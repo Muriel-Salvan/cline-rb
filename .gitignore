@@ -1,0 +1,2 @@
+# This repo builds a Rubygem. No lock file then.
+Gemfile.lock
