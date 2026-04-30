@@ -1,6 +1,6 @@
 # cline-rb
 
-Ruby bindings on the [Cline](https://cline.bot/) ecosystem.
+Ruby bindings on the [Cline](https://cline.bot/) ecosystem (CLI, skills, tasks, config...)
 
 ## Installation
 

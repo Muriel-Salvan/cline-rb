@@ -1,7 +1,13 @@
-plugins: rubocop-rspec
+plugins:
+  - rubocop-rspec
+  - rubocop-yard
 
 AllCops:
   NewCops: enable
+
+# Keep indentation consistent
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
 
 # It's ok to have longer lines
 Layout/LineLength:
@@ -21,7 +27,7 @@ Metrics/CyclomaticComplexity:
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/MethodLength:
-  Max: 40
+  Max: 50
 
 # kwargs should not count towards max parameters list.
 Metrics/ParameterLists:
