@@ -31,7 +31,7 @@ module Cline
 
     # Get MCP settings stored in this data directory
     #
-    # @return [GlobalSettings, nil] MCP settings stored in this data directory, or nil if none
+    # @return [McpSettings, nil] MCP settings stored in this data directory, or nil if none
     def mcp_settings
       @mcp_settings ||= McpSettings.json_from_base_dir(@data_dir)
     end

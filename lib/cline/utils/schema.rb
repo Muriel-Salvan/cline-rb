@@ -1,3 +1,4 @@
+require 'forwardable'
 require 'shale'
 
 module Cline
@@ -23,6 +24,16 @@ module Cline
         external_name = :"MapOf#{shale_type.to_s.gsub(':', '')}"
         unless Schema.const_defined?(external_name)
           schema_class = Class.new(Cline::Schema) do
+            extend Forwardable
+
+            # @!group Public API
+
+            include Enumerable
+
+            def_delegators :elements_hash, :[], :each, :size, :keys, :values, :to_hash
+
+            # @!group Internal
+
             # @return [Hash] The elements hash taken from the extra attributes
             attr_accessor :elements_hash
 
