@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+# Check that a given config folder contains workspaces settings that cline-rb is able to read and write
+
+config_dir = ARGV[0]
+
+raise 'Usage: compatibility_check_workspaces <config_dir>' if config_dir.nil?
+
+require 'cline'
+require 'fileutils'
+require 'tmpdir'
+
+original_config = Cline::Config.from_dir(config_dir)
+# Replicate the settings into a temporary directory using cline-rb readers and writers
+Dir.mktmpdir do |temp_dir|
+  original_config.workspaces.each do |workspace_name, workspace|
+    puts "Save workspace #{workspace_name}"
+    if workspace.settings
+      workspace.settings.json_to_base_dir("#{temp_dir}/#{workspace_name}")
+    else
+      FileUtils.mkdir_p("#{temp_dir}/#{workspace_name}")
+    end
+  end
+  # Load the temporary directory
+  new_workspaces = Cline::Workspaces.from_dir(temp_dir)
+  # Compare both
+  if original_config.workspaces == new_workspaces
+    puts 'Workspaces compatibility check - Success'
+  else
+    puts 'Workspaces compatibility check - Failure'
+  end
+end

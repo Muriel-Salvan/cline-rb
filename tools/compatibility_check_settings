@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+# Check that a given config folder contains settings that cline-rb is able to read and write
+
+config_dir = ARGV[0]
+
+raise 'Usage: compatibility_check_settings <config_dir>' if config_dir.nil?
+
+require 'cline'
+require 'fileutils'
+require 'tmpdir'
+
+original_config = Cline::Config.from_dir(config_dir)
+# Replicate the settings into a temporary directory using cline-rb readers and writers
+Dir.mktmpdir do |temp_dir|
+  original_config.global_settings.json_to_base_dir(temp_dir)
+  original_config.mcp_settings.json_to_base_dir(temp_dir)
+  # Load the temporary directory
+  new_data = Cline::Data.from_dir(temp_dir)
+  # Compare both
+  if original_config.global_settings == new_data.global_settings
+    puts 'Global settings compatibility check - Success'
+  else
+    puts 'Global settings compatibility check - Failure'
+  end
+  if original_config.mcp_settings == new_data.mcp_settings
+    puts 'MCP settings compatibility check - Success'
+  else
+    puts 'MCP settings compatibility check - Failure'
+  end
+end
