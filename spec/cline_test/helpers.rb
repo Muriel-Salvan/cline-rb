@@ -11,9 +11,12 @@ module ClineTest
     # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none
     #   Workspace data is itself a hash that can describe the workspace with the following keys:
     #   * settings [Hash, nil] The settings to create, or nil if none
+    # @param tasks [Hash{String => Hash{Symbol => Object}}, nil] The tasks to create (key: name, value: data), or nil if none
+    #   Tasks data is itself a hash that can describe the task with the following keys:
+    #   * messages [Array<Hash>, nil] The messages to create, or nil if none
     # @yield [data_dir] Block called with the data directory ready
     # @yieldparam [String] The data directory
-    def with_data_dir(global_settings: nil, mcp_settings: nil, workspaces: nil)
+    def with_data_dir(global_settings: nil, mcp_settings: nil, workspaces: nil, tasks: nil)
       Dir.mktmpdir do |data_dir|
         File.write(File.join(data_dir, 'globalState.json'), global_settings.to_json) if global_settings
         if mcp_settings
@@ -26,6 +29,14 @@ module ClineTest
             workspace_dir = File.join(workspaces_dir, workspace_name)
             FileUtils.mkdir_p(workspace_dir)
             File.write(File.join(workspace_dir, 'workspaceState.json'), workspace_data[:settings].to_json) if workspace_data[:settings]
+          end
+        end
+        if tasks
+          tasks_dir = File.join(data_dir, 'tasks')
+          tasks.each do |task_name, task_data|
+            task_dir = File.join(tasks_dir, task_name)
+            FileUtils.mkdir_p(task_dir)
+            File.write(File.join(task_dir, 'ui_messages.json'), task_data[:messages].to_json) if task_data[:messages]
           end
         end
         yield data_dir
