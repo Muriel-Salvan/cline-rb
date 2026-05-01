@@ -339,4 +339,55 @@ describe Cline::Data, '#global_settings' do
       expect(global_settings.global_skills_toggles.to_h).to eq({ 'default_skill' => true })
     end
   end
+
+  describe '#==' do
+    it 'returns true when 2 global settings from different data directories have the same content' do
+      settings_hash = {
+        cline_web_tools_enabled: true,
+        focus_chain_settings: {
+          enabled: true,
+          remind_cline_interval: 5
+        }
+      }
+      with_data_dir(global_settings: settings_hash) do |data_dir1|
+        settings1 = described_class.from_dir(data_dir1).global_settings
+        with_data_dir(global_settings: settings_hash) do |data_dir2|
+          settings2 = described_class.from_dir(data_dir2).global_settings
+          # Settings are from different data directories but have identical content
+          expect(settings1).not_to equal(settings2) # Different instances
+          expect(settings1).to eq(settings2)
+        end
+      end
+    end
+
+    it 'returns false when 2 global settings have different attributes' do
+      with_data_dir(global_settings: { cline_web_tools_enabled: true }) do |data_dir1|
+        settings1 = described_class.from_dir(data_dir1).global_settings
+        with_data_dir(global_settings: { cline_web_tools_enabled: false }) do |data_dir2|
+          settings2 = described_class.from_dir(data_dir2).global_settings
+          expect(settings1).not_to eq(settings2)
+        end
+      end
+    end
+
+    it 'returns false when 2 global settings have different nested attributes' do
+      with_data_dir(global_settings: { focus_chain_settings: { enabled: true } }) do |data_dir1|
+        settings1 = described_class.from_dir(data_dir1).global_settings
+        with_data_dir(global_settings: { focus_chain_settings: { enabled: false } }) do |data_dir2|
+          settings2 = described_class.from_dir(data_dir2).global_settings
+          expect(settings1).not_to eq(settings2)
+        end
+      end
+    end
+
+    it 'returns false when 2 global settings have unknown attributes' do
+      with_data_dir(global_settings: { focus_chain_settings: { unknown_attribute: 1 } }) do |data_dir1|
+        settings1 = described_class.from_dir(data_dir1).global_settings
+        with_data_dir(global_settings: { focus_chain_settings: { unknown_attribute: 2 } }) do |data_dir2|
+          settings2 = described_class.from_dir(data_dir2).global_settings
+          expect(settings1).not_to eq(settings2)
+        end
+      end
+    end
+  end
 end

@@ -76,4 +76,58 @@ describe Cline::Data, '#mcp_settings' do
       expect(servers['minimal-server'].disabled).to be false
     end
   end
+
+  describe '#==' do
+    it 'returns true when 2 MCP settings from different data directories have the same content' do
+      settings_hash = {
+        mcp_servers: {
+          'test-server': {
+            auto_approve: %w[file-read command-run],
+            disabled: false,
+            timeout: 30,
+            type: 'stdio'
+          }
+        }
+      }
+      with_data_dir(mcp_settings: settings_hash) do |data_dir1|
+        settings1 = described_class.from_dir(data_dir1).mcp_settings
+        with_data_dir(mcp_settings: settings_hash) do |data_dir2|
+          settings2 = described_class.from_dir(data_dir2).mcp_settings
+          # Settings are from different data directories but have identical content
+          expect(settings1).not_to equal(settings2) # Different instances
+          expect(settings1).to eq(settings2)
+        end
+      end
+    end
+
+    it 'returns false when 2 MCP settings have different server attributes' do
+      with_data_dir(mcp_settings: { mcp_servers: { test: { disabled: false } } }) do |data_dir1|
+        settings1 = described_class.from_dir(data_dir1).mcp_settings
+        with_data_dir(mcp_settings: { mcp_servers: { test: { disabled: true } } }) do |data_dir2|
+          settings2 = described_class.from_dir(data_dir2).mcp_settings
+          expect(settings1).not_to eq(settings2)
+        end
+      end
+    end
+
+    it 'returns false when 2 MCP settings have different server lists' do
+      with_data_dir(mcp_settings: { mcp_servers: { server1: { disabled: false } } }) do |data_dir1|
+        settings1 = described_class.from_dir(data_dir1).mcp_settings
+        with_data_dir(mcp_settings: { mcp_servers: { server2: { disabled: false } } }) do |data_dir2|
+          settings2 = described_class.from_dir(data_dir2).mcp_settings
+          expect(settings1).not_to eq(settings2)
+        end
+      end
+    end
+
+    it 'returns false when 2 MCP settings have different unknown attributes' do
+      with_data_dir(mcp_settings: { mcp_servers: { server1: { unknown_attribute: 1 } } }) do |data_dir1|
+        settings1 = described_class.from_dir(data_dir1).mcp_settings
+        with_data_dir(mcp_settings: { mcp_servers: { server2: { unknown_attribute: 2 } } }) do |data_dir2|
+          settings2 = described_class.from_dir(data_dir2).mcp_settings
+          expect(settings1).not_to eq(settings2)
+        end
+      end
+    end
+  end
 end
