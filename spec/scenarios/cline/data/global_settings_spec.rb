@@ -268,7 +268,7 @@ describe Cline::Data, '#global_settings' do
       }
     ) do |data_dir|
       global_settings = described_class.from_dir(data_dir).global_settings
-      expect(global_settings.open_ai_headers.to_hash).to eq({ 'Authorization' => 'Bearer test' })
+      expect(global_settings.open_ai_headers.to_h).to eq({ 'Authorization' => 'Bearer test' })
       expect(global_settings.open_ai_headers['Authorization']).to eq('Bearer test')
       expect(global_settings.sap_ai_core_use_orchestration_mode).to be true
       expect(global_settings.anthropic_base_url).to eq 'https://api.anthropic.com'
@@ -329,14 +329,14 @@ describe Cline::Data, '#global_settings' do
     ) do |data_dir|
       global_settings = described_class.from_dir(data_dir).global_settings
       expect(global_settings).not_to be_nil
-      expect(global_settings.remote_rules_toggles.to_hash).to eq({ 'rule1' => true, 'rule2' => false })
+      expect(global_settings.remote_rules_toggles.to_h).to eq({ 'rule1' => true, 'rule2' => false })
       expect(global_settings.remote_rules_toggles['rule1']).to eq true
       expect(global_settings.remote_rules_toggles['rule2']).to eq false
-      expect(global_settings.remote_workflow_toggles.to_hash).to eq({ 'workflow1' => true })
-      expect(global_settings.global_workflow_toggles.to_hash).to eq({ 'workflow_a' => false, 'workflow_b' => true })
-      expect(global_settings.global_cline_rules_toggles.to_hash).to eq({ 'core_rule' => true })
-      expect(global_settings.remote_skills_toggles.to_hash).to eq({ 'skill_x' => false, 'skill_y' => true })
-      expect(global_settings.global_skills_toggles.to_hash).to eq({ 'default_skill' => true })
+      expect(global_settings.remote_workflow_toggles.to_h).to eq({ 'workflow1' => true })
+      expect(global_settings.global_workflow_toggles.to_h).to eq({ 'workflow_a' => false, 'workflow_b' => true })
+      expect(global_settings.global_cline_rules_toggles.to_h).to eq({ 'core_rule' => true })
+      expect(global_settings.remote_skills_toggles.to_h).to eq({ 'skill_x' => false, 'skill_y' => true })
+      expect(global_settings.global_skills_toggles.to_h).to eq({ 'default_skill' => true })
     end
   end
 end
