@@ -1,32 +1,27 @@
-require 'tmpdir'
-
 describe Cline::Data, '#mcp_settings' do
   it 'returns nil when no MCP settings file exists in data directory' do
-    Dir.mktmpdir do |tmp_dir|
-      expect(described_class.from_dir(tmp_dir).mcp_settings).to be_nil
+    with_data_dir(mcp_settings: nil) do |data_dir|
+      expect(described_class.from_dir(data_dir).mcp_settings).to be_nil
     end
   end
 
   it 'ignores extra unknown parameters from MCP settings file' do
-    Dir.mktmpdir do |tmp_dir|
-      FileUtils.mkdir_p(File.join(tmp_dir, 'settings'))
-      File.write(
-        File.join(tmp_dir, 'settings', 'cline_mcp_settings.json'),
-        {
-          mcp_servers: {
-            'test-server': {
-              auto_approve: %w[file-read command-run],
-              disabled: false,
-              timeout: 30,
-              type: 'stdio',
-              this_is_an_unknown_parameter: 'should be ignored',
-              another_extra_field: 12_345
-            }
-          },
-          top_level_unknown: 'also ignored'
-        }.to_json
-      )
-      mcp_settings = described_class.from_dir(tmp_dir).mcp_settings
+    with_data_dir(
+      mcp_settings: {
+        mcp_servers: {
+          'test-server': {
+            auto_approve: %w[file-read command-run],
+            disabled: false,
+            timeout: 30,
+            type: 'stdio',
+            this_is_an_unknown_parameter: 'should be ignored',
+            another_extra_field: 12_345
+          }
+        },
+        top_level_unknown: 'also ignored'
+      }
+    ) do |data_dir|
+      mcp_settings = described_class.from_dir(data_dir).mcp_settings
       # Verify valid attributes are still correctly loaded
       servers = mcp_settings.mcp_servers
       expect(servers['test-server'].auto_approve).to eq %w[file-read command-run]
@@ -41,32 +36,29 @@ describe Cline::Data, '#mcp_settings' do
   end
 
   it 'loads all MCP settings attributes' do
-    Dir.mktmpdir do |tmp_dir|
-      FileUtils.mkdir_p(File.join(tmp_dir, 'settings'))
-      File.write(
-        File.join(tmp_dir, 'settings', 'cline_mcp_settings.json'),
-        {
-          mcp_servers: {
-            'stdio-server': {
-              auto_approve: %w[file-read command-run edit-files],
-              disabled: false,
-              timeout: 60,
-              type: 'stdio'
-            },
-            'sse-server': {
-              auto_approve: [],
-              disabled: true,
-              timeout: 120,
-              type: 'sse',
-              url: 'http://localhost:8080/sse'
-            },
-            'minimal-server': {
-              disabled: false
-            }
+    with_data_dir(
+      mcp_settings: {
+        mcp_servers: {
+          'stdio-server': {
+            auto_approve: %w[file-read command-run edit-files],
+            disabled: false,
+            timeout: 60,
+            type: 'stdio'
+          },
+          'sse-server': {
+            auto_approve: [],
+            disabled: true,
+            timeout: 120,
+            type: 'sse',
+            url: 'http://localhost:8080/sse'
+          },
+          'minimal-server': {
+            disabled: false
           }
-        }.to_json
-      )
-      mcp_settings = described_class.from_dir(tmp_dir).mcp_settings
+        }
+      }
+    ) do |data_dir|
+      mcp_settings = described_class.from_dir(data_dir).mcp_settings
       servers = mcp_settings.mcp_servers
       expect(servers.count).to eq 3
       # Check stdio server
