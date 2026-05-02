@@ -11,8 +11,10 @@ module Cline
       # @param dir [String] Directory used to initialize the new instance
       # @param args [Array] Extra parameters to give to the instance's constructor
       # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
-      # @return [Settings] The settings read from this directory
+      # @return [Object, nil] The instance initialized from this directory, or nil if none
       def from_dir(dir, *args, **kwargs)
+        return unless File.exist?(dir) && File.directory?(dir)
+
         instance = new(*args, **kwargs)
         instance.initialize_from_dir(dir)
         instance

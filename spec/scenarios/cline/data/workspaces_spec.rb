@@ -1,8 +1,7 @@
 describe Cline::Data, '#workspaces' do
-  it 'returns Workspaces instance even when no workspaces directory exists in data directory' do
+  it 'returns no workspaces when no directory exists in data directory' do
     with_data_dir(workspaces: nil) do |data_dir|
-      workspaces = described_class.from_dir(data_dir).workspaces
-      expect(workspaces.size).to eq 0
+      expect(described_class.from_dir(data_dir).workspaces).to be_nil
     end
   end
 

@@ -330,8 +330,8 @@ describe Cline::Data, '#global_settings' do
       global_settings = described_class.from_dir(data_dir).global_settings
       expect(global_settings).not_to be_nil
       expect(global_settings.remote_rules_toggles.to_h).to eq({ 'rule1' => true, 'rule2' => false })
-      expect(global_settings.remote_rules_toggles['rule1']).to eq true
-      expect(global_settings.remote_rules_toggles['rule2']).to eq false
+      expect(global_settings.remote_rules_toggles['rule1']).to be true
+      expect(global_settings.remote_rules_toggles['rule2']).to be false
       expect(global_settings.remote_workflow_toggles.to_h).to eq({ 'workflow1' => true })
       expect(global_settings.global_workflow_toggles.to_h).to eq({ 'workflow_a' => false, 'workflow_b' => true })
       expect(global_settings.global_cline_rules_toggles.to_h).to eq({ 'core_rule' => true })

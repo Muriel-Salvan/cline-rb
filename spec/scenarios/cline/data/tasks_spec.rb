@@ -1,7 +1,7 @@
 describe Cline::Data, '#tasks' do
-  it 'returns Tasks instance even when no tasks directory exists in data directory' do
+  it 'returns no tasks when no tasks directory exists in data directory' do
     with_data_dir(tasks: nil) do |data_dir|
-      expect(described_class.from_dir(data_dir).tasks.size).to eq 0
+      expect(described_class.from_dir(data_dir).tasks).to be_nil
     end
   end
 
@@ -79,7 +79,7 @@ describe Cline::Data, '#tasks' do
         expect(message.model_info.model_id).to eq 'gpt-4'
         expect(message.model_info.mode).to eq 'act'
         expect(message.conversation_history_index).to eq 5
-        expect(message.partial).to eq false
+        expect(message.partial).to be false
       end
     end
 
