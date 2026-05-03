@@ -36,6 +36,13 @@ module Cline
       @mcp_settings ||= McpSettings.json_from_base_dir(@data_dir)
     end
 
+    # Get the cached Cline models
+    #
+    # @return [Models] Cached Cline models
+    def cline_models
+      @cline_models ||= Models.json_from_base_dir(@data_dir)
+    end
+
     # Equality check
     #
     # @param other [Object] The other to check equality with
@@ -45,7 +52,8 @@ module Cline
         other.workspaces == workspaces &&
         other.tasks == tasks &&
         other.global_settings == global_settings &&
-        other.mcp_settings == mcp_settings
+        other.mcp_settings == mcp_settings &&
+        other.cline_models == cline_models
     end
 
     # @!group Internal

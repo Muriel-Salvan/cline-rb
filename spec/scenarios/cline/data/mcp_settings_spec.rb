@@ -1,12 +1,12 @@
 describe Cline::Data, '#mcp_settings' do
   it 'returns nil when no MCP settings file exists in data directory' do
-    with_data_dir(mcp_settings: nil) do |data_dir|
-      expect(described_class.from_dir(data_dir).mcp_settings).to be_nil
+    with_data(mcp_settings: nil) do |data|
+      expect(data.mcp_settings).to be_nil
     end
   end
 
   it 'ignores extra unknown parameters from MCP settings file' do
-    with_data_dir(
+    with_data(
       mcp_settings: {
         mcp_servers: {
           'test-server': {
@@ -20,8 +20,8 @@ describe Cline::Data, '#mcp_settings' do
         },
         top_level_unknown: 'also ignored'
       }
-    ) do |data_dir|
-      mcp_settings = described_class.from_dir(data_dir).mcp_settings
+    ) do |data|
+      mcp_settings = data.mcp_settings
       # Verify valid attributes are still correctly loaded
       servers = mcp_settings.mcp_servers
       expect(servers['test-server'].auto_approve).to eq %w[file-read command-run]
@@ -36,7 +36,7 @@ describe Cline::Data, '#mcp_settings' do
   end
 
   it 'loads all MCP settings attributes' do
-    with_data_dir(
+    with_data(
       mcp_settings: {
         mcp_servers: {
           'stdio-server': {
@@ -57,8 +57,8 @@ describe Cline::Data, '#mcp_settings' do
           }
         }
       }
-    ) do |data_dir|
-      mcp_settings = described_class.from_dir(data_dir).mcp_settings
+    ) do |data|
+      mcp_settings = data.mcp_settings
       servers = mcp_settings.mcp_servers
       expect(servers.count).to eq 3
       # Check stdio server
@@ -89,10 +89,10 @@ describe Cline::Data, '#mcp_settings' do
           }
         }
       }
-      with_data_dir(mcp_settings: settings_hash) do |data_dir1|
-        settings1 = described_class.from_dir(data_dir1).mcp_settings
-        with_data_dir(mcp_settings: settings_hash) do |data_dir2|
-          settings2 = described_class.from_dir(data_dir2).mcp_settings
+      with_data(mcp_settings: settings_hash) do |data1|
+        settings1 = data1.mcp_settings
+        with_data(mcp_settings: settings_hash) do |data2|
+          settings2 = data2.mcp_settings
           # Settings are from different data directories but have identical content
           expect(settings1).not_to equal(settings2) # Different instances
           expect(settings1).to eq(settings2)
@@ -101,31 +101,25 @@ describe Cline::Data, '#mcp_settings' do
     end
 
     it 'returns false when 2 MCP settings have different server attributes' do
-      with_data_dir(mcp_settings: { mcp_servers: { test: { disabled: false } } }) do |data_dir1|
-        settings1 = described_class.from_dir(data_dir1).mcp_settings
-        with_data_dir(mcp_settings: { mcp_servers: { test: { disabled: true } } }) do |data_dir2|
-          settings2 = described_class.from_dir(data_dir2).mcp_settings
-          expect(settings1).not_to eq(settings2)
+      with_data(mcp_settings: { mcp_servers: { test: { disabled: false } } }) do |data1|
+        with_data(mcp_settings: { mcp_servers: { test: { disabled: true } } }) do |data2|
+          expect(data1.mcp_settings).not_to eq(data2.mcp_settings)
         end
       end
     end
 
     it 'returns false when 2 MCP settings have different server lists' do
-      with_data_dir(mcp_settings: { mcp_servers: { server1: { disabled: false } } }) do |data_dir1|
-        settings1 = described_class.from_dir(data_dir1).mcp_settings
-        with_data_dir(mcp_settings: { mcp_servers: { server2: { disabled: false } } }) do |data_dir2|
-          settings2 = described_class.from_dir(data_dir2).mcp_settings
-          expect(settings1).not_to eq(settings2)
+      with_data(mcp_settings: { mcp_servers: { server1: { disabled: false } } }) do |data1|
+        with_data(mcp_settings: { mcp_servers: { server2: { disabled: false } } }) do |data2|
+          expect(data1.mcp_settings).not_to eq(data2.mcp_settings)
         end
       end
     end
 
     it 'returns false when 2 MCP settings have different unknown attributes' do
-      with_data_dir(mcp_settings: { mcp_servers: { server1: { unknown_attribute: 1 } } }) do |data_dir1|
-        settings1 = described_class.from_dir(data_dir1).mcp_settings
-        with_data_dir(mcp_settings: { mcp_servers: { server2: { unknown_attribute: 2 } } }) do |data_dir2|
-          settings2 = described_class.from_dir(data_dir2).mcp_settings
-          expect(settings1).not_to eq(settings2)
+      with_data(mcp_settings: { mcp_servers: { server1: { unknown_attribute: 1 } } }) do |data1|
+        with_data(mcp_settings: { mcp_servers: { server2: { unknown_attribute: 2 } } }) do |data2|
+          expect(data1.mcp_settings).not_to eq(data2.mcp_settings)
         end
       end
     end

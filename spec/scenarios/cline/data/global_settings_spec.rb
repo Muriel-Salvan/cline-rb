@@ -1,12 +1,12 @@
 describe Cline::Data, '#global_settings' do
   it 'returns nil when no global settings file exists in data directory' do
-    with_data_dir(global_settings: nil) do |data_dir|
-      expect(described_class.from_dir(data_dir).global_settings).to be_nil
+    with_data(global_settings: nil) do |data|
+      expect(data.global_settings).to be_nil
     end
   end
 
   it 'ignores extra unknown parameters from global settings file' do
-    with_data_dir(
+    with_data(
       global_settings: {
         cline_web_tools_enabled: true,
         this_is_an_unknown_parameter: 'should be ignored',
@@ -17,8 +17,8 @@ describe Cline::Data, '#global_settings' do
           remind_cline_interval: 5
         }
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       # Verify valid attributes are still correctly loaded
       expect(global_settings.cline_web_tools_enabled).to be true
       expect(global_settings.focus_chain_settings.enabled).to be true
@@ -31,7 +31,7 @@ describe Cline::Data, '#global_settings' do
   end
 
   it 'loads all global settings attributes (features)' do
-    with_data_dir(
+    with_data(
       global_settings: {
         focus_chain_settings: {
           enabled: true,
@@ -47,8 +47,8 @@ describe Cline::Data, '#global_settings' do
         enable_checkpoints_setting: false,
         background_edit_enabled: true
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       expect(global_settings.focus_chain_settings).not_to be_nil
       expect(global_settings.focus_chain_settings.enabled).to be true
       expect(global_settings.focus_chain_settings.remind_cline_interval).to eq 5
@@ -65,7 +65,7 @@ describe Cline::Data, '#global_settings' do
   end
 
   it 'loads all global settings attributes (models)' do
-    with_data_dir(
+    with_data(
       global_settings: {
         act_mode_open_router_model_info: {
           name: 'test-model',
@@ -113,8 +113,8 @@ describe Cline::Data, '#global_settings' do
         act_mode_thinking_budget_tokens: 8000,
         act_mode_open_router_model_id: 'openrouter/act-model'
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       expect(global_settings.act_mode_open_router_model_info.name).to eq 'test-model'
       expect(global_settings.act_mode_open_router_model_info.max_tokens).to eq 4096
       expect(global_settings.act_mode_open_router_model_info.context_window).to eq 8192
@@ -152,7 +152,7 @@ describe Cline::Data, '#global_settings' do
   end
 
   it 'loads all global settings attributes (auto_approval)' do
-    with_data_dir(
+    with_data(
       global_settings: {
         auto_approval_settings: {
           enabled: true,
@@ -173,8 +173,8 @@ describe Cline::Data, '#global_settings' do
         },
         yolo_mode_toggled: true
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       expect(global_settings.auto_approval_settings.enabled).to be true
       expect(global_settings.auto_approval_settings.version).to eq 1
       expect(global_settings.auto_approval_settings.max_requests).to eq 10
@@ -193,7 +193,7 @@ describe Cline::Data, '#global_settings' do
   end
 
   it 'loads all global settings attributes (browser)' do
-    with_data_dir(
+    with_data(
       global_settings: {
         browser_settings: {
           viewport: {
@@ -207,8 +207,8 @@ describe Cline::Data, '#global_settings' do
           custom_args: '--no-sandbox'
         }
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       expect(global_settings.browser_settings.viewport.width).to eq 1280
       expect(global_settings.browser_settings.viewport.height).to eq 720
       expect(global_settings.browser_settings.remote_browser_enabled).to be true
@@ -220,7 +220,7 @@ describe Cline::Data, '#global_settings' do
   end
 
   it 'loads all global settings attributes (workspace)' do
-    with_data_dir(
+    with_data(
       global_settings: {
         workspace_roots: [
           {
@@ -239,8 +239,8 @@ describe Cline::Data, '#global_settings' do
         primary_root_index: 0,
         multi_root_enabled: true
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       expect(global_settings.workspace_roots.count).to eq 2
       expect(global_settings.workspace_roots.first.path).to eq '/workspace/project1'
       expect(global_settings.workspace_roots.first.name).to eq 'Project 1'
@@ -252,7 +252,7 @@ describe Cline::Data, '#global_settings' do
   end
 
   it 'loads all global settings attributes (api_providers)' do
-    with_data_dir(
+    with_data(
       global_settings: {
         open_ai_headers: { 'Authorization' => 'Bearer test' },
         sap_ai_core_use_orchestration_mode: true,
@@ -266,8 +266,8 @@ describe Cline::Data, '#global_settings' do
         azure_api_version: '2024-02-01',
         request_timeout_ms: 30_000
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       expect(global_settings.open_ai_headers.to_h).to eq({ 'Authorization' => 'Bearer test' })
       expect(global_settings.open_ai_headers['Authorization']).to eq('Bearer test')
       expect(global_settings.sap_ai_core_use_orchestration_mode).to be true
@@ -284,7 +284,7 @@ describe Cline::Data, '#global_settings' do
   end
 
   it 'loads all global settings attributes (general)' do
-    with_data_dir(
+    with_data(
       global_settings: {
         welcome_view_completed: true,
         custom_prompt: 'Custom prompt text',
@@ -299,8 +299,8 @@ describe Cline::Data, '#global_settings' do
         last_dismissed_info_banner_version: 5,
         last_dismissed_model_banner_version: 3
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       expect(global_settings.welcome_view_completed).to be true
       expect(global_settings.custom_prompt).to eq 'Custom prompt text'
       expect(global_settings.default_terminal_profile).to eq 'bash'
@@ -317,7 +317,7 @@ describe Cline::Data, '#global_settings' do
   end
 
   it 'loads all global settings attributes (toggles)' do
-    with_data_dir(
+    with_data(
       global_settings: {
         remote_rules_toggles: { 'rule1' => true, 'rule2' => false },
         remote_workflow_toggles: { 'workflow1' => true },
@@ -326,8 +326,8 @@ describe Cline::Data, '#global_settings' do
         remote_skills_toggles: { 'skill_x' => false, 'skill_y' => true },
         global_skills_toggles: { 'default_skill' => true }
       }
-    ) do |data_dir|
-      global_settings = described_class.from_dir(data_dir).global_settings
+    ) do |data|
+      global_settings = data.global_settings
       expect(global_settings).not_to be_nil
       expect(global_settings.remote_rules_toggles.to_h).to eq({ 'rule1' => true, 'rule2' => false })
       expect(global_settings.remote_rules_toggles['rule1']).to be true
@@ -349,10 +349,10 @@ describe Cline::Data, '#global_settings' do
           remind_cline_interval: 5
         }
       }
-      with_data_dir(global_settings: settings_hash) do |data_dir1|
-        settings1 = described_class.from_dir(data_dir1).global_settings
-        with_data_dir(global_settings: settings_hash) do |data_dir2|
-          settings2 = described_class.from_dir(data_dir2).global_settings
+      with_data(global_settings: settings_hash) do |data1|
+        settings1 = data1.global_settings
+        with_data(global_settings: settings_hash) do |data2|
+          settings2 = data2.global_settings
           # Settings are from different data directories but have identical content
           expect(settings1).not_to equal(settings2) # Different instances
           expect(settings1).to eq(settings2)
@@ -361,31 +361,25 @@ describe Cline::Data, '#global_settings' do
     end
 
     it 'returns false when 2 global settings have different attributes' do
-      with_data_dir(global_settings: { cline_web_tools_enabled: true }) do |data_dir1|
-        settings1 = described_class.from_dir(data_dir1).global_settings
-        with_data_dir(global_settings: { cline_web_tools_enabled: false }) do |data_dir2|
-          settings2 = described_class.from_dir(data_dir2).global_settings
-          expect(settings1).not_to eq(settings2)
+      with_data(global_settings: { cline_web_tools_enabled: true }) do |data1|
+        with_data(global_settings: { cline_web_tools_enabled: false }) do |data2|
+          expect(data1.global_settings).not_to eq(data2.global_settings)
         end
       end
     end
 
     it 'returns false when 2 global settings have different nested attributes' do
-      with_data_dir(global_settings: { focus_chain_settings: { enabled: true } }) do |data_dir1|
-        settings1 = described_class.from_dir(data_dir1).global_settings
-        with_data_dir(global_settings: { focus_chain_settings: { enabled: false } }) do |data_dir2|
-          settings2 = described_class.from_dir(data_dir2).global_settings
-          expect(settings1).not_to eq(settings2)
+      with_data(global_settings: { focus_chain_settings: { enabled: true } }) do |data1|
+        with_data(global_settings: { focus_chain_settings: { enabled: false } }) do |data2|
+          expect(data1.global_settings).not_to eq(data2.global_settings)
         end
       end
     end
 
     it 'returns false when 2 global settings have unknown attributes' do
-      with_data_dir(global_settings: { focus_chain_settings: { unknown_attribute: 1 } }) do |data_dir1|
-        settings1 = described_class.from_dir(data_dir1).global_settings
-        with_data_dir(global_settings: { focus_chain_settings: { unknown_attribute: 2 } }) do |data_dir2|
-          settings2 = described_class.from_dir(data_dir2).global_settings
-          expect(settings1).not_to eq(settings2)
+      with_data(global_settings: { focus_chain_settings: { unknown_attribute: 1 } }) do |data1|
+        with_data(global_settings: { focus_chain_settings: { unknown_attribute: 2 } }) do |data2|
+          expect(data1.global_settings).not_to eq(data2.global_settings)
         end
       end
     end

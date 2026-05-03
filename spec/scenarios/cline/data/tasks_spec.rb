@@ -1,19 +1,19 @@
 describe Cline::Data, '#tasks' do
   it 'returns no tasks when no tasks directory exists in data directory' do
-    with_data_dir(tasks: nil) do |data_dir|
-      expect(described_class.from_dir(data_dir).tasks).to be_nil
+    with_data(tasks: nil) do |data|
+      expect(data.tasks).to be_nil
     end
   end
 
   it 'returns Tasks instance with correct count when tasks exist' do
-    with_data_dir(
+    with_data(
       tasks: {
         'task-1' => {},
         'task-2' => {},
         'task-3' => {}
       }
-    ) do |data_dir|
-      tasks = described_class.from_dir(data_dir).tasks
+    ) do |data|
+      tasks = data.tasks
       expect(tasks.size).to eq 3
       expect(tasks['task-1']).not_to be_nil
       expect(tasks['task-2']).not_to be_nil
@@ -30,14 +30,14 @@ describe Cline::Data, '#tasks' do
     # @yield [task] Block called with the test task ready
     # @yieldparam [Cline::Task] The test task
     def with_task(name: 'test-task', messages: nil)
-      with_data_dir(
+      with_data(
         tasks: {
           name => {
             messages:
           }
         }
-      ) do |data_dir|
-        yield described_class.from_dir(data_dir).tasks[name]
+      ) do |data|
+        yield data.tasks[name]
       end
     end
 

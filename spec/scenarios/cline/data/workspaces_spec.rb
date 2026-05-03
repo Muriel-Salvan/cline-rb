@@ -1,20 +1,21 @@
 describe Cline::Data, '#workspaces' do
   it 'returns no workspaces when no directory exists in data directory' do
-    with_data_dir(workspaces: nil) do |data_dir|
-      expect(described_class.from_dir(data_dir).workspaces).to be_nil
+    with_data(workspaces: nil) do |data|
+      expect(data.workspaces).to be_nil
     end
   end
 
   it 'returns Workspaces instance with correct count when workspaces exist' do
-    with_data_dir(
+    with_data(
       workspaces: {
         'workspace-1' => {},
         'workspace-2' => {},
         'workspace-3' => {}
       }
-    ) do |data_dir|
-      workspaces = described_class.from_dir(data_dir).workspaces
+    ) do |data|
+      workspaces = data.workspaces
       expect(workspaces.size).to eq 3
+      expect(workspaces.keys).to contain_exactly('workspace-1', 'workspace-2', 'workspace-3')
       expect(workspaces['workspace-1']).not_to be_nil
       expect(workspaces['workspace-2']).not_to be_nil
       expect(workspaces['workspace-3']).not_to be_nil
@@ -30,14 +31,14 @@ describe Cline::Data, '#workspaces' do
     # @yield [workspace] Block called with the test workspace ready
     # @yieldparam [Cline::Workspace] The test workspace
     def with_workspace(name: 'test-workspace', settings: nil)
-      with_data_dir(
+      with_data(
         workspaces: {
           name => {
             settings:
           }
         }
-      ) do |data_dir|
-        yield described_class.from_dir(data_dir).workspaces[name]
+      ) do |data|
+        yield data.workspaces[name]
       end
     end
 
