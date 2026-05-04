@@ -464,6 +464,41 @@ describe Cline::Data, '#tasks' do
           expect(task.messages[1].text).to eq 'New message'
         end
       end
+
+      it 'returns monitor object when no block given and stops monitoring after #stop is called' do
+        with_task(messages: nil) do |task|
+          @calls = []
+          monitor = task.monitor_messages(
+            on_message: proc do |message, last, previous_version|
+              calls << {
+                message: message,
+                last: last,
+                previous_version: previous_version
+              }
+            end,
+            monitoring_interval_secs: 0.01
+          )
+          # Wait for monitoring thread to start
+          sleep 0.05
+          # First write should trigger on_message call
+          write_messages(task, [{ ts: 100, type: 'user', text: 'First message' }])
+          sleep 0.05
+          expect(calls.size).to eq 1
+          calls.clear
+          # Stop the monitor
+          monitor.stop
+          # Second write should NOT trigger on_message call after stop
+          write_messages(
+            task,
+            [
+              { ts: 100, type: 'user', text: 'First message' },
+              { ts: 101, type: 'user', text: 'Second message' }
+            ]
+          )
+          sleep 0.05
+          expect(calls).to be_empty
+        end
+      end
     end
   end
 end

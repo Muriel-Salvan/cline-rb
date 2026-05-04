@@ -33,7 +33,10 @@ module Cline
     # @param ignore_partials [Boolean] Should we ignore partial messages?
     #   If true, then on_message will only be called for messages that have been fully received.
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds
-    # @yield [#call] Code called while monitoring is in place
+    # @yield [#call] Optional code called while monitoring is in place.
+    #   If used then monitoring is stopped at the end of the block's execution.
+    # @return [FileMonitor, nil] If no block has been given, return the monitor that needs to be
+    #   stopped by the caller when monitoring should end.
     def monitor_messages(on_message:, ignore_partials: false, monitoring_interval_secs: 1, &)
       # Keep messages per timestamp to detect updates
       messages = {}

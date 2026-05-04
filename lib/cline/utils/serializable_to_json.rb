@@ -55,28 +55,20 @@ module Cline
         #   * Param instance [Object, nil] New instance with updates, or nil if no instance
         # @param monitoring_interval_secs [Float] The monitoring interval in seconds
         # @param kwargs [Hash] Extra kwargs to give to the from_cline_json constructor
-        # @yield Code called with monitoring in place
-        def monitor_changes(base_dir, *args, on_change:, monitoring_interval_secs: 1, **kwargs)
-          json_file = File.join(base_dir, json_file_path)
-          monitoring = true
-          monitoring_thread = Thread.new do
-            file_mtime = nil
-            while monitoring
-              new_file_mtime = File.exist?(json_file) ? File.mtime(json_file) : nil
-              if new_file_mtime != file_mtime
-                # There is an update
-                on_change.call(json_from_base_dir(base_dir, *args, **kwargs))
-                file_mtime = new_file_mtime
-              end
-              sleep monitoring_interval_secs
-            end
-          end
-          begin
-            yield
-          ensure
-            monitoring = false
-            monitoring_thread.join
-          end
+        # @yield [#call] Optional code called while monitoring is in place.
+        #   If used then monitoring is stopped at the end of the block's execution.
+        # @return [FileMonitor, nil] If no block has been given, return the monitor that needs to be
+        #   stopped by the caller when monitoring should end.
+        def monitor_changes(base_dir, *args, on_change:, monitoring_interval_secs: 1, **kwargs, &)
+          monitor = FileMonitor.new(
+            File.join(base_dir, json_file_path),
+            on_change: proc do |_mtime|
+              on_change.call(json_from_base_dir(base_dir, *args, **kwargs))
+            end,
+            monitoring_interval_secs:
+          )
+          monitor.start(&)
+          monitor unless block_given?
         end
 
         # Return the file path to serialize the instance in a JSON file.
