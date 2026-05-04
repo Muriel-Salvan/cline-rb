@@ -11,7 +11,7 @@ module Cline
     include Enumerable
 
     # Delegates enumerating methods to the internal messages
-    def_delegators :messages, :each, :size, :[]
+    def_delegators :messages, :each, :size, :[], :empty?
 
     # Equality check
     #
