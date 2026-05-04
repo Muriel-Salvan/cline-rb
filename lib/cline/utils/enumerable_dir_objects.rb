@@ -40,7 +40,9 @@ module Cline
       #
       # @param calling_class [Class] The class that is calling this method
       # @param object_class [Class] The class to instantiate for each directory
-      def self.include_for(calling_class, object_class)
+      # @param args [Array] Extra parameters to give to the instance's constructor
+      # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
+      def self.include_for(calling_class, object_class, *args, **kwargs)
         calling_class.class_eval do
           include EnumerableDirObjects
 
@@ -53,7 +55,7 @@ module Cline
           #   0. [String] The object name
           #   1. [Object] The object itself
           define_method :object_from do |dir|
-            [File.basename(dir), object_class.from_dir(dir)]
+            [File.basename(dir), object_class.from_dir(dir, *args, **kwargs)]
           end
         end
       end

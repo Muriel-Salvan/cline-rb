@@ -12,7 +12,7 @@ module Cline
     #
     # @return [Messages, nil] The task's messages, or nil if none
     def messages
-      @messages ||= Messages.json_from_base_dir(@task_dir)
+      @messages ||= Messages.json_from_base_dir(@task_dir, cline_models: @cline_models)
     end
 
     # Equality check
@@ -25,6 +25,13 @@ module Cline
     end
 
     # @!group Internal
+
+    # Constructor
+    #
+    # @param cline_models [Models] The Cline models used to interpret the tasks' messages
+    def initialize(cline_models:)
+      @cline_models = cline_models
+    end
 
     # Initialize this instance from a directory
     #

@@ -37,9 +37,10 @@ module Cline
     # * Keep track of extra attributes to serialize them back if needed.
     #
     # @param json [String] JSON data
+    # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     # @return [Object] Corresponding instance
-    def self.from_cline_json(json)
-      Messages.new(JSON.parse(json).map { |message| Message.of_hash(message) })
+    def self.from_cline_json(json, cline_models:)
+      Messages.new(JSON.parse(json).map { |json_message| Message.of_hash(json_message, cline_models:) })
     end
 
     # Output this object as Cline JSON.

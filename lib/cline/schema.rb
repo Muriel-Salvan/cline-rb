@@ -56,9 +56,11 @@ module Cline
     # * Keep track of extra attributes to serialize them back if needed.
     #
     # @param json [String] JSON data
+    # @param args [Array] Remaining arguments to be transferred to Shale
+    # @param kwargs [Hash] Remaining kwargs to be transferred to Shale
     # @return [Object] Corresponding instance
-    def self.from_cline_json(json)
-      of_hash(JSON.parse(json))
+    def self.from_cline_json(json, *args, **kwargs)
+      of_hash(JSON.parse(json), *args, **kwargs)
     end
 
     # Output this object as Cline JSON.

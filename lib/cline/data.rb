@@ -17,9 +17,10 @@ module Cline
 
     # Get tasks from this data directory
     #
+    # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     # @return [Tasks] Set of tasks associated to this data directory
-    def tasks
-      @tasks ||= Tasks.from_dir(File.join(@data_dir, 'tasks'))
+    def tasks(cline_models: self.cline_models)
+      @tasks ||= Tasks.from_dir(File.join(@data_dir, 'tasks'), cline_models:)
     end
 
     # Get global settings stored in this data directory

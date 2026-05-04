@@ -27,15 +27,17 @@ describe Cline::Data, '#tasks' do
     #
     # @param name [String] The task name
     # @param messages [Array<Hash>, nil] The task messages, or nil if none
+    # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
     # @yield [task] Block called with the test task ready
     # @yieldparam [Cline::Task] The test task
-    def with_task(name: 'test-task', messages: nil)
+    def with_task(name: 'test-task', messages: nil, cline_models: nil)
       with_data(
         tasks: {
           name => {
             messages:
           }
-        }
+        },
+        cline_models:
       ) do |data|
         yield data.tasks[name]
       end
@@ -80,6 +82,102 @@ describe Cline::Data, '#tasks' do
         expect(message.model_info.mode).to eq 'act'
         expect(message.conversation_history_index).to eq 5
         expect(message.partial).to be false
+        expect(message.usage).to be_nil
+      end
+    end
+
+    it 'parses usage information from api_req_started messages' do
+      with_task(
+        messages: [
+          {
+            ts: 123_456,
+            type: 'say',
+            say: 'api_req_started',
+            text: JSON.generate(
+              {
+                cost: 0.0025,
+                tokensIn: 1000,
+                tokensOut: 500,
+                cacheReads: 200,
+                cacheWrites: 150
+              }
+            ),
+            model_info: {
+              provider_id: 'openai',
+              model_id: 'gpt-4',
+              mode: 'act'
+            }
+          }
+        ],
+        cline_models: {
+          'gpt-4' => { 'name' => 'GPT-4', 'contextWindow' => 128_000 }
+        }
+      ) do |task|
+        usage = task.messages.first.usage
+        expect(usage).not_to be_nil
+        expect(usage.cost).to eq(0.0025)
+        expect(usage.input_tokens).to eq(1000)
+        expect(usage.output_tokens).to eq(500)
+        expect(usage.cache_read_tokens).to eq(200)
+        expect(usage.cache_write_tokens).to eq(150)
+        expect(usage.context_tokens).to eq(1850)
+        expect(usage.context_tokens_limit).to eq(128_000)
+      end
+    end
+
+    it 'uses proper model with different context token limits from other data directory' do
+      messages = [
+        {
+          type: 'say',
+          say: 'api_req_started',
+          text: JSON.generate({ tokensIn: 1000, tokensOut: 500 }),
+          model_info: { model_id: 'test/model' }
+        }
+      ]
+      with_task(
+        messages: messages,
+        cline_models: { 'test/model' => { 'name' => 'Test Model', 'contextWindow' => 128_000 } }
+      ) do |task1|
+        with_task(
+          name: 'other-task',
+          messages: messages,
+          cline_models: { 'test/model' => { 'name' => 'Test Model', 'contextWindow' => 256_000 } }
+        ) do |task2|
+          expect(task1.messages.first.usage.context_tokens_limit).to eq(128_000)
+          expect(task2.messages.first.usage.context_tokens_limit).to eq(256_000)
+        end
+      end
+    end
+
+    it 'handles unknown model_id gracefully' do
+      with_task(
+        messages: [
+          {
+            type: 'say',
+            say: 'api_req_started',
+            text: JSON.generate(
+              {
+                cost: 0.001,
+                tokensIn: 500,
+                tokensOut: 200
+              }
+            ),
+            model_info: {
+              provider_id: 'test',
+              model_id: 'unknown/model',
+              mode: 'act'
+            }
+          }
+        ],
+        cline_models: { 'known/model' => { 'name' => 'Known Model' } }
+      ) do |task|
+        usage = task.messages.first.usage
+        expect(usage).not_to be_nil
+        expect(usage.cost).to eq(0.001)
+        expect(usage.input_tokens).to eq(500)
+        expect(usage.output_tokens).to eq(200)
+        expect(usage.context_tokens_limit).to be_nil
+        expect(usage.cline_model).to be_nil
       end
     end
 
@@ -152,6 +250,35 @@ describe Cline::Data, '#tasks' do
           with_task(messages: [{ ts: 123, type: 'user', text: 'Hello', unknown_attribute: 2 }]) do |task2|
             expect(task1).not_to eq(task2)
             expect(task1.messages).not_to eq(task2.messages)
+          end
+        end
+      end
+
+      it 'returns true for messages with same content even with different cline_models instances' do
+        message_hash = {
+          ts: 123_456,
+          type: 'say',
+          say: 'text',
+          text: 'Hello world',
+          model_info: {
+            provider_id: 'test',
+            model_id: 'test/model',
+            mode: 'act'
+          }
+        }
+        with_task(
+          messages: [message_hash],
+          cline_models: { 'test/model' => { 'name' => 'Test Model 1', 'contextWindow' => 128_000 } }
+        ) do |task1|
+          with_task(
+            name: 'other-task',
+            messages: [message_hash],
+            cline_models: { 'test/model' => { 'name' => 'Test Model 2', 'contextWindow' => 256_000 } }
+          ) do |task2|
+            message1 = task1.messages.first
+            message2 = task2.messages.first
+            expect(message1.cline_models).not_to equal(message2.cline_models)
+            expect(message1).to eq(message2)
           end
         end
       end

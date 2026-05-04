@@ -1,6 +1,6 @@
 module Cline
   module Utils
-    # Provide a Schema class the capability serialize and deserialize itself into a JSON file, relative to a base directory.
+    # Provide a class the capability serialize and deserialize itself into a JSON file, relative to a base directory.
     # This provides:
     # * Class method json_from_base_dir(base_dir) to instantiate a new instance from a file present in this base directory.
     # * Instance method json_to_base_dir(base_dir) to save the instance into a JSON file in the base directory.
@@ -39,13 +39,15 @@ module Cline
         # Instantiate an instance of the including class from a base directory.
         #
         # @param base_dir [String] Base directory used to initialize the new instance
-        # @return [Schema, nil] The instance, or nil if no JSON file exists
-        def json_from_base_dir(base_dir)
+        # @param args [Array] Extra parameters to give to the from_cline_json constructor
+        # @param kwargs [Hash] Extra kwargs to give to the from_cline_json constructor
+        # @return [Object, nil] The instance, or nil if no JSON file exists
+        def json_from_base_dir(base_dir, *args, **kwargs)
           json_file = File.join(base_dir, json_file_path)
-          File.exist?(json_file) ? from_cline_json(File.read(json_file)) : nil
+          File.exist?(json_file) ? from_cline_json(File.read(json_file), *args, **kwargs) : nil
         end
 
-        # Return the file path to serialize the Schema class in a JSON file.
+        # Return the file path to serialize the instance in a JSON file.
         # The path is relative to the base dir.
         #
         # @return [String] The relative JSON file path
