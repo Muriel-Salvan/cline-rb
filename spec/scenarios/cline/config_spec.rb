@@ -111,4 +111,56 @@ describe Cline::Config do
       end
     end
   end
+
+  describe '.global' do
+    around do |example|
+      # Backup original value as it is a global cache
+      original_global = described_class.instance_variable_get(:@global)
+      begin
+        # Clear cache
+        described_class.instance_variable_set(:@global, nil)
+        Dir.mktmpdir do |tmp_dir|
+          @tmp_dir = tmp_dir.gsub('\\', '/')
+          # Create .cline directory structure
+          cline_dir = File.join(tmp_dir, '.cline')
+          FileUtils.mkdir_p(cline_dir)
+          setup_config_dir(cline_dir, global_settings: { default_terminal_profile: 'test-profile' })
+          example.run
+        end
+      ensure
+        described_class.instance_variable_set(:@global, original_global)
+      end
+    end
+
+    # @return [String] The temporary directory that contains the .cline config dir
+    attr_reader :tmp_dir
+
+    context 'when on Windows' do
+      before do
+        allow(OS).to receive_messages(
+          windows?: true,
+          linux?: false
+        )
+        allow(ENV).to receive(:[]).with('USERPROFILE').and_return(tmp_dir)
+      end
+
+      it 'loads global config from USERPROFILE/.cline' do
+        expect(described_class.global.global_settings.default_terminal_profile).to eq 'test-profile'
+      end
+    end
+
+    context 'when on Linux' do
+      before do
+        allow(OS).to receive_messages(
+          windows?: false,
+          linux?: true
+        )
+        allow(described_class).to receive(:`).with('eval echo ~$USER').and_return(tmp_dir)
+      end
+
+      it 'loads global config from HOME/.cline' do
+        expect(described_class.global.global_settings.default_terminal_profile).to eq 'test-profile'
+      end
+    end
+  end
 end
