@@ -69,6 +69,22 @@ shared_examples 'a cli command' do |opts|
     )
   end
 
+  it 'echoes stdout content to $stdout when stdout_echo is true' do
+    mock_commands("cline #{opts[:name]}" => { stdout: "Executing Cline CLI\nSuccess output line 1\nSuccess output line 2\n" })
+    allow($stdout).to receive(:write)
+    described_class.new(stdout_echo: true).public_send(opts[:name], *opts[:args])
+    expect($stdout).to have_received(:write).with("Executing Cline CLI\n").ordered
+    expect($stdout).to have_received(:write).with("Success output line 1\n").ordered
+    expect($stdout).to have_received(:write).with("Success output line 2\n").ordered
+  end
+
+  it 'does not echo stdout content to $stdout when stdout_echo is false (default)' do
+    mock_commands("cline #{opts[:name]}" => { stdout: "Executing Cline CLI\nSuccess\n" })
+    allow($stdout).to receive(:write)
+    described_class.new(stdout_echo: false).public_send(opts[:name], *opts[:args])
+    expect($stdout).not_to have_received(:write)
+  end
+
   it 'raises UnexpectedExitStatusError when exit status is not expected' do
     mock_commands("cline #{opts[:name]}" => { exit_status: 1 })
     cli = described_class.new
