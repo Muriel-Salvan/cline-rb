@@ -1,0 +1,180 @@
+require 'open3'
+require 'tmpdir'
+
+module Cline
+  # Provide a wrapper over the Cline CLI tool
+  class Cli
+    include Utils::Logger
+
+    # Unexpected exit status error
+    class UnexpectedExitStatusError < RuntimeError
+    end
+
+    # Unknown option
+    class UnknownOptionError < RuntimeError
+    end
+
+    # Define all commands and their options
+    COMMANDS = {
+      # Global options
+      global: {
+        verbose: '--verbose',
+        cwd: '--cwd STRING',
+        config: '--config STRING'
+      },
+      auth: {
+        # Provider ID for quick setup (e.g., openai-native, anthropic, moonshot)
+        provider: '--provider STRING',
+        # API key for the provider
+        apikey: '--apikey STRING',
+        # Model ID to configure (e.g., gpt-4o, claude-sonnet-4-6, kimi-k2.5)
+        modelid: '--modelid STRING',
+        # Base URL (optional, only for openai provider)
+        baseurl: '--baseurl STRING'
+      },
+      task: {
+        # Run in act mode
+        act: '--act',
+        # Run in plan mode
+        plan: '--plan',
+        # Enable yolo mode (auto-approve actions)
+        yolo: '--yolo',
+        # Enable auto-approve all actions while keeping interactive mode
+        auto_approve_all: '--auto-approve-all',
+        # Optional timeout in seconds (applies only when provided)
+        timeout: '--timeout INTEGER',
+        # Model to use for the task
+        model: '--model STRING',
+        # Enable extended thinking (1024 tokens when enabled without value)
+        thinking: '--thinking INTEGER',
+        # Reasoning effort: none|low|medium|high|xhigh
+        reasoning_effort: '--reasoning-effort STRING',
+        # Maximum consecutive mistakes before halting in yolo mode
+        max_consecutive_mistakes: '--max-consecutive-mistakes INTEGER',
+        # Output messages as JSON instead of styled text
+        json: '--json',
+        # Reject first completion attempt to force re-verification
+        double_check_completion: '--double-check-completion',
+        # Enable AI-powered context compaction instead of mechanical truncation
+        auto_condense: '--auto-condense',
+        # Path to additional hooks directory for runtime hook injection
+        hooks_dir: '--hooks-dir STRING',
+        # Task ID to resume, or nil for a new task
+        task_id: '--taskId STRING'
+      }
+    }
+
+    # Constructor
+    #
+    # @param stdout_echo [Boolean] Do we echo stdout of Cline CLI?
+    # @param kwargs [Hash{Symbol => Object}] Global options (see COMMANDS[:global])
+    def initialize(stdout_echo: false, **kwargs)
+      @global_options = parse_global_options(**kwargs)
+      @stdout_echo = stdout_echo
+      @cline_pid = nil
+    end
+
+    # Authenticate the CLI
+    #
+    # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
+    def auth(**kwargs)
+      run_cli('auth', parse_auth_options(**kwargs))
+    end
+
+    # Run a task with a prompt
+    #
+    # @param prompt [String] The prompt to give to the task
+    # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
+    def task(prompt, **kwargs)
+      run_cli('task', parse_task_options(**kwargs), stdin_data: prompt)
+    end
+
+    # @return [Integer, nil] The PID of the running Cline process, if any
+    attr_reader :cline_pid
+
+    private
+
+    # Generate all methods that can parse kwargs to generate CLI options, for each known command.
+    # Those methods are named parse_#{command}_options.
+    COMMANDS.each do |command, options|
+      # Parse the options for a given command
+      #
+      # @param kwargs [Hash{Symbol => Object}] The options associated to the command
+      # @return [Array<String>] The corresponding CLI arguments
+      define_method(:"parse_#{command}_options") do |**kwargs|
+        kwargs.map do |option, value|
+          raise UnknownOptionError, "Unknown #{command} option #{option}" unless options.key?(option)
+
+          if value
+            cli_option, cli_arg = options[option].split
+            "#{cli_option}#{" #{value}" unless cli_arg.nil?}"
+          end
+        end.compact
+      end
+    end
+
+    # Run a command on the Cline CLI
+    #
+    # @param command [Symbol] The command to run
+    # @param args [Array<String>] Command arguments
+    # @param stdin_data [String, nil] Data to send to the standard input of the CLI, or nil if none
+    # @param expected_exit_status [Integer, nil] Expected exit status, or nil for no expectation
+    # @return [Hash{Symbol => Object}] A set of return properties:
+    #   * stdout [String] Full stdout
+    #   * stderr [String] Full stderr
+    #   * exit_status [Integer] Exit status
+    def run_cli(command, args = [], stdin_data: nil, expected_exit_status: 0)
+      cmd = "cline #{command} #{(@global_options + args).join(' ')}".strip
+      (
+        proc do |&run_block|
+          if stdin_data
+            Dir.mktmpdir do |tmp_dir|
+              stdin_file = "#{tmp_dir}/stdin"
+              File.write(stdin_file, stdin_data)
+              cmd << "< #{stdin_file}"
+              run_block.call
+            end
+          else
+            run_block.call
+          end
+        end
+      ).call do
+        log_debug "Launch CLI `#{cmd}`..."
+        stdout_lines = []
+        stderr_lines = []
+        exit_status = nil
+        Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+          @cline_pid = wait_thr.pid
+          stdin.close
+          [
+            # Parse stdout
+            Thread.new do
+              stdout.each_line do |line|
+                stdout_lines << line
+                $stdout.write line if @stdout_echo
+              end
+            end,
+            # Parse stderr
+            Thread.new do
+              stderr.each_line do |line|
+                stderr_lines << line
+                $stderr.write line
+              end
+            end
+          ].each(&:join)
+          exit_status = wait_thr.value.exitstatus
+          @cline_pid = nil
+          log_debug "CLI `#{cmd}` exited with status: #{exit_status}"
+          if !expected_exit_status.nil? && exit_status != expected_exit_status
+            raise UnexpectedExitStatusError, "CLI `#{cmd}` exited with status #{exit_status} (expected #{expected_exit_status})"
+          end
+        end
+        {
+          stdout: stdout_lines.join,
+          stderr: stderr_lines.join,
+          exit_status:
+        }
+      end
+    end
+  end
+end

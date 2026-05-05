@@ -55,7 +55,7 @@ module Cline
         #   * Param instance [Object, nil] New instance with updates, or nil if no instance
         # @param monitoring_interval_secs [Float] The monitoring interval in seconds
         # @param kwargs [Hash] Extra kwargs to give to the from_cline_json constructor
-        # @yield [#call] Optional code called while monitoring is in place.
+        # @yield Optional code called while monitoring is in place.
         #   If used then monitoring is stopped at the end of the block's execution.
         # @return [FileMonitor, nil] If no block has been given, return the monitor that needs to be
         #   stopped by the caller when monitoring should end.

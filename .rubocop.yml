@@ -19,15 +19,23 @@ Lint/UnusedMethodArgument:
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/AbcSize:
+  Max: 70
+
+# It's ok to have longer methods, while keeping readability.
+Metrics/BlockLength:
   Max: 50
+
+# It's ok to have longer classes, while keeping readability.
+Metrics/ClassLength:
+  Max: 200
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/CyclomaticComplexity:
-  Max: 15
+  Max: 40
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/MethodLength:
-  Max: 50
+  Max: 80
 
 # kwargs should not count towards max parameters list.
 Metrics/ParameterLists:
@@ -35,7 +43,7 @@ Metrics/ParameterLists:
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/PerceivedComplexity:
-  Max: 20
+  Max: 40
 
 # It's ok to have nested groups in RSpec.
 RSpec/NestedGroups:

@@ -18,7 +18,7 @@ module Cline
 
     # Start monitoring
     #
-    # @yield [#call] Optional block that is called while monitoring has started.
+    # @yield Optional block that is called while monitoring has started.
     #   If this block is given, then #stop will be called automatically at the end of the block execution.
     def start
       @monitoring = true

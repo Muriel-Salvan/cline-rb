@@ -1,3 +1,4 @@
+require 'stringio'
 require 'tmpdir'
 require 'fileutils'
 require 'json'
@@ -74,6 +75,48 @@ module ClineTest
         yield config_dir
       end
     end
+
+    # Mock a list of commands, with their corresponding stdout, stderr and exit status.
+    # This helper hides the underlying ways of running commands from Cline::Cli.
+    #
+    # @param commands [Hash{String => Hash{Symbol => Object}}] For each command to mock, a description of its output:
+    #   * stdout [String] The stdout to be returned for this command. Defaults to ''.
+    #   * stderr [String] The stderr to be returned for this command. Defaults to ''.
+    #   * exit_status [Integer] The exit status to be returned for this command. Defaults to 0.
+    #   * pid [Integer] The PID of the running command. Defaults to 1234.
+    #   * running_time_secs [Float] The time this command runs. Defaults to 0.
+    def mock_commands(commands = {})
+      @issued_commands = []
+      # Mock Open3.popen3 with spies pattern
+      allow(Open3).to receive(:popen3) do |cmd, &block|
+        issued_commands << cmd
+        mocked_result = {
+          stdout: '',
+          stderr: '',
+          exit_status: 0,
+          pid: 1234,
+          running_time_secs: 0
+        }.merge(commands[cmd] || {})
+        mocked_process_status = instance_double(Process::Status)
+        allow(mocked_process_status).to receive(:exitstatus) do
+          sleep mocked_result[:running_time_secs]
+          mocked_result[:exit_status]
+        end
+        block.call(
+          instance_double(IO, close: nil),
+          StringIO.new(mocked_result[:stdout]),
+          StringIO.new(mocked_result[:stderr]),
+          instance_double(
+            Process::Waiter,
+            pid: mocked_result[:pid],
+            value: mocked_process_status
+          )
+        )
+      end
+    end
+
+    # @return [Array<String>] List of commands that have been issued
+    attr_reader :issued_commands
 
     private
 
