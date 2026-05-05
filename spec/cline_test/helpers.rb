@@ -89,14 +89,20 @@ module ClineTest
       @issued_commands = []
       # Mock Open3.popen3 with spies pattern
       allow(Open3).to receive(:popen3) do |cmd, &block|
-        issued_commands << cmd
+        command, stdin =
+          if cmd =~ /^(.+) < ([^\s]+)$/
+            [Regexp.last_match(1), File.read(Regexp.last_match(2))]
+          else
+            [cmd, nil]
+          end
+        issued_commands << { command:, stdin: }
         mocked_result = {
           stdout: '',
           stderr: '',
           exit_status: 0,
           pid: 1234,
           running_time_secs: 0
-        }.merge(commands[cmd] || {})
+        }.merge(commands[command] || {})
         mocked_process_status = instance_double(Process::Status)
         allow(mocked_process_status).to receive(:exitstatus) do
           sleep mocked_result[:running_time_secs]
@@ -115,8 +121,26 @@ module ClineTest
       end
     end
 
-    # @return [Array<String>] List of commands that have been issued
+    # @return [Array<Hash{Symbol => Object}>] List of commands that have been issued:
+    #   * command [String] The command itself
+    #   * stdin [String, nil] The stdin that was redirected to this command, or nil if none
     attr_reader :issued_commands
+
+    # Expect issued commands to match a list of commands
+    #
+    # @param expected_commands [Array<String, Hash>] The expected commands or their description:
+    #   * command [String] The expected command itself (serves as the default value when used as a String instead of a Hash).
+    #   * stdin [String, nil] Expected stdin content with this command, or nil if none. Defaults to nil.
+    def expect_issued_commands(expected_commands)
+      expect(issued_commands).to eq(
+        expected_commands.map do |expected_command|
+          # Normalize and set default values
+          {
+            stdin: nil
+          }.merge(expected_command.is_a?(Hash) ? expected_command : { command: expected_command })
+        end
+      )
+    end
 
     private
 

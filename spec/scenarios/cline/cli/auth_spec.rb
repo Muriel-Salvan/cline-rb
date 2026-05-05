@@ -4,7 +4,7 @@ describe Cline::Cli, '#auth' do
   it_behaves_like(
     'a cli command',
     name: :auth,
-    options: {
+    kwargs: {
       provider: 'openai-native',
       apikey: 'test-key-123',
       modelid: 'gpt-4o',
