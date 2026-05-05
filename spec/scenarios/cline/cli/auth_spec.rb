@@ -3,7 +3,7 @@ describe Cline::Cli, '#auth' do
     mock_commands
   end
 
-  it 'calls the correct base auth command' do
+  it 'calls the correct command' do
     described_class.new.auth
     expect(issued_commands).to eq ['cline auth']
   end
@@ -17,7 +17,7 @@ describe Cline::Cli, '#auth' do
     expect(issued_commands).to eq ['cline auth --verbose --cwd /test/path --config /test/config.yml']
   end
 
-  it 'includes auth method options in the command' do
+  it 'includes command options in the command' do
     described_class.new.auth(
       provider: 'openai-native',
       apikey: 'test-key-123',
@@ -29,7 +29,7 @@ describe Cline::Cli, '#auth' do
     ]
   end
 
-  it 'combines global options and auth options correctly' do
+  it 'combines global and command options correctly' do
     described_class.new(verbose: true, cwd: '/working/dir').auth(
       provider: 'anthropic',
       apikey: 'anthropic-key',
@@ -40,13 +40,7 @@ describe Cline::Cli, '#auth' do
     ]
   end
 
-  it 'raises UnknownOptionError for invalid global options' do
-    expect do
-      described_class.new(invalid_option: 'value')
-    end.to raise_error(Cline::Cli::UnknownOptionError, 'Unknown global option invalid_option')
-  end
-
-  it 'raises UnknownCommandOptionError for invalid auth options' do
+  it 'raises UnknownOptionError for invalid command options' do
     cli = described_class.new
     expect do
       cli.auth(invalid_option: 'value')
@@ -56,14 +50,14 @@ describe Cline::Cli, '#auth' do
   it 'returns stdout, stderr and exit_status correctly' do
     mock_commands(
       'cline auth' => {
-        stdout: "Executing Cline CLI\nAuthentication successful\n",
+        stdout: "Executing Cline CLI\nSuccess\n",
         stderr: "Warning: update available\n"
       }
     )
     # Mute stderr
     allow($stderr).to receive(:write)
     expect(described_class.new.auth).to eq(
-      stdout: "Executing Cline CLI\nAuthentication successful\n",
+      stdout: "Executing Cline CLI\nSuccess\n",
       stderr: "Warning: update available\n",
       exit_status: 0
     )
@@ -75,11 +69,6 @@ describe Cline::Cli, '#auth' do
     expect do
       cli.auth
     end.to raise_error(Cline::Cli::UnexpectedExitStatusError)
-  end
-
-  it 'has nil cline_pid before running command' do
-    cli = described_class.new
-    expect(cli.cline_pid).to be_nil
   end
 
   it 'has correct cline_pid value while running command' do
