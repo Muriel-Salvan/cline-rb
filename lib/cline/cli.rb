@@ -131,7 +131,7 @@ module Cline
             Dir.mktmpdir do |tmp_dir|
               stdin_file = "#{tmp_dir}/stdin"
               File.write(stdin_file, stdin_data)
-              cmd << "< #{stdin_file}"
+              cmd << " < #{stdin_file}"
               run_block.call
             end
           else
