@@ -25,6 +25,10 @@ Metrics/AbcSize:
 Metrics/BlockLength:
   Max: 50
 
+# It's ok to have longer methods, while keeping readability.
+Metrics/BlockNesting:
+  Max: 5
+
 # It's ok to have longer classes, while keeping readability.
 Metrics/ClassLength:
   Max: 200

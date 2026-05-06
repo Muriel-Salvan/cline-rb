@@ -71,6 +71,7 @@ module Cline
     def initialize(stdout_echo: false, **kwargs)
       @global_options = parse_global_options(**kwargs)
       @stdout_echo = stdout_echo
+      @config_dir = kwargs[:config]
       @cline_pid = nil
     end
 
@@ -84,9 +85,48 @@ module Cline
     # Run a task with a prompt
     #
     # @param prompt [String] The prompt to give to the task
+    # @param on_message [#call, nil] Callback called for each new or updated message for this task, or nil if none (see Task#monitor_message)
+    # @param monitoring_interval_secs [Float] The monitoring interval in seconds
     # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
-    def task(prompt, **kwargs)
-      run_cli('task', parse_task_options(**kwargs), stdin_data: prompt)
+    def task(prompt, on_message: nil, monitoring_interval_secs: 1, **kwargs)
+      task_monitor_thread = nil
+      cli_running = true
+      begin
+        result = run_cli(
+          'task',
+          parse_task_options(**kwargs),
+          stdin_data: prompt,
+          on_stdout: proc do |line|
+            if line.strip =~ /^\{"type":"task_started","taskId":"([^"]+)"\}$/
+              task_id = Regexp.last_match[1]
+              log_debug "Started task ID #{task_id}"
+              if on_message
+                task_monitor_thread = Thread.new do
+                  # It can be that the task has not been created yet.
+                  # Just wait for it.
+                  while cli_running do
+                    if config.tasks
+                      break if config.tasks[task_id]
+
+                      config.tasks.refresh!
+                    else
+                      config.refresh!
+                    end
+                    sleep 0.1
+                  end
+                  config.tasks[task_id].monitor_messages(on_message:, ignore_partials: true, monitoring_interval_secs:) do
+                    sleep 0.1 while cli_running
+                  end
+                end
+              end
+            end
+          end
+        )
+      ensure
+        cli_running = false
+        task_monitor_thread&.join
+      end
+      result
     end
 
     # @return [Integer, nil] The PID of the running Cline process, if any
@@ -119,11 +159,13 @@ module Cline
     # @param args [Array<String>] Command arguments
     # @param stdin_data [String, nil] Data to send to the standard input of the CLI, or nil if none
     # @param expected_exit_status [Integer, nil] Expected exit status, or nil for no expectation
+    # @param on_stdout [#call, nil] Optional callback that is called for every line output on stdout
+    #   * Param line [String] The stdout line (including potential \n)
     # @return [Hash{Symbol => Object}] A set of return properties:
     #   * stdout [String] Full stdout
     #   * stderr [String] Full stderr
     #   * exit_status [Integer] Exit status
-    def run_cli(command, args = [], stdin_data: nil, expected_exit_status: 0)
+    def run_cli(command, args = [], stdin_data: nil, expected_exit_status: 0, on_stdout: nil)
       cmd = "cline #{command} #{(@global_options + args).join(' ')}".strip
       (
         proc do |&run_block|
@@ -152,6 +194,7 @@ module Cline
               stdout.each_line do |line|
                 stdout_lines << line
                 $stdout.write line if @stdout_echo
+                on_stdout&.call(line)
               end
             end,
             # Parse stderr
@@ -175,6 +218,13 @@ module Cline
           exit_status:
         }
       end
+    end
+
+    # Return the config object associated to this instance
+    #
+    # @return [Config] The config instance used by this Cli instance
+    def config
+      @config ||= @config_dir.nil? ? Config.global : Config.from_dir(@config_dir)
     end
   end
 end

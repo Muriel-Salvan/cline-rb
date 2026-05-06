@@ -63,5 +63,11 @@ module Cline
     def initialize_from_dir(dir)
       @config_dir = dir
     end
+
+    # Remove caches.
+    def refresh!
+      @skills = nil
+      @data = nil
+    end
   end
 end

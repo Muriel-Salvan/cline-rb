@@ -137,6 +137,7 @@ module ClineTest
     #   * exit_status [Integer] The exit status to be returned for this command. Defaults to 0.
     #   * pid [Integer] The PID of the running command. Defaults to 1234.
     #   * running_time_secs [Float] The time this command runs. Defaults to 0.
+    #   * exec [#call, nil] Code to be executed when this command is run, or nil if none. Defaults to nil.
     def mock_commands(commands = {})
       @issued_commands = []
       # Mock Open3.popen3 with spies pattern
@@ -153,11 +154,13 @@ module ClineTest
           stderr: '',
           exit_status: 0,
           pid: 1234,
-          running_time_secs: 0
+          running_time_secs: 0,
+          exec: nil
         }.merge(commands[command] || {})
         mocked_process_status = instance_double(Process::Status)
         allow(mocked_process_status).to receive(:exitstatus) do
           sleep mocked_result[:running_time_secs]
+          mocked_result[:exec]&.call
           mocked_result[:exit_status]
         end
         block.call(

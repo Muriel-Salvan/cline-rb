@@ -27,4 +27,57 @@ describe Cline::Cli, '#task' do
                  '--taskId task-12345',
     stdin: 'Test task prompt: Create a simple Ruby class'
   )
+
+  it 'triggers on_message callback for messages added during task execution via exec hook' do
+    messages_received = []
+    test_messages = [
+      { ts: 100, type: 'user', text: 'Test message 1' },
+      { ts: 101, type: 'assistant', text: 'Test response 1' },
+      { ts: 102, type: 'user', text: 'Test message 2' }
+    ]
+    with_config_dir do |config_dir|
+      # Mock the task command with exec hook to add messages while running
+      mock_commands(
+        "cline task --config #{config_dir}" => {
+          stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n",
+          exec: proc do
+            sleep 0.5
+            # This runs while the CLI command is executing
+            task_dir = File.join(config_dir, 'data', 'tasks', '12345')
+            FileUtils.mkdir_p(task_dir)
+            messages_file = File.join(task_dir, 'ui_messages.json')
+            # First create empty file
+            File.write(messages_file, '[]')
+            sleep 0.2
+            # Then add test messages 1 by 1
+            test_messages.size.times do |idx|
+              File.write(messages_file, test_messages[0..idx].to_json)
+              sleep 0.2
+            end
+          end
+        }
+      )
+      # Create CLI instance with our test config directory
+      described_class.new(config: config_dir).task(
+        'Test prompt',
+        on_message: proc { |message, last, previous|
+          messages_received << {
+            message: message,
+            last: last,
+            previous_version: previous
+          }
+        },
+        monitoring_interval_secs: 0.1
+      )
+
+      # Verify callback was called correctly
+      expect(messages_received.size).to eq 3
+      expect(messages_received[0][:message].ts).to eq 100
+      expect(messages_received[0][:last]).to be true
+      expect(messages_received[1][:message].ts).to eq 101
+      expect(messages_received[1][:last]).to be true
+      expect(messages_received[2][:message].ts).to eq 102
+      expect(messages_received[2][:last]).to be true
+    end
+  end
 end

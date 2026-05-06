@@ -67,6 +67,11 @@ module Cline
         @set_dir = dir
       end
 
+      # Remove caches.
+      def refresh!
+        @objects_set = nil
+      end
+
       private
 
       # Read all objects from the dir.
