@@ -32,8 +32,12 @@ describe Cline::Cli, '#task' do
     messages_received = []
     test_messages = [
       { ts: 100, type: 'user', text: 'Test message 1' },
-      { ts: 101, type: 'assistant', text: 'Test response 1' },
-      { ts: 102, type: 'user', text: 'Test message 2' }
+      [
+        # Those 2 messages will be sent at the same time
+        { ts: 101, type: 'assistant', text: 'Test response 1' },
+        { ts: 102, type: 'user', text: 'Test message 2' }
+      ],
+      { ts: 103, type: 'user', text: 'Test message 3' }
     ]
     with_config_dir do |config_dir|
       # Mock the task command with exec hook to add messages while running
@@ -51,7 +55,7 @@ describe Cline::Cli, '#task' do
             sleep 0.2
             # Then add test messages 1 by 1
             test_messages.size.times do |idx|
-              File.write(messages_file, test_messages[0..idx].to_json)
+              File.write(messages_file, test_messages[0..idx].flatten(1).to_json)
               sleep 0.2
             end
           end
@@ -71,13 +75,15 @@ describe Cline::Cli, '#task' do
       )
 
       # Verify callback was called correctly
-      expect(messages_received.size).to eq 3
+      expect(messages_received.size).to eq 4
       expect(messages_received[0][:message].ts).to eq 100
       expect(messages_received[0][:last]).to be true
       expect(messages_received[1][:message].ts).to eq 101
-      expect(messages_received[1][:last]).to be true
+      expect(messages_received[1][:last]).to be false
       expect(messages_received[2][:message].ts).to eq 102
       expect(messages_received[2][:last]).to be true
+      expect(messages_received[3][:message].ts).to eq 103
+      expect(messages_received[3][:last]).to be true
     end
   end
 end
