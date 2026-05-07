@@ -9,4 +9,19 @@ describe Cline::Cli do
     cli = described_class.new
     expect(cli.cline_pid).to be_nil
   end
+
+  it 'executes multiple commands in proper sequence' do
+    mock_commands
+    cli = described_class.new(verbose: true, cwd: '/test/path')
+    cli.auth(provider: 'openai-native', apikey: 'test-api-key', modelid: 'gpt-4o')
+    cli.task('Implement authentication system', act: true, timeout: 300, yolo: true)
+    cli.task('Plan database migration', plan: true, reasoning_effort: 'high')
+    cli.task('Generate documentation', json: true)
+    expect_issued_commands [
+      { command: 'cline auth --verbose --cwd /test/path --provider openai-native --apikey test-api-key --modelid gpt-4o' },
+      { command: 'cline task --verbose --cwd /test/path --act --timeout 300 --yolo', stdin: 'Implement authentication system' },
+      { command: 'cline task --verbose --cwd /test/path --plan --reasoning-effort high', stdin: 'Plan database migration' },
+      { command: 'cline task --verbose --cwd /test/path --json', stdin: 'Generate documentation' }
+    ]
+  end
 end
