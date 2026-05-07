@@ -49,9 +49,34 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Max: 40
 
+# Some method names should have less than 3 characters
+Naming/MethodParameterName:
+  AllowedNames:
+    # Cline has the concept of timestamps using ts
+    - ts
+
+# These tests are not describing any class or module
+RSpec/DescribeClass:
+  Exclude:
+    - 'spec/scenarios/code_quality_spec.rb'
+    - 'spec/scenarios/packaging_spec.rb'
+
+# It's ok to have scenarios having multiple lines
+RSpec/ExampleLength:
+  Max: 90
+
+# It's ok to have test scenarios having several expectations
+RSpec/MultipleExpectations:
+  Max: 40
+
 # It's ok to have nested groups in RSpec.
 RSpec/NestedGroups:
   Max: 5
+
+# Exclude spec files that have more than 1 level of depth organization as Rubocop doesn't allow more than 1 level of method nesting.
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - 'spec/scenarios/cline/data/tasks/**/*'
 
 # I don't want to pollute my code with something that should be integrated in the language
 Style/FrozenStringLiteralComment:
@@ -60,22 +85,3 @@ Style/FrozenStringLiteralComment:
 # I don't want to pollute my code with something that should be integrated in the language
 Style/MutableConstant:
   Enabled: false
-
-# These tests are not describing any class or module
-RSpec/DescribeClass:
-  Exclude:
-    - 'spec/scenarios/code_quality_spec.rb'
-    - 'spec/scenarios/packaging_spec.rb'
-
-# It's ok to have test scenarios having several expectations
-RSpec/MultipleExpectations:
-  Max: 40
-
-# It's ok to have scenarios having multiple lines
-RSpec/ExampleLength:
-  Max: 90
-
-# Exclude spec files that have more than 1 level of depth organization as Rubocop doesn't allow more than 1 level of method nesting.
-RSpec/SpecFilePathFormat:
-  Exclude:
-    - 'spec/scenarios/cline/data/tasks/**/*'

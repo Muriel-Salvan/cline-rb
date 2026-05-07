@@ -1,3 +1,4 @@
+require 'human_number'
 require 'open3'
 require 'sys/proctable'
 require 'tmpdir'
@@ -105,7 +106,7 @@ module Cline
                 task_monitor_thread = Thread.new do
                   # It can be that the task has not been created yet.
                   # Just wait for it.
-                  while cli_running do
+                  while cli_running
                     if config.tasks
                       break if config.tasks[task_id]
 
@@ -115,7 +116,27 @@ module Cline
                     end
                     sleep 0.1
                   end
-                  config.tasks[task_id].monitor_messages(on_message:, ignore_partials: true, monitoring_interval_secs:) do
+                  # [Hash{Integer => Usage}] All usages, per timestamp, for logging purposes
+                  usages = {}
+                  config.tasks[task_id].monitor_messages(
+                    on_message: proc do |message, last, previous_version|
+                      log_debug do
+                        usages[message.ts] = message.usage if message.usage
+                        last_usage = usages.values.last
+                        prefix = "[#{message.timestamp.strftime('%H:%M:%S')}]#{
+                          unless last_usage.nil?
+                            " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')}" \
+                              " #{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
+                              "/#{HumanNumber.human_number(last_usage.context_tokens_limit, max_digits: 2)})"
+                          end
+                        } - "
+                        "#{prefix}#{message.to_human(limit: 128 - prefix.size)}"
+                      end
+                      on_message.call(message, last, previous_version)
+                    end,
+                    ignore_partials: true,
+                    monitoring_interval_secs:
+                  ) do
                     sleep 0.1 while cli_running
                   end
                 end
