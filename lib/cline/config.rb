@@ -20,7 +20,7 @@ module Cline
           elsif OS.linux?
             `eval echo ~$USER`.strip
           else
-            raise "Unknown OS: #{OS.host_os}"
+            raise NotImplementedError, "Unknown OS: #{OS.host_os}"
           end
         }/.cline"
       )

@@ -1,10 +1,17 @@
-require 'stringio'
-require 'tmpdir'
 require 'fileutils'
 require 'json'
+require 'open3'
+require 'stringio'
+require 'tmpdir'
 
 module ClineTest
   module Helpers
+    class << self
+      # Capture the original Open3.popen3 method in case some test cases want to use it while the real one is mocked.
+      attr_accessor :original_popen3
+    end
+    self.original_popen3 = Open3.method(:popen3)
+
     # Provide a temporary Cline data instance over a temporary directory.
     # Will clean up the directory after code execution.
     #
@@ -135,9 +142,12 @@ module ClineTest
     #   * stdout [String] The stdout to be returned for this command. Defaults to ''.
     #   * stderr [String] The stderr to be returned for this command. Defaults to ''.
     #   * exit_status [Integer] The exit status to be returned for this command. Defaults to 0.
-    #   * pid [Integer] The PID of the running command. Defaults to 1234.
+    #   * pid [Integer, #call] The PID of the running command, or a code block that will return it lazily. Defaults to 1234.
+    #     * Return [Integer] The PID to be considered.
     #   * running_time_secs [Float] The time this command runs. Defaults to 0.
     #   * exec [#call, nil] Code to be executed when this command is run, or nil if none. Defaults to nil.
+    #     This block will always be executed in a spearate thread that is then joined on the exitstatus evaluation.
+    #     * Param mocked_result [Hash] The same mocked command description (see #mock_commands) that can be modified dynamically.
     def mock_commands(commands = {})
       @issued_commands = []
       # Mock Open3.popen3 with spies pattern
@@ -155,23 +165,28 @@ module ClineTest
           exit_status: 0,
           pid: 1234,
           running_time_secs: 0,
-          exec: nil
+          exec: nil,
+          exec_thread: nil
         }.merge(commands[command] || {})
+        exec_thread = mocked_result[:exec] ? Thread.new { mocked_result[:exec].call(mocked_result) } : nil
         mocked_process_status = instance_double(Process::Status)
         allow(mocked_process_status).to receive(:exitstatus) do
+          exec_thread&.join
           sleep mocked_result[:running_time_secs]
-          mocked_result[:exec]&.call
           mocked_result[:exit_status]
+        end
+        mocked_process_waiter = instance_double(
+          Process::Waiter,
+          value: mocked_process_status
+        )
+        allow(mocked_process_waiter).to receive(:pid) do
+          mocked_result[:pid].is_a?(Proc) ? mocked_result[:pid].call : mocked_result[:pid]
         end
         block.call(
           instance_double(IO, close: nil),
           StringIO.new(mocked_result[:stdout]),
           StringIO.new(mocked_result[:stderr]),
-          instance_double(
-            Process::Waiter,
-            pid: mocked_result[:pid],
-            value: mocked_process_status
-          )
+          mocked_process_waiter
         )
       end
     end

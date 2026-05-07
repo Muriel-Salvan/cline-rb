@@ -1,4 +1,5 @@
 require 'open3'
+require 'sys/proctable'
 require 'tmpdir'
 
 module Cline
@@ -132,6 +133,20 @@ module Cline
     # @return [Integer, nil] The PID of the running Cline process, if any
     attr_reader :cline_pid
 
+    # Interrupt the running Cline command
+    def interrupt
+      if cline_pid
+        log_debug "Interrupt current command with PID #{cline_pid}"
+        all_pids = [cline_pid] + get_child_pids_recursive(cline_pid)
+        log_debug "Found process tree PIDs: #{all_pids.join(', ')}"
+        all_pids.each do |pid|
+          Process.kill('KILL', pid)
+        end
+      else
+        log_debug 'No Cline command started, so no need to interrupt anything'
+      end
+    end
+
     private
 
     # Generate all methods that can parse kwargs to generate CLI options, for each known command.
@@ -225,6 +240,25 @@ module Cline
     # @return [Config] The config instance used by this Cli instance
     def config
       @config ||= @config_dir.nil? ? Config.global : Config.from_dir(@config_dir)
+    end
+
+    # Get all child PIDs recursively for a given parent PID
+    #
+    # @param parent_pid [Integer] Parent process ID
+    # @return [Array<Integer>] All child and grandchild PIDs recursively
+    def get_child_pids_recursive(parent_pid)
+      child_pids = []
+      begin
+        Sys::ProcTable.ps.each do |process|
+          next unless process.ppid == parent_pid
+
+          child_pids << process.pid
+          child_pids.concat(get_child_pids_recursive(process.pid))
+        end
+      rescue StandardError
+        # Gracefully handle errors if processes disappear while enumerating
+      end
+      child_pids
     end
   end
 end

@@ -17,7 +17,9 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 3.1'
 
   spec.add_dependency 'json', '~> 2.18'
+  spec.add_dependency 'os', '~> 1.1'
   spec.add_dependency 'shale', '~> 1.2'
+  spec.add_dependency 'sys-proctable', '~> 1.3'
   spec.add_dependency 'zeitwerk', '~> 2.7'
 
   spec.metadata['rubygems_mfa_required'] = 'true'
