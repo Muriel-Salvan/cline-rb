@@ -19,7 +19,7 @@ Lint/UnusedMethodArgument:
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/AbcSize:
-  Max: 70
+  Max: 110
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/BlockLength:
@@ -39,7 +39,7 @@ Metrics/CyclomaticComplexity:
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/MethodLength:
-  Max: 80
+  Max: 100
 
 # kwargs should not count towards max parameters list.
 Metrics/ParameterLists:
@@ -74,3 +74,8 @@ RSpec/MultipleExpectations:
 # It's ok to have scenarios having multiple lines
 RSpec/ExampleLength:
   Max: 90
+
+# Exclude spec files that have more than 1 level of depth organization as Rubocop doesn't allow more than 1 level of method nesting.
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - 'spec/scenarios/cline/data/tasks/**/*'
