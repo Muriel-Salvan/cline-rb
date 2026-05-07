@@ -74,6 +74,7 @@ describe Cline::Data, '#tasks' do
         expect(messages.size).to eq 1
         message = messages.first
         expect(message.ts).to eq 123_456
+        expect(message.timestamp).to eq Time.at(123.456)
         expect(message.type).to eq 'assistant'
         expect(message.say).to eq 'execution_start'
         expect(message.ask).to eq 'approval'

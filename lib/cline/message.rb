@@ -1,3 +1,5 @@
+require 'time'
+
 module Cline
   # Task's message
   class Message < Schema
@@ -38,6 +40,13 @@ module Cline
 
     # @return [Boolean] Flag indicating this is an incomplete streaming message
     attribute :partial, :boolean
+
+    # Get the message timestamp as a Ruby time
+    #
+    # @return [Time] The message timestamp
+    def timestamp
+      @timestamp ||= Time.at(ts / 1000.0)
+    end
 
     # Get the usage statistics of this message, if any
     #
