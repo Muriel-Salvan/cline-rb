@@ -1,5 +1,4 @@
 require 'forwardable'
-require 'os'
 
 module Cline
   # Accesses all configuration of a Cline directory.
@@ -13,17 +12,7 @@ module Cline
     #
     # @return [Config] The global config for the current user
     def self.global
-      @global ||= Config.from_dir(
-        "#{
-          if OS.windows?
-            ENV['USERPROFILE'].gsub('\\', '/')
-          elsif OS.linux?
-            `eval echo ~$USER`.strip
-          else
-            raise NotImplementedError, "Unknown OS: #{OS.host_os}"
-          end
-        }/.cline"
-      )
+      @global ||= Config.from_dir("#{Utils::Os.user_home_dir}/.cline")
     end
 
     # Get the local Cline config

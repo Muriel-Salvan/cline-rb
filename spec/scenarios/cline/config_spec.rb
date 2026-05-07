@@ -135,12 +135,14 @@ describe Cline::Config do
     # @return [String] The temporary directory that contains the .cline config dir
     attr_reader :tmp_dir
 
-    context 'when on Windows' do
+    context 'when the host OS is mingw32' do
+      around do |example|
+        with_host_os('mingw32') do
+          example.call
+        end
+      end
+
       before do
-        allow(OS).to receive_messages(
-          windows?: true,
-          linux?: false
-        )
         allow(ENV).to receive(:[]).with('USERPROFILE').and_return(tmp_dir)
       end
 
@@ -149,13 +151,15 @@ describe Cline::Config do
       end
     end
 
-    context 'when on Linux' do
+    context 'when the host OS is linux' do
+      around do |example|
+        with_host_os('linux') do
+          example.call
+        end
+      end
+
       before do
-        allow(OS).to receive_messages(
-          windows?: false,
-          linux?: true
-        )
-        allow(described_class).to receive(:`).with('eval echo ~$USER').and_return(tmp_dir)
+        allow(Cline::Utils::Os).to receive(:`).with('eval echo ~$USER').and_return(tmp_dir)
       end
 
       it 'loads global config from HOME/.cline' do
