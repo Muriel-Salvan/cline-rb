@@ -9,7 +9,7 @@ describe Cline::Cli, '#interrupt' do
       'cline auth' => {
         exec: proc do |mocked_result|
           # Spawn a real process
-          ClineTest::Helpers.original_popen3.call('ruby -e"sleep 60"') do |stdin, _stdout, _stderr, wait_thr|
+          ClineTest::Helpers::Cli.original_popen3.call('ruby -e"sleep 60"') do |stdin, _stdout, _stderr, wait_thr|
             mocked_result[:pid] = wait_thr.pid
             test_pid = mocked_result[:pid]
             stdin.close
@@ -60,7 +60,7 @@ describe Cline::Cli, '#interrupt' do
                 end
               EO_RUBY
             )
-            ClineTest::Helpers.original_popen3.call("ruby #{spawn_file} 4") do |stdin, stdout, _stderr, wait_thr|
+            ClineTest::Helpers::Cli.original_popen3.call("ruby #{spawn_file} 4") do |stdin, stdout, _stderr, wait_thr|
               mocked_result[:pid] = wait_thr.pid
               stdin.close
               Thread.new do
