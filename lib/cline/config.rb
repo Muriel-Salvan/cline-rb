@@ -26,6 +26,13 @@ module Cline
       )
     end
 
+    # Get the local Cline config
+    #
+    # @return [Config] The local config for the current repository
+    def self.local
+      @local ||= Config.from_dir('.cline')
+    end
+
     extend Utils::InitializableFromDir
 
     # Give access to the data getters

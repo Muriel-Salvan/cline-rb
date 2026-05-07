@@ -118,7 +118,7 @@ describe Cline::Config do
       original_global = described_class.instance_variable_get(:@global)
       begin
         # Clear cache
-        described_class.instance_variable_set(:@global, nil)
+        described_class.remove_instance_variable(:@global) if described_class.instance_variable_defined?(:@global)
         Dir.mktmpdir do |tmp_dir|
           @tmp_dir = tmp_dir.gsub('\\', '/')
           # Create .cline directory structure
@@ -161,6 +161,35 @@ describe Cline::Config do
       it 'loads global config from HOME/.cline' do
         expect(described_class.global.global_settings.default_terminal_profile).to eq 'test-profile'
       end
+    end
+  end
+
+  describe '.local' do
+    around do |example|
+      # Backup original value as it is a global cache
+      original_local = described_class.instance_variable_get(:@local)
+      begin
+        # Clear cache
+        described_class.remove_instance_variable(:@local) if described_class.instance_variable_defined?(:@local)
+        Dir.mktmpdir do |tmp_dir|
+          tmp_dir = tmp_dir.gsub('\\', '/')
+          # Create .cline directory structure
+          cline_dir = File.join(tmp_dir, '.cline')
+          FileUtils.mkdir_p(cline_dir)
+          setup_config_dir(cline_dir, global_settings: { cline_web_tools_enabled: true })
+
+          # Change to temporary directory for the test
+          Dir.chdir(tmp_dir) do
+            example.run
+          end
+        end
+      ensure
+        described_class.instance_variable_set(:@local, original_local)
+      end
+    end
+
+    it 'loads local config from current working directory .cline' do
+      expect(described_class.local.global_settings.cline_web_tools_enabled).to be true
     end
   end
 end
