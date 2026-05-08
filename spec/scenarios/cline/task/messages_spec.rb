@@ -1,4 +1,4 @@
-describe Cline::Data, '#tasks #messages' do
+describe Cline::Task, '#messages' do
   it 'returns nil when no messages.json file exists in task directory' do
     with_task(messages: nil) do |task|
       expect(task.messages).to be_nil

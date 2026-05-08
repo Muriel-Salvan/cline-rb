@@ -1,4 +1,4 @@
-describe Cline::Data, '#tasks #messages #usage' do
+describe Cline::Message, '#usage' do
   it 'parses usage information from api_req_started messages' do
     with_task(
       messages: [

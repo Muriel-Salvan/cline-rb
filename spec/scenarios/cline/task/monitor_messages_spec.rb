@@ -1,6 +1,6 @@
 require 'fileutils'
 
-describe Cline::Data, '#tasks #monitor_messages' do
+describe Cline::Task, '#monitor_messages' do
   # Helper to write messages to task directory
   #
   # @param task [Cline::Task] Task to write messages for

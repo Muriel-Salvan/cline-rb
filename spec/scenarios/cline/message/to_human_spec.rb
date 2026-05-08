@@ -1,6 +1,6 @@
 require 'json'
 
-describe Cline::Data, '#tasks #messages #to_human' do
+describe Cline::Message, '#to_human' do
   # Create a task with a JSON message, and provide the corresponding human message for expectations.
   #
   # @param ts [Integer] The JSON message ts field

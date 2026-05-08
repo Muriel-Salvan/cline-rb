@@ -77,11 +77,6 @@ RSpec/MultipleExpectations:
 RSpec/NestedGroups:
   Max: 5
 
-# Exclude spec files that have more than 1 level of depth organization as Rubocop doesn't allow more than 1 level of method nesting.
-RSpec/SpecFilePathFormat:
-  Exclude:
-    - 'spec/scenarios/cline/data/tasks/**/*'
-
 # I don't want to pollute my code with something that should be integrated in the language
 Style/FrozenStringLiteralComment:
   EnforcedStyle: never
