@@ -21,11 +21,12 @@ describe Cline::Cli, '#task' do
       hooks_dir: '/path/to/hooks',
       task_id: 'task-12345'
     },
-    cli_options: '--act --yolo --auto-approve-all --timeout 300 --model gpt-4o ' \
-                 '--thinking 2048 --reasoning-effort high --max-consecutive-mistakes 3 ' \
-                 '--json --double-check-completion --auto-condense --hooks-dir /path/to/hooks ' \
-                 '--taskId task-12345',
-    stdin: 'Test task prompt: Create a simple Ruby class'
+    expected_cli: 'cline',
+    expected_cli_options: '--act --yolo --auto-approve-all --timeout 300 --model gpt-4o ' \
+      '--thinking 2048 --reasoning-effort high --max-consecutive-mistakes 3 ' \
+      '--json --double-check-completion --auto-condense --hooks-dir /path/to/hooks ' \
+      '--taskId task-12345',
+    expected_stdin: 'Test task prompt: Create a simple Ruby class'
   )
 
   it 'triggers on_message callback for messages added during task execution via exec hook' do
@@ -42,7 +43,7 @@ describe Cline::Cli, '#task' do
     with_config_dir do |config_dir|
       # Mock the task command with exec hook to add messages while running
       mock_commands(
-        "cline task --config #{config_dir}" => {
+        "cline --config #{config_dir}" => {
           stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n",
           exec: proc do
             sleep 0.5

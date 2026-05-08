@@ -80,8 +80,9 @@ module Cline
     # Authenticate the CLI
     #
     # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
+    # @return [Hash{Symbol => Object}] A set of return properties (see #run_cli)
     def auth(**kwargs)
-      run_cli('auth', parse_auth_options(**kwargs))
+      run_cli(command: 'auth', args: parse_auth_options(**kwargs))
     end
 
     # Run a task with a prompt
@@ -95,8 +96,7 @@ module Cline
       cli_running = true
       begin
         result = run_cli(
-          'task',
-          parse_task_options(**kwargs),
+          args: parse_task_options(**kwargs),
           stdin_data: prompt,
           on_stdout: proc do |line|
             if line.strip =~ /^\{"type":"task_started","taskId":"([^"]+)"\}$/
@@ -191,7 +191,7 @@ module Cline
 
     # Run a command on the Cline CLI
     #
-    # @param command [Symbol] The command to run
+    # @param command [Symbol, nil] The command to run, or nil if none
     # @param args [Array<String>] Command arguments
     # @param stdin_data [String, nil] Data to send to the standard input of the CLI, or nil if none
     # @param expected_exit_status [Integer, nil] Expected exit status, or nil for no expectation
@@ -201,8 +201,8 @@ module Cline
     #   * stdout [String] Full stdout
     #   * stderr [String] Full stderr
     #   * exit_status [Integer] Exit status
-    def run_cli(command, args = [], stdin_data: nil, expected_exit_status: 0, on_stdout: nil)
-      cmd = "cline #{command} #{(@global_options + args).join(' ')}".strip
+    def run_cli(command: nil, args: [], stdin_data: nil, expected_exit_status: 0, on_stdout: nil)
+      cmd = "cline#{" #{command}" if command} #{(@global_options + args).join(' ')}".strip
       (
         proc do |&run_block|
           if stdin_data

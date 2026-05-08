@@ -19,9 +19,9 @@ describe Cline::Cli do
     cli.task('Generate documentation', json: true)
     expect_issued_commands [
       { command: 'cline auth --verbose --cwd /test/path --provider openai-native --apikey test-api-key --modelid gpt-4o' },
-      { command: 'cline task --verbose --cwd /test/path --act --timeout 300 --yolo', stdin: 'Implement authentication system' },
-      { command: 'cline task --verbose --cwd /test/path --plan --reasoning-effort high', stdin: 'Plan database migration' },
-      { command: 'cline task --verbose --cwd /test/path --json', stdin: 'Generate documentation' }
+      { command: 'cline --verbose --cwd /test/path --act --timeout 300 --yolo', stdin: 'Implement authentication system' },
+      { command: 'cline --verbose --cwd /test/path --plan --reasoning-effort high', stdin: 'Plan database migration' },
+      { command: 'cline --verbose --cwd /test/path --json', stdin: 'Generate documentation' }
     ]
   end
 end

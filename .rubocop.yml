@@ -9,6 +9,10 @@ AllCops:
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
 
+# Keep indentation consistent
+Layout/LineEndStringConcatenationIndentation:
+  EnforcedStyle: indented
+
 # It's ok to have longer lines
 Layout/LineLength:
   Max: 160
