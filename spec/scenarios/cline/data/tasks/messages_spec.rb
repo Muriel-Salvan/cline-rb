@@ -79,4 +79,43 @@ describe Cline::Data, '#tasks #messages' do
       expect(messages[3].ts).to eq 103
     end
   end
+
+  it 'raises Errno::EACCES after retrying 3 times when the file cannot be read' do
+    with_task(
+      messages: [
+        { ts: 100, type: 'user', text: 'First message' }
+      ]
+    ) do |task|
+      read_call_count = 0
+      allow(File).to receive(:read).with(File.join(task.instance_variable_get(:@task_dir), Cline::Messages.json_file_path)) do |*_args|
+        read_call_count += 1
+        raise Errno::EACCES
+      end
+      expect { task.messages }.to raise_error(Errno::EACCES)
+      expect(read_call_count).to eq 4
+    end
+  end
+
+  it 'recovers from a temporary read error and reads the file successfully on retry' do
+    with_task(
+      messages: [
+        { ts: 100, type: 'user', text: 'First message' }
+      ]
+    ) do |task|
+      read_call_count = 0
+      original_read = File.method(:read)
+      allow(File).to receive(:read).with(File.join(task.instance_variable_get(:@task_dir), Cline::Messages.json_file_path)) do |*args|
+        read_call_count += 1
+        raise Errno::EACCES if read_call_count == 1
+
+        original_read.call(*args)
+      end
+
+      messages = task.messages
+      expect(read_call_count).to eq 2
+      expect(messages).not_to be_nil
+      expect(messages.size).to eq 1
+      expect(messages.first.ts).to eq 100
+    end
+  end
 end

@@ -44,7 +44,7 @@ module Cline
         # @return [Object, nil] The instance, or nil if no JSON file exists
         def json_from_base_dir(base_dir, *args, **kwargs)
           json_file = File.join(base_dir, json_file_path)
-          File.exist?(json_file) ? from_cline_json(File.read(json_file), *args, **kwargs) : nil
+          File.exist?(json_file) ? from_cline_json(safe_read(json_file), *args, **kwargs) : nil
         end
 
         # Monitor changes done on the JSON file and call a callback for each update.
@@ -77,6 +77,32 @@ module Cline
         # @return [String] The relative JSON file path
         def json_file_path
           raise NotImplementedError, 'This method should be implemented by sub-classes'
+        end
+
+        private
+
+        # Try to read a file with retries in case other processes are using it.
+        #
+        # Parameters::
+        # * *file* (String): Path to read
+        # * *max_retries* (Integer): Number of retries in case of concurrent access [default: 3]
+        # Result::
+        # * String: The file content
+        def safe_read(file, max_retries: 3)
+          retries = 0
+          file_content = nil
+          begin
+            file_content = File.read(file)
+          rescue Errno::EACCES, Errno::EAGAIN
+            # Could be that the file is being written at the same time.
+            # Just try again.
+            retries += 1
+            raise if retries > max_retries
+
+            sleep(0.05 * retries)
+            retry
+          end
+          file_content
         end
       end
 
