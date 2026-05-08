@@ -25,7 +25,7 @@ module Cline
     extend Utils::InitializableFromDir
 
     # Give access to the data getters
-    def_delegators :data, *%i[workspaces tasks global_settings mcp_settings]
+    def_delegators :data, *%i[global_settings mcp_settings tasks workspaces]
 
     # Get skills from this config
     #

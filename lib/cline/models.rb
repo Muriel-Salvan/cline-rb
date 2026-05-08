@@ -12,7 +12,7 @@ module Cline
     include Enumerable
 
     # Delegates hash methods to the internal models map
-    def_delegators :models, :each, :size, :[], :key?, :keys, :values
+    def_delegators :models, *%i[[] each empty? first key? keys size values]
 
     # Equality check
     #

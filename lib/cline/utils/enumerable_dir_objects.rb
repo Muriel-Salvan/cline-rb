@@ -14,7 +14,7 @@ module Cline
       include Enumerable
 
       # Give a Hash interface
-      def_delegators :objects_set, :[], :each, :size, :keys, :values, :empty?, :key?
+      def_delegators :objects_set, *%i[[] each empty? first key? keys size values]
 
       # Equality check
       #

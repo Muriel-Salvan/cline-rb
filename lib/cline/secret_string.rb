@@ -7,7 +7,7 @@ module Cline
 
     # @!group Public API
 
-    def_delegators :secret_string, :to_s, :to_unprotected
+    def_delegators :secret_string, *%i[to_s to_unprotected]
 
     # Equality check
     #
