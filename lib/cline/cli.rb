@@ -91,8 +91,11 @@ module Cline
     # @param on_message [#call, nil] Callback called for each new or updated message for this task, or nil if none (see Task#monitor_message)
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds
     # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
+    # @return [Hash{Symbol => Object}] A set of return properties (see #run_cli). Additionnally the following ones:
+    #   * message [Message, nil] The last message of the task, or nil if none
     def task(prompt, on_message: nil, monitoring_interval_secs: 1, **kwargs)
       task_monitor_thread = nil
+      @current_task = nil
       cli_running = true
       begin
         result = run_cli(
@@ -102,43 +105,45 @@ module Cline
             if line.strip =~ /^\{"type":"task_started","taskId":"([^"]+)"\}$/
               task_id = Regexp.last_match[1]
               log_debug "Started task ID #{task_id}"
-              if on_message
-                task_monitor_thread = Thread.new do
-                  # It can be that the task has not been created yet.
-                  # Just wait for it.
-                  while cli_running
-                    if config.tasks
-                      break if config.tasks[task_id]
-
-                      config.tasks.refresh!
-                    else
-                      config.refresh!
+              # Create the thread that will find out the task handled by the CLI
+              task_monitor_thread = Thread.new do
+                # It can be that the task has not been created yet.
+                # Just wait for it.
+                while cli_running
+                  if config.tasks
+                    if config.tasks[task_id]
+                      @current_task = config.tasks[task_id]
+                      break
                     end
-                    sleep 0.1
+
+                    config.tasks.refresh!
+                  else
+                    config.refresh!
                   end
-                  # [Hash{Integer => Usage}] All usages, per timestamp, for logging purposes
-                  usages = {}
-                  config.tasks[task_id].monitor_messages(
-                    on_message: proc do |message, last, previous_version|
-                      log_debug do
-                        usages[message.ts] = message.usage if message.usage
-                        last_usage = usages.values.last
-                        prefix = "[#{message.timestamp.strftime('%H:%M:%S')}]#{
-                          unless last_usage.nil?
-                            " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')}" \
-                              " #{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
-                              "/#{HumanNumber.human_number(last_usage.context_tokens_limit, max_digits: 2)})"
-                          end
-                        } - "
-                        "#{prefix}#{message.to_human(limit: 128 - prefix.size)}"
-                      end
-                      on_message.call(message, last, previous_version)
-                    end,
-                    ignore_partials: true,
-                    monitoring_interval_secs:
-                  ) do
-                    sleep 0.1 while cli_running
-                  end
+                  sleep 0.1
+                end
+                # [Hash{Integer => Usage}] All usages, per timestamp, for logging purposes
+                usages = {}
+                @current_task.monitor_messages(
+                  on_message: proc do |message, last, previous_version|
+                    log_debug do
+                      usages[message.ts] = message.usage if message.usage
+                      last_usage = usages.values.last
+                      prefix = "[#{message.timestamp.strftime('%H:%M:%S')}]#{
+                        unless last_usage.nil?
+                          " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')}" \
+                            " #{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
+                            "/#{HumanNumber.human_number(last_usage.context_tokens_limit, max_digits: 2)})"
+                        end
+                      } - "
+                      "#{prefix}#{message.to_human(limit: 128 - prefix.size)}"
+                    end
+                    on_message&.call(message, last, previous_version)
+                  end,
+                  ignore_partials: true,
+                  monitoring_interval_secs:
+                ) do
+                  sleep 0.1 while cli_running
                 end
               end
             end
@@ -153,6 +158,9 @@ module Cline
 
     # @return [Integer, nil] The PID of the running Cline process, if any
     attr_reader :cline_pid
+
+    # @return [Task, nil] The current or last task handled by the Cline process, if any
+    attr_reader :current_task
 
     # Interrupt the running Cline command
     def interrupt
