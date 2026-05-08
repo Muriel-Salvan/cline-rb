@@ -94,10 +94,8 @@ describe Cline::Cli, '#task' do
         "cline --config #{config_dir}" => {
           stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n",
           exec: proc do
-            data_dir = File.join(config_dir, 'data')
-            FileUtils.mkdir_p data_dir
-            setup_data_dir(
-              data_dir,
+            setup_config_dir(
+              config_dir,
               tasks: {
                 '12345' => {
                   messages: [
@@ -134,10 +132,8 @@ describe Cline::Cli, '#task' do
         "cline --config #{config_dir}" => {
           stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n",
           exec: proc do
-            data_dir = File.join(config_dir, 'data')
-            FileUtils.mkdir_p data_dir
-            setup_data_dir(
-              data_dir,
+            setup_config_dir(
+              config_dir,
               tasks: {
                 '12345' => {
                   messages: []
@@ -150,6 +146,74 @@ describe Cline::Cli, '#task' do
       result = described_class.new(config: config_dir).task('Test prompt')
       expect(result.key?(:message)).to be true
       expect(result[:message]).to be_nil
+    end
+  end
+
+  describe 'interruption logic' do
+    interrupting_combinations = {
+      'ask/followup' => { ts: 100, type: 'ask', ask: 'followup', text: '{"question":"Continue?","options":[]}' },
+      'ask/new_task' => { ts: 100, type: 'ask', ask: 'new_task', text: 'New task to pursue' },
+      'ask/plan_mode_respond' => { ts: 100, type: 'ask', ask: 'plan_mode_respond', text: '{"response":"Plan response"}' },
+      'say/completion_result' => { ts: 100, type: 'say', say: 'completion_result', text: 'Task completed successfully' }
+    }
+
+    context 'when the message is not the last one' do
+      interrupting_combinations.each do |name, message|
+        it "does not interrupt when message is not the last one with #{name}" do
+          with_config_dir do |config_dir|
+            setup_config_dir(
+              config_dir,
+              tasks: {
+                '12345' => {
+                  messages: [
+                    message,
+                    { ts: 101, type: 'say', say: 'text', text: 'Another message' }
+                  ]
+                }
+              }
+            )
+            mock_commands(
+              "cline --config #{config_dir}" => {
+                stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n",
+                exec: proc do
+                  sleep 0.5
+                end
+              }
+            )
+            cli = described_class.new(config: config_dir)
+            allow(cli).to receive(:interrupt)
+            cli.task('Test prompt', monitoring_interval_secs: 0.1)
+            expect(cli).not_to have_received(:interrupt)
+          end
+        end
+      end
+    end
+
+    context 'when the message is the last one' do
+      interrupting_combinations.each do |name, message|
+        it "interrupts when message is the last one with #{name}" do
+          with_config_dir do |config_dir|
+            setup_config_dir(
+              config_dir,
+              tasks: {
+                '12345' => { messages: [message] }
+              }
+            )
+            mock_commands(
+              "cline --config #{config_dir}" => {
+                stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n",
+                exec: proc do
+                  sleep 0.5
+                end
+              }
+            )
+            cli = described_class.new(config: config_dir)
+            allow(cli).to receive(:interrupt)
+            cli.task('Test prompt', monitoring_interval_secs: 0.1)
+            expect(cli).to have_received(:interrupt)
+          end
+        end
+      end
     end
   end
 

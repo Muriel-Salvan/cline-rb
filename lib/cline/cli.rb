@@ -138,7 +138,17 @@ module Cline
                       } - "
                       "#{prefix}#{message.to_human(limit: 128 - prefix.size)}"
                     end
+                    # Call the user callback if any
                     on_message&.call(message, last, previous_version)
+                    # Interrupt the CLI if we just got a last message that is blocking (like a user ask or plan_mode_respond).
+                    if last && (
+                      (message.type == 'ask' && %w[followup new_task plan_mode_respond].include?(message.ask)) ||
+                      (message.type == 'say' && %w[completion_result].include?(message.say))
+                    )
+                      # The CLI should end.
+                      # Maybe it did it already, but maybe not. Make sure it does.
+                      interrupt
+                    end
                   end,
                   ignore_partials: true,
                   monitoring_interval_secs:
