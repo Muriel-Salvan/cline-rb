@@ -32,7 +32,7 @@ module Cline
       #
       # @param base [Class] The base class
       def self.included(base)
-        base.extend(InitializableFromDir)
+        base.include(InitializableFromDir)
       end
 
       # Include the mixin and configure it for a specific object class
@@ -60,13 +60,6 @@ module Cline
         end
       end
 
-      # Initialize this instance from a directory
-      #
-      # @param dir [String] The directory to be used to initialize this instance
-      def initialize_from_dir(dir)
-        @set_dir = dir
-      end
-
       # Remove caches.
       def refresh!
         @objects_set = nil
@@ -80,7 +73,7 @@ module Cline
       # @return [Hash{String => Object}] The objects, per object name
       def objects_set
         @objects_set ||= Dir
-          .glob(File.join(@set_dir, '*'))
+          .glob(File.join(@dir, '*'))
           .select { |path| File.directory?(path) }
           .to_h { |subdir| object_from(subdir) }
       end

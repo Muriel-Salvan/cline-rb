@@ -3,13 +3,13 @@ module Cline
   class Workspace
     # @!group Public API
 
-    extend Utils::InitializableFromDir
+    include Utils::InitializableFromDir
 
     # Get the workspace settings
     #
     # @return [WorkspaceSettings, nil] The workspace settings or nil if none
     def settings
-      @settings ||= WorkspaceSettings.json_from_base_dir(@workspace_dir)
+      @settings ||= WorkspaceSettings.json_from_base_dir(@dir)
     end
 
     # Equality check
@@ -19,15 +19,6 @@ module Cline
     def ==(other)
       other.is_a?(Workspace) &&
         other.settings == settings
-    end
-
-    # @!group Internal
-
-    # Initialize this instance from a directory
-    #
-    # @param dir [String] The directory to be used to initialize this instance
-    def initialize_from_dir(dir)
-      @workspace_dir = dir
     end
   end
 end

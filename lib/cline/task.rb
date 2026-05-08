@@ -6,13 +6,13 @@ module Cline
   class Task
     # @!group Public API
 
-    extend Utils::InitializableFromDir
+    include Utils::InitializableFromDir
 
     # Get the task's messages
     #
     # @return [Messages, nil] The task's messages, or nil if none
     def messages
-      @messages ||= Messages.json_from_base_dir(@task_dir, cline_models: @cline_models)
+      @messages ||= Messages.json_from_base_dir(@dir, cline_models: @cline_models)
     end
 
     # Equality check
@@ -41,7 +41,7 @@ module Cline
       # Keep messages per timestamp to detect updates
       messages = {}
       Messages.monitor_changes(
-        @task_dir,
+        @dir,
         cline_models: @cline_models,
         on_change: proc do |new_messages|
           # Update the messages we have
@@ -72,13 +72,6 @@ module Cline
     # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     def initialize(cline_models:)
       @cline_models = cline_models
-    end
-
-    # Initialize this instance from a directory
-    #
-    # @param dir [String] The directory to be used to initialize this instance
-    def initialize_from_dir(dir)
-      @task_dir = dir
     end
   end
 end

@@ -3,19 +3,13 @@ module Cline
   class Skill
     # @!group Public API
 
-    extend Utils::InitializableFromDir
+    include Utils::InitializableFromDir
 
-    # @return [String] Skill name
-    attr_reader :name
-
-    # @!group Internal
-
-    # Initialize this instance from a directory
+    # Get the skill's name
     #
-    # @param dir [String] The directory to be used to initialize this instance
-    def initialize_from_dir(dir)
-      @dir = dir
-      @name = File.basename(dir)
+    # @return [String] Skill name
+    def name
+      File.basename(@dir)
     end
 
     # Equality check

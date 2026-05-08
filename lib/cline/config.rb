@@ -22,7 +22,7 @@ module Cline
       @local ||= Config.from_dir('.cline')
     end
 
-    extend Utils::InitializableFromDir
+    include Utils::InitializableFromDir
 
     # Give access to the data getters
     def_delegators :data, *%i[global_settings mcp_settings tasks workspaces]
@@ -31,14 +31,14 @@ module Cline
     #
     # @return [Skills] Set of skills
     def skills
-      @skills ||= Skills.from_dir(File.join(@config_dir, 'skills'))
+      @skills ||= Skills.from_dir(subdir('skills'))
     end
 
     # Get the data directory from this config
     #
     # @return [Data] The Cline data directory content
     def data
-      @data ||= Data.from_dir(File.join(@config_dir, 'data'))
+      @data ||= Data.from_dir(subdir('data'))
     end
 
     # Equality check
@@ -52,13 +52,6 @@ module Cline
     end
 
     # @!group Internal
-
-    # Initialize this instance from a directory
-    #
-    # @param dir [String] The directory to be used to initialize this instance
-    def initialize_from_dir(dir)
-      @config_dir = dir
-    end
 
     # Remove caches.
     def refresh!
