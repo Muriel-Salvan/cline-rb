@@ -153,6 +153,7 @@ module Cline
         cli_running = false
         task_monitor_thread&.join
       end
+      result[:message] = @current_task.messages.last if @current_task
       result
     end
 

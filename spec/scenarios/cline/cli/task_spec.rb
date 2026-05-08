@@ -88,6 +88,71 @@ describe Cline::Cli, '#task' do
     end
   end
 
+  it 'returns the last task message in the result hash' do
+    with_config_dir do |config_dir|
+      mock_commands(
+        "cline --config #{config_dir}" => {
+          stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n",
+          exec: proc do
+            data_dir = File.join(config_dir, 'data')
+            FileUtils.mkdir_p data_dir
+            setup_data_dir(
+              data_dir,
+              tasks: {
+                '12345' => {
+                  messages: [
+                    { ts: 100, type: 'user', text: 'First message' },
+                    { ts: 101, type: 'assistant', text: 'Second message' },
+                    { ts: 102, type: 'user', text: 'Third message' }
+                  ]
+                }
+              }
+            )
+          end
+        }
+      )
+      result = described_class.new(config: config_dir).task('Test prompt')
+      expect(result[:message]).not_to be_nil
+      expect(result[:message].ts).to eq 102
+      expect(result[:message].text).to eq 'Third message'
+      expect(result[:message].type).to eq 'user'
+    end
+  end
+
+  it 'does not include message in the result when no task was created' do
+    mock_commands(
+      'cline' => {
+        stdout: "some output without task_started\n"
+      }
+    )
+    expect(described_class.new.task('Test prompt').key?(:message)).to be false
+  end
+
+  it 'returns nil message when the task has no messages' do
+    with_config_dir do |config_dir|
+      mock_commands(
+        "cline --config #{config_dir}" => {
+          stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n",
+          exec: proc do
+            data_dir = File.join(config_dir, 'data')
+            FileUtils.mkdir_p data_dir
+            setup_data_dir(
+              data_dir,
+              tasks: {
+                '12345' => {
+                  messages: []
+                }
+              }
+            )
+          end
+        }
+      )
+      result = described_class.new(config: config_dir).task('Test prompt')
+      expect(result.key?(:message)).to be true
+      expect(result[:message]).to be_nil
+    end
+  end
+
   describe '#current_task' do
     it 'is nil when no task has been started' do
       expect(described_class.new.current_task).to be_nil

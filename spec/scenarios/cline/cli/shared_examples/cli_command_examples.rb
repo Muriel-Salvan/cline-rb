@@ -63,11 +63,9 @@ shared_examples 'a cli command' do |opts|
     # Mute stderr
     allow($stderr).to receive(:write)
     result = described_class.new.public_send(opts[:name], *opts[:args])
-    expect(result).to eq(
-      stdout: "Executing Cline CLI\nSuccess\n",
-      stderr: "Warning: update available\n",
-      exit_status: 0
-    )
+    expect(result[:stdout]).to eq "Executing Cline CLI\nSuccess\n"
+    expect(result[:stderr]).to eq "Warning: update available\n"
+    expect(result[:exit_status]).to eq 0
   end
 
   it 'echoes stdout content to $stdout when stdout_echo is true' do
