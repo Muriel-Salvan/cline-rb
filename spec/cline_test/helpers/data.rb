@@ -10,6 +10,7 @@ module ClineTest
       #
       # @param global_settings [Hash, nil] The global settings file content, or nil if none
       # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none
+      # @param secrets [Hash, nil] The secrets file content, or nil if none
       # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none
       #   Workspace data is itself a hash that can describe the workspace with the following keys:
       #   * settings [Hash, nil] The settings to create, or nil if none
@@ -19,8 +20,8 @@ module ClineTest
       # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
       # @yield [data_dir] Block called with the data directory ready
       # @yieldparam [String] The data directory
-      def with_data(global_settings: nil, mcp_settings: nil, workspaces: nil, tasks: nil, cline_models: nil)
-        with_data_dir(global_settings:, mcp_settings:, workspaces:, tasks:, cline_models:) do |data_dir|
+      def with_data(global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, tasks: nil, cline_models: nil)
+        with_data_dir(global_settings:, mcp_settings:, secrets:, workspaces:, tasks:, cline_models:) do |data_dir|
           yield Cline::Data.from_dir(data_dir)
         end
       end
@@ -30,6 +31,7 @@ module ClineTest
       #
       # @param global_settings [Hash, nil] The global settings file content, or nil if none
       # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none
+      # @param secrets [Hash, nil] The secrets file content, or nil if none
       # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none
       #   Workspace data is itself a hash that can describe the workspace with the following keys:
       #   * settings [Hash, nil] The settings to create, or nil if none
@@ -39,9 +41,9 @@ module ClineTest
       # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
       # @yield [data_dir] Block called with the data directory ready
       # @yieldparam [String] The data directory
-      def with_data_dir(global_settings: nil, mcp_settings: nil, workspaces: nil, tasks: nil, cline_models: nil)
+      def with_data_dir(global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, tasks: nil, cline_models: nil)
         Dir.mktmpdir do |data_dir|
-          setup_data_dir(data_dir, global_settings:, mcp_settings:, workspaces:, tasks:, cline_models:)
+          setup_data_dir(data_dir, global_settings:, mcp_settings:, secrets:, workspaces:, tasks:, cline_models:)
           yield data_dir
         end
       end
@@ -51,11 +53,13 @@ module ClineTest
       # @param data_dir [String] The directory to setup
       # @param global_settings [Hash, nil] The global settings file content, or nil if none (see #with_data_dir)
       # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none (see #with_data_dir)
+      # @param secrets [Hash, nil] The secrets file content, or nil if none (see #with_data_dir)
       # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none (see #with_data_dir)
       # @param tasks [Hash{String => Hash{Symbol => Object}}, nil] The tasks to create (key: name, value: data), or nil if none (see #with_data_dir)
       # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none (see #with_data_dir)
-      def setup_data_dir(data_dir, global_settings: nil, mcp_settings: nil, workspaces: nil, tasks: nil, cline_models: nil)
+      def setup_data_dir(data_dir, global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, tasks: nil, cline_models: nil)
         File.write(File.join(data_dir, 'globalState.json'), global_settings.to_json) if global_settings
+        File.write(File.join(data_dir, 'secrets.json'), secrets.to_json) if secrets
         if mcp_settings
           FileUtils.mkdir_p(File.join(data_dir, 'settings'))
           File.write(File.join(data_dir, 'settings', 'cline_mcp_settings.json'), mcp_settings.to_json)

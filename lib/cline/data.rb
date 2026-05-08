@@ -30,6 +30,13 @@ module Cline
       @global_settings ||= GlobalSettings.json_from_base_dir(@data_dir)
     end
 
+    # Get secrets stored in this data directory
+    #
+    # @return [Secrets, nil] Secrets stored in this data directory, or nil if none
+    def secrets
+      @secrets ||= Secrets.json_from_base_dir(@data_dir)
+    end
+
     # Get MCP settings stored in this data directory
     #
     # @return [McpSettings, nil] MCP settings stored in this data directory, or nil if none
@@ -54,6 +61,7 @@ module Cline
         other.tasks == tasks &&
         other.global_settings == global_settings &&
         other.mcp_settings == mcp_settings &&
+        other.secrets == secrets &&
         other.cline_models == cline_models
     end
 
