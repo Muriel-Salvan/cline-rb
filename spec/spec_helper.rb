@@ -27,6 +27,13 @@ RSpec.configure do |config|
   # Include test helpers
   config.include ClineTest::Helpers
 
+  # Around hook for all test cases
+  # Don't use a before hook for that purpose, as before hooks are always run after around hooks.
+  config.around do |example|
+    clean_temp_dir
+    example.run
+  end
+
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.

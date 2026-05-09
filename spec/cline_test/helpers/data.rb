@@ -1,6 +1,5 @@
 require 'fileutils'
 require 'json'
-require 'tmpdir'
 
 module ClineTest
   module Helpers
@@ -42,7 +41,7 @@ module ClineTest
       # @yield [data_dir] Block called with the data directory ready
       # @yieldparam [String] The data directory
       def with_data_dir(global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, tasks: nil, cline_models: nil)
-        Dir.mktmpdir do |data_dir|
+        with_temp_dir do |data_dir|
           setup_data_dir(data_dir, global_settings:, mcp_settings:, secrets:, workspaces:, tasks:, cline_models:)
           yield data_dir
         end

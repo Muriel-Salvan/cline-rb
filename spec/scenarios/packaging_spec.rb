@@ -1,10 +1,9 @@
 require 'English'
-require 'tmpdir'
 require 'yaml'
 
 RSpec.describe 'Gem packaging' do
   it 'successfully builds the gem and creates the correct file in specific test location' do
-    Dir.mktmpdir do |temp_dir|
+    with_temp_dir do |temp_dir|
       gem_file = File.join(temp_dir, "cline-rb-#{Cline::VERSION}.gem")
       # Run gem build command with explicit output to our test directory
       stdout = `gem build cline-rb.gemspec --output #{gem_file}`

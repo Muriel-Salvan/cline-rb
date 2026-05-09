@@ -119,7 +119,7 @@ describe Cline::Config do
       begin
         # Clear cache
         described_class.remove_instance_variable(:@global) if described_class.instance_variable_defined?(:@global)
-        Dir.mktmpdir do |tmp_dir|
+        with_temp_dir do |tmp_dir|
           @tmp_dir = tmp_dir.gsub('\\', '/')
           # Create .cline directory structure
           cline_dir = File.join(tmp_dir, '.cline')
@@ -175,7 +175,7 @@ describe Cline::Config do
       begin
         # Clear cache
         described_class.remove_instance_variable(:@local) if described_class.instance_variable_defined?(:@local)
-        Dir.mktmpdir do |tmp_dir|
+        with_temp_dir do |tmp_dir|
           tmp_dir = tmp_dir.gsub('\\', '/')
           # Create .cline directory structure
           cline_dir = File.join(tmp_dir, '.cline')

@@ -1,5 +1,3 @@
-require 'tmpdir'
-
 describe Cline::Cli, '#interrupt' do
   let(:cli) { described_class.new }
 
@@ -44,7 +42,7 @@ describe Cline::Cli, '#interrupt' do
       'cline auth' => {
         exec: proc do |mocked_result|
           # Spawn a tree of processes
-          Dir.mktmpdir do |temp_dir|
+          with_temp_dir do |temp_dir|
             spawn_file = "#{temp_dir}/spawn.rb"
             File.write(
               spawn_file,

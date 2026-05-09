@@ -1,5 +1,4 @@
 require 'fileutils'
-require 'tmpdir'
 
 module ClineTest
   module Helpers
@@ -18,7 +17,7 @@ module ClineTest
       # @yield [config_dir] Block called with the config directory ready
       # @yieldparam [String] The config directory
       def with_config_dir(skills: nil, global_settings: nil, mcp_settings: nil, workspaces: nil, tasks: nil, cline_models: nil)
-        Dir.mktmpdir do |config_dir|
+        with_temp_dir do |config_dir|
           setup_config_dir(config_dir, skills:, global_settings:, mcp_settings:, workspaces:, tasks:, cline_models:)
           yield config_dir
         end
