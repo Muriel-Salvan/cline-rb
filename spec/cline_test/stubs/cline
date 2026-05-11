@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+
+# This is a stub of the cline command line.
+
+# It looks for its stub configuration in .cline_test/tmp/cli_stub.json.
+# The cli_stub.json file contains the attributes defined by the mock_commands method (see #ClineTest::Helpers::Cli#mock_commands).
+
+# It also records all its call arguments and stdin in the file named .cline_test/tmp/cli_calls.json.
+# Those records are appended to the file if it already exists.
+# This file contains an Array of calls information:
+# * pid [Integer] The PID of the process
+# * command [String] Command line that was called
+# * stdin [String, nil] The content of stdin, or nil if none
+
+require 'fileutils'
+require 'json'
+
+# Make sure output is sent directly to the calling process
+$stdout.sync = true
+$stderr.sync = true
+
+# Record the call
+calls_file = '.cline_test/tmp/cli_calls.json'
+calls = File.exist?(calls_file) ? JSON.parse(File.read(calls_file)) : []
+File.write(
+  calls_file,
+  (
+    calls + [
+      {
+        pid: Process.pid,
+        command: "cline #{ARGV.join(' ')}".strip,
+        stdin:
+          if $stdin.tty?
+            nil
+          else
+            stdin = $stdin.read
+            stdin.empty? ? nil : stdin
+          end
+      }
+    ]
+  ).to_json
+)
+
+# Read the config driven by mock_commands
+config = JSON.parse(File.read('.cline_test/tmp/cli_stub.json'), symbolize_names: true)
+
+# Produce the mocked behaviour
+$stdout.write config[:stdout]
+$stderr.write config[:stderr]
+eval config[:eval]
+if config[:task]
+  config_dir = ARGV.join(' ').match(/--config ([^\s]+)/)[1]
+  raise 'The Cline stub can only handle a task if used with the --config flag' unless config_dir
+
+  # Simulate a task being created
+  $stdout.write "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n"
+  task_dir = File.join(config_dir, 'data', 'tasks', '12345')
+  FileUtils.mkdir_p(task_dir)
+  if config[:task][:messages]
+    # Normalize messages to be sent with some default values
+    default_message = { ts: 100, type: 'say', say: 'text', text: 'Message content' }
+    messages = config[:task][:messages].map do |messages_group|
+      (messages_group.is_a?(Array) ? messages_group : [messages_group]).map { |message| default_message.merge(message) }
+    end
+    messages_file = File.join(task_dir, 'ui_messages.json')
+    # First create empty file
+    File.write(messages_file, '[]')
+    sleep 0.2
+    # Then add test messages 1 by 1 with 0.2 seconds delay
+    messages.size.times do |idx|
+      File.write(messages_file, messages[0..idx].flatten(1).to_json)
+      sleep 0.2
+    end
+  end
+end
+sleep config[:running_time_secs]
+exit config[:exit_status]

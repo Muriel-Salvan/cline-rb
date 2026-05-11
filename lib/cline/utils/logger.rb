@@ -19,7 +19,7 @@ module Cline
         return unless Logger.debug
 
         msg = yield if block_given?
-        puts "[DEBUG] - #{msg}"
+        puts "[CLINE DEBUG] - #{msg}"
       end
     end
   end

@@ -16,7 +16,7 @@ module ClineTest
       # @yield [temp_dir] Block called with the temp directory ready
       # @yieldparam [String] The temp directory
       def with_temp_dir(&)
-        if Helpers.debug?
+        if Debug.debug?
           temp_dir = "#{temp_dir_path}/#{Time.now.utc.strftime('%Y-%m-%d-%H-%M-%S-%N')}"
           FileUtils.mkdir_p temp_dir
           yield temp_dir

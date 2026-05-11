@@ -35,7 +35,7 @@ Metrics/BlockNesting:
 
 # It's ok to have longer classes, while keeping readability.
 Metrics/ClassLength:
-  Max: 200
+  Max: 250
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/CyclomaticComplexity:
@@ -76,6 +76,19 @@ RSpec/MultipleExpectations:
 # It's ok to have nested groups in RSpec.
 RSpec/NestedGroups:
   Max: 5
+
+# Some test files can output to stdout and stderr
+RSpec/Output:
+  Exclude:
+    # This module handles test debug output
+    - spec/cline_test/helpers/debug.rb
+    # The Cline CLI stub should output for the tests
+    - spec/cline_test/stubs/cline
+
+# The Cline CLI stub shoud le able to eval specific scenarios
+Security/Eval:
+  Exclude:
+    - spec/cline_test/stubs/cline
 
 # I don't want to pollute my code with something that should be integrated in the language
 Style/FrozenStringLiteralComment:

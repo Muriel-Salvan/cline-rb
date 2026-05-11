@@ -111,10 +111,7 @@ module Cline
                 # Just wait for it.
                 while cli_running
                   if config.tasks
-                    if config.tasks[task_id]
-                      @current_task = config.tasks[task_id]
-                      break
-                    end
+                    break if config.tasks[task_id]
 
                     config.tasks.refresh!
                   else
@@ -122,9 +119,12 @@ module Cline
                   end
                   sleep 0.1
                 end
+                # The CLI could be already finished, but we still need to monitor the eventual messages.
+                @current_task = config&.tasks && config.tasks[task_id]
+                log_debug 'Found task correctly' if @current_task
                 # [Hash{Integer => Usage}] All usages, per timestamp, for logging purposes
                 usages = {}
-                @current_task.monitor_messages(
+                @current_task&.monitor_messages(
                   on_message: proc do |message, last, previous_version|
                     log_debug do
                       usages[message.ts] = message.usage if message.usage
@@ -163,7 +163,7 @@ module Cline
         cli_running = false
         task_monitor_thread&.join
       end
-      result[:message] = @current_task.messages.last if @current_task
+      result[:message] = @current_task&.messages&.last
       result
     end
 
@@ -179,8 +179,10 @@ module Cline
         log_debug "Interrupt current command with PID #{cline_pid}"
         all_pids = [cline_pid] + get_child_pids_recursive(cline_pid)
         log_debug "Found process tree PIDs: #{all_pids.join(', ')}"
-        all_pids.each do |pid|
-          Process.kill('KILL', pid)
+        @interrupted_on_purpose = true
+        all_pids.reverse.each do |pid|
+          log_debug "Kill process #{pid}"
+          Utils::Os.kill(pid)
         end
       else
         log_debug 'No Cline command started, so no need to interrupt anything'
@@ -237,11 +239,13 @@ module Cline
         end
       ).call do
         log_debug "Launch CLI `#{cmd}`..."
+        @interrupted_on_purpose = false
         stdout_lines = []
         stderr_lines = []
         exit_status = nil
         Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
           @cline_pid = wait_thr.pid
+          log_debug "Cline process started with PID #{@cline_pid}"
           stdin.close
           [
             # Parse stdout
@@ -261,9 +265,9 @@ module Cline
             end
           ].each(&:join)
           exit_status = wait_thr.value.exitstatus
+          log_debug "Cline process `#{cmd}` with PID #{@cline_pid} exited with status: #{exit_status}#{' (interrupted on purpose)' if @interrupted_on_purpose}"
           @cline_pid = nil
-          log_debug "CLI `#{cmd}` exited with status: #{exit_status}"
-          if !expected_exit_status.nil? && exit_status != expected_exit_status
+          if !@interrupted_on_purpose && !expected_exit_status.nil? && exit_status != expected_exit_status
             raise UnexpectedExitStatusError, "CLI `#{cmd}` exited with status #{exit_status} (expected #{expected_exit_status})"
           end
         end

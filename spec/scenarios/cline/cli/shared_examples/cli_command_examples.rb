@@ -79,9 +79,18 @@ shared_examples 'a cli command' do |opts|
 
   it 'does not echo stdout content to $stdout when stdout_echo is false (default)' do
     mock_commands(opts[:expected_cli] => { stdout: "Executing Cline CLI\nSuccess\n" })
-    allow($stdout).to receive(:write)
+    stdout_messages = []
+    allow($stdout).to receive(:write) do |message|
+      stdout_messages << message
+    end
     described_class.new(stdout_echo: false).public_send(opts[:name], *opts[:args])
-    expect($stdout).not_to have_received(:write)
+    # Check that every call was only made for debug logs if any
+    expect(
+      stdout_messages.reject do |message|
+        message.start_with?('[CLINE DEBUG] - ') ||
+          message.start_with?('[CLINE TEST DEBUG] - ')
+      end
+    ).to be_empty
   end
 
   it 'raises UnexpectedExitStatusError when exit status is not expected' do
@@ -93,18 +102,19 @@ shared_examples 'a cli command' do |opts|
   end
 
   it 'has correct cline_pid value while running command' do
-    mock_commands(opts[:expected_cli] => { pid: 9876, running_time_secs: 0.5 })
+    mock_commands(opts[:expected_cli] => { running_time_secs: 1 })
     cli = described_class.new
     # Create another thread to capture PID while the command is running
-    captured_pid = nil
+    captured_pids = nil
     pid_thread = Thread.new do
       # Wait a bit for command execution to start
-      sleep 0.1
-      captured_pid = cli.cline_pid
+      sleep 0.1 until cli.cline_pid
+      captured_pids = [cli.cline_pid] + get_child_pids_recursive(cli.cline_pid)
     end
     cli.public_send(opts[:name], *opts[:args])
     pid_thread.join
-    expect(captured_pid).to eq(9876)
+    # The PID of the command Ruby process should be part of children (inclusive) of cline_pid
+    expect(captured_pids).to include(issued_commands.first[:pid])
   end
 
   it 'has nil cline_pid after running command' do

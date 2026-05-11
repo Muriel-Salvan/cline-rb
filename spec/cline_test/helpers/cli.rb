@@ -20,56 +20,45 @@ module ClineTest
       #   * pid [Integer, #call] The PID of the running command, or a code block that will return it lazily. Defaults to 1234.
       #     * Return [Integer] The PID to be considered.
       #   * running_time_secs [Float] The time this command runs. Defaults to 0.
-      #   * exec [#call, nil] Code to be executed when this command is run, or nil if none. Defaults to nil.
-      #     This block will always be executed in a spearate thread that is then joined on the exitstatus evaluation.
-      #     * Param mocked_result [Hash] The same mocked command description (see #mock_commands) that can be modified dynamically.
+      #   * eval [String] Code to be executed using an eval in the Cline process. Defaults to ''.
+      #   * task [Hash{Symbol => Object}, nil] Description of a task that the Cline process should create, or nil if none. Defaults to nil.
+      #     This property should be used only with a command using the --config flag.
+      #     Here is the list of all properties that can be set for the task description:
+      #     * messages [Array<Hash{Symbol => Object}, Array<Hash{Symbol => Object}>>, nil] List of messages (or messages groups) to be created,
+      #       or nil if none.
+      #       Each message (or group) from the list will be created with 0.2 seconds interval.
       def mock_commands(commands = {})
-        @issued_commands = []
         # Mock Open3.popen3 with spies pattern
         allow(Open3).to receive(:popen3) do |cmd, &block|
-          command, stdin =
-            if cmd =~ /^(.+) < ([^\s]+)$/
-              [Regexp.last_match(1), File.read(Regexp.last_match(2))]
-            else
-              [cmd, nil]
-            end
-          issued_commands << { command:, stdin: }
-          mocked_result = {
-            stdout: '',
-            stderr: '',
-            exit_status: 0,
-            pid: 1234,
-            running_time_secs: 0,
-            exec: nil,
-            exec_thread: nil
-          }.merge(commands[command] || {})
-          exec_thread = mocked_result[:exec] ? Thread.new { mocked_result[:exec].call(mocked_result) } : nil
-          mocked_process_status = instance_double(Process::Status)
-          allow(mocked_process_status).to receive(:exitstatus) do
-            exec_thread&.join
-            sleep mocked_result[:running_time_secs]
-            mocked_result[:exit_status]
-          end
-          mocked_process_waiter = instance_double(
-            Process::Waiter,
-            value: mocked_process_status
+          stub_conf_file = '.cline_test/tmp/cli_stub.json'
+          FileUtils.mkdir_p File.dirname(stub_conf_file)
+          File.write(
+            stub_conf_file,
+            {
+              stdout: '',
+              stderr: '',
+              exit_status: 0,
+              running_time_secs: 0,
+              eval: '',
+              task: nil
+            }.merge(commands[cmd =~ /^(.+) < [^\s]+$/ ? Regexp.last_match(1) : cmd] || {}).to_json
           )
-          allow(mocked_process_waiter).to receive(:pid) do
-            mocked_result[:pid].is_a?(Proc) ? mocked_result[:pid].call : mocked_result[:pid]
-          end
-          block.call(
-            instance_double(IO, close: nil),
-            StringIO.new(mocked_result[:stdout]),
-            StringIO.new(mocked_result[:stderr]),
-            mocked_process_waiter
-          )
+          stubbed_cmd = cmd.gsub(/^cline /, 'ruby spec/cline_test/stubs/cline ')
+          log_debug { "Execute `#{stubbed_cmd}` with stub conf:\n#{JSON.pretty_generate(JSON.parse(File.read(stub_conf_file)))}" }
+          Cli.original_popen3.call(stubbed_cmd, &block)
         end
       end
 
+      # Get the list of Cline CLI commands that were issued during this test run
+      #
       # @return [Array<Hash{Symbol => Object}>] List of commands that have been issued:
+      #   * pid [Integer] The PID of the Cline process
       #   * command [String] The command itself
       #   * stdin [String, nil] The stdin that was redirected to this command, or nil if none
-      attr_reader :issued_commands
+      def issued_commands
+        calls_file = '.cline_test/tmp/cli_calls.json'
+        File.exist?(calls_file) ? JSON.parse(File.read(calls_file), symbolize_names: true) : []
+      end
 
       # Expect issued commands to match a list of commands
       #
@@ -77,7 +66,7 @@ module ClineTest
       #   * command [String] The expected command itself (serves as the default value when used as a String instead of a Hash).
       #   * stdin [String, nil] Expected stdin content with this command, or nil if none. Defaults to nil.
       def expect_issued_commands(expected_commands)
-        expect(issued_commands).to eq(
+        expect(issued_commands.map { |command| command.slice(*%i[command stdin]) }).to eq(
           expected_commands.map do |expected_command|
             # Normalize and set default values
             {

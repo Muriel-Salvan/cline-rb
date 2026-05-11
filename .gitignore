@@ -1,2 +1,5 @@
 # This repo builds a Rubygem. No lock file then.
 Gemfile.lock
+
+# Don't commit the temporary directory used by tests in debug mode
+.cline_test

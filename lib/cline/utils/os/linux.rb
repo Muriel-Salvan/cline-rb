@@ -9,6 +9,17 @@ module Cline
         def user_home_dir
           `eval echo ~$USER`.strip
         end
+
+        # Kill a process
+        # Handles errors gracefully in case the process has already disappeared.
+        #
+        # @param pid [Integer] Process to kill
+        def kill(pid)
+          Process.kill('TERM', pid)
+        rescue Errno::ESRCH
+          # Could be that the process naturally died before we interrupted it
+          log_debug "Process #{pid} was already killed"
+        end
       end
     end
   end

@@ -24,13 +24,15 @@ module Cline
       @monitoring = true
       @monitoring_thread = Thread.new do
         file_mtime = nil
-        while @monitoring
+        loop do
           new_file_mtime = File.exist?(@file) ? File.mtime(@file) : nil
           if new_file_mtime != file_mtime
             # There is an update
             @on_change.call(new_file_mtime)
             file_mtime = new_file_mtime
           end
+          break unless @monitoring
+
           sleep @monitoring_interval_secs
         end
       end
