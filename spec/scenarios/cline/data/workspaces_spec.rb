@@ -107,6 +107,45 @@ describe Cline::Data, '#workspaces' do
       end
     end
 
+    describe '#save' do
+      it 'persists modified attributes to the workspaceState.json file' do
+        with_workspace(
+          settings: {
+            localSkillsToggles: { skill1: true, skill2: false },
+            unknownParameter: 'Unknown value'
+          }
+        ) do |workspace|
+          settings = workspace.settings
+          settings.local_skills_toggles['skill1'] = false
+          settings.local_skills_toggles['skill3'] = true
+          settings.save
+
+          file_content = JSON.parse(File.read(File.join(workspace.dir, 'workspaceState.json')))
+          expect(file_content['localSkillsToggles']['skill1']).to be false
+          expect(file_content['localSkillsToggles']['skill2']).to be false
+          expect(file_content['localSkillsToggles']['skill3']).to be true
+          expect(file_content['unknownParameter']).to eq 'Unknown value'
+        end
+      end
+
+      it 'persists a newly instantiated workspace settings file' do
+        with_data(workspaces: { 'test-workspace' => {} }) do |data|
+          workspace = data.workspaces['test-workspace']
+          settings = workspace.settings(create: true)
+          settings.local_skills_toggles = Cline::Utils::Schema.map(:boolean).new
+          settings.local_skills_toggles['skill1'] = true
+          settings.save
+          expect(JSON.parse(File.read(File.join(workspace.dir, 'workspaceState.json')))).to eq (
+            {
+              'localSkillsToggles' => {
+                'skill1' => true
+              }
+            }
+          )
+        end
+      end
+    end
+
     describe '#==' do
       it 'returns true when 2 workspaces from different data directories have the same settings' do
         settings_hash = {

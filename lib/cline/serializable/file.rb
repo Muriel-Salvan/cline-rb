@@ -8,10 +8,6 @@ module Cline
     # - `.open(file) -> [Object, nil]` Provides a new instance initialized from the file, or nil if no file.
     # - `.monitor_file_changes(file, on_change)` Provides a monitor to be notified on file changes.
     # - `#file -> [String]` The file from which this object was initialized.
-    #
-    # Requires:
-    # - `#to_file(file)` Save an instance in the file
-    # - `#from_file` (Optional) Initialize the instance from the file
     module File
       # @!group Internal
 
@@ -88,7 +84,6 @@ module Cline
       # @param file [String] The file to be used to initialize this instance
       def initialize_from_file(file)
         @file = file
-        from_file if respond_to?(:from_file, true)
       end
     end
   end

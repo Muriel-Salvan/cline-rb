@@ -12,7 +12,7 @@ module Cline
     include Enumerable
 
     # Delegates hash methods to the internal models map
-    def_delegators :models, *%i[[] each empty? first key? keys size values]
+    def_delegators :models, *%i[[] []= each empty? first key? keys size values]
 
     # Equality check
     #
@@ -52,7 +52,7 @@ module Cline
 
     protected
 
-    # @return [Array<Model>] List of models
+    # @return [Hash{String => Model}] List of models
     attr_reader :models
   end
 end

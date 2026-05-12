@@ -14,6 +14,16 @@ module Cline
     # - `.from_cline_json(json) -> Object` The deserializer that returns an instance from a JSON string.
     # - `#to_cline_json -> String` The serializer that returns a JSON string from the instance.
     module ClineData
+      # @!group Public API
+
+      # Save the instance into the Cline data
+      def save
+        raise 'This instance has not been initialized from a Cline directory' unless file
+
+        FileUtils.mkdir_p(::File.dirname(file))
+        ::File.write(file, to_cline_json)
+      end
+
       # @!group Internal
 
       # Class methods that should be made accessible to any class including our mixin
@@ -102,15 +112,6 @@ module Cline
           end
           file_content
         end
-      end
-
-      # Save the instance into the Cline data
-      #
-      # @param base_dir [String] Base directory in which the instance should be saved
-      def to_cline_data(base_dir = dir)
-        json_file = ::File.join(base_dir, self.class.cline_json_file)
-        FileUtils.mkdir_p(::File.dirname(json_file))
-        ::File.write(json_file, to_cline_json)
       end
 
       # Include the mixin and configure it with the JSON file path

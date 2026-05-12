@@ -95,6 +95,47 @@ describe Cline::Data, '#cline_models' do
     end
   end
 
+  describe '#save' do
+    it 'persists modified models to the Cline json file' do
+      with_data(
+        cline_models: {
+          'test/model-1' => {
+            'name' => 'Test Model 1',
+            'maxTokens' => 1000,
+            'unknownParameter' => 'Unknown value'
+          }
+        }
+      ) do |data|
+        models = data.cline_models
+        models['test/model-1'].max_tokens = 1500
+        models['test/model-2'] = Cline::Model.new(name: 'Test Model 2', max_tokens: 2000)
+        models.save
+        file_content = JSON.parse(File.read(File.join(data.dir, 'cache/cline_models.json')))
+        expect(file_content['test/model-1']['name']).to eq 'Test Model 1'
+        expect(file_content['test/model-1']['maxTokens']).to eq 1500
+        expect(file_content['test/model-1']['unknownParameter']).to eq 'Unknown value'
+        expect(file_content['test/model-2']['name']).to eq 'Test Model 2'
+        expect(file_content['test/model-2']['maxTokens']).to eq 2000
+      end
+    end
+
+    it 'persists a newly instantiated Cline JSON file' do
+      with_data(cline_models: nil) do |data|
+        models = data.cline_models(create: true)
+        models['test/model-1'] = Cline::Model.new(name: 'Test Model 1', max_tokens: 1000)
+        models.save
+        expect(JSON.parse(File.read(File.join(data.dir, 'cache/cline_models.json')))).to eq(
+          {
+            'test/model-1' => {
+              'name' => 'Test Model 1',
+              'maxTokens' => 1000
+            }
+          }
+        )
+      end
+    end
+  end
+
   describe '#==' do
     it 'returns true when 2 data instances have the same models' do
       models_hash = {

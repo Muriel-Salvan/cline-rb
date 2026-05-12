@@ -354,6 +354,42 @@ describe Cline::Data, '#global_settings' do
     end
   end
 
+  describe '#save' do
+    it 'persists modified attributes to the globalState.json file' do
+      with_data(
+        global_settings: {
+          clineWebToolsEnabled: true,
+          focusChainSettings: { enabled: true, remindClineInterval: 5 },
+          unknownParameter: 'Unknown value'
+        }
+      ) do |data|
+        settings = data.global_settings
+        settings.cline_web_tools_enabled = false
+        settings.save
+        file_content = JSON.parse(File.read(File.join(data.dir, 'globalState.json')))
+        expect(file_content['clineWebToolsEnabled']).to be false
+        expect(file_content['focusChainSettings']['enabled']).to be true
+        expect(file_content['focusChainSettings']['remindClineInterval']).to eq 5
+        expect(file_content['unknownParameter']).to eq 'Unknown value'
+      end
+    end
+
+    it 'persists a newly instantiated global settings file' do
+      with_data(global_settings: nil) do |data|
+        settings = data.global_settings(create: true)
+        settings.cline_web_tools_enabled = true
+        settings.save
+        expect(JSON.parse(File.read(File.join(data.dir, 'globalState.json')), symbolize_names: true)).to eq(
+          {
+            clineWebToolsEnabled: true,
+            dismissedBanners: [],
+            workspaceRoots: []
+          }
+        )
+      end
+    end
+  end
+
   describe '#==' do
     it 'returns true when 2 global settings from different data directories have the same content' do
       settings_hash = {

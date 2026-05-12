@@ -119,6 +119,39 @@ describe Cline::Data, '#secrets' do
     end
   end
 
+  describe '#save' do
+    it 'persists modified attributes to the secrets.json file' do
+      with_data(
+        secrets: {
+          clineApiKey: 'sk_abf',
+          openAiApiKey: 'openapiapikey',
+          unknownParameter: 'Unknown value'
+        }
+      ) do |data|
+        secrets = data.secrets
+        secrets.cline_api_key = Cline::SecretString.new('sk_updated')
+        secrets.save
+        file_content = JSON.parse(File.read(File.join(data.dir, 'secrets.json')))
+        expect(file_content['clineApiKey']).to eq 'sk_updated'
+        expect(file_content['openAiApiKey']).to eq 'openapiapikey'
+        expect(file_content['unknownParameter']).to eq 'Unknown value'
+      end
+    end
+
+    it 'persists a newly instantiated secrets file' do
+      with_data(secrets: nil) do |data|
+        secrets = data.secrets(create: true)
+        secrets.cline_api_key = Cline::SecretString.new('sk_newkey')
+        secrets.save
+        expect(JSON.parse(File.read(File.join(data.dir, 'secrets.json')), symbolize_names: true)).to eq(
+          {
+            clineApiKey: 'sk_newkey'
+          }
+        )
+      end
+    end
+  end
+
   describe '#==' do
     it 'returns true when 2 secrets from different data directories have the same content' do
       secrets_hash = {

@@ -30,7 +30,15 @@ module Cline
 
             include Enumerable
 
-            def_delegators :elements_hash, *%i[[] each empty? first key? keys size to_hash values]
+            def_delegators :elements_hash, *%i[[] []= each empty? first key? keys size to_hash values]
+
+            # Constructor
+            #
+            # @param elements_hash [Hash{String => shale_type}] The elements to initialize the structure with
+            def initialize(elements_hash = {})
+              super()
+              @elements_hash = elements_hash
+            end
 
             # @!group Internal
 

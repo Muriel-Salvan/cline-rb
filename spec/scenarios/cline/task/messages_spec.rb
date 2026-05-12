@@ -98,6 +98,63 @@ describe Cline::Task, '#messages' do
     end
   end
 
+  describe '#save' do
+    it 'persists modified messages to the ui_messages.json file' do
+      with_task(
+        messages: [
+          { ts: 100, type: 'user', text: 'Hello', unknownAttribute: 'Unknown value' },
+          { ts: 101, type: 'assistant', text: 'Hi there' }
+        ]
+      ) do |task|
+        messages = task.messages
+        messages.first.text = 'Updated hello'
+        messages << Cline::Message.new(
+          ts: 102,
+          type: 'say',
+          say: 'text',
+          text: 'Another question'
+        )
+        messages.save
+        file_content = JSON.parse(File.read(File.join(task.dir, 'ui_messages.json')))
+        expect(file_content.size).to eq 3
+        expect(file_content[0]['ts']).to eq 100
+        expect(file_content[0]['type']).to eq 'user'
+        expect(file_content[0]['text']).to eq 'Updated hello'
+        expect(file_content[0]['unknownAttribute']).to eq 'Unknown value'
+        expect(file_content[1]['ts']).to eq 101
+        expect(file_content[1]['type']).to eq 'assistant'
+        expect(file_content[1]['text']).to eq 'Hi there'
+        expect(file_content[2]['ts']).to eq 102
+        expect(file_content[2]['type']).to eq 'say'
+        expect(file_content[2]['say']).to eq 'text'
+        expect(file_content[2]['text']).to eq 'Another question'
+      end
+    end
+
+    it 'persists a newly instantiated ui_messages file' do
+      with_task(messages: nil) do |task|
+        messages = task.messages(create: true)
+        messages << Cline::Message.new(
+          ts: 100,
+          type: 'say',
+          say: 'text',
+          text: 'Hello'
+        )
+        messages.save
+        expect(JSON.parse(File.read(File.join(task.dir, 'ui_messages.json')), symbolize_names: true)).to eq (
+          [
+            {
+              ts: 100,
+              type: 'say',
+              say: 'text',
+              text: 'Hello'
+            }
+          ]
+        )
+      end
+    end
+  end
+
   it 'raises Errno::EACCES after retrying 3 times when the file cannot be read' do
     with_task(
       messages: [

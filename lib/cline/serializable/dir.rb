@@ -8,10 +8,6 @@ module Cline
     # - `.open(dir) -> [Object, nil]` Provides a new instance initialized from the directory, or nil if no directory.
     # - `#dir -> [String]` The directory from which this object was initialized.
     # - `#subdir(path) -> [String]` Provide a subdirectory path from the directory the object was initialized from.
-    #
-    # Requires:
-    # - `#to_dir(dir)` Save an instance in a directory
-    # - `#from_dir` (Optional) Initialize the instance from the directory
     module Dir
       # Class methods that should be made accessible to any class including our mixin
       module ClassMethods
@@ -71,7 +67,6 @@ module Cline
       def initialize_from_dir(dir, create:)
         @dir = dir
         @create = create
-        from_dir if respond_to?(:from_dir, true)
       end
 
       # Return the path to a sub-directory of our instance directory

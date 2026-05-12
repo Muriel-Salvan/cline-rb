@@ -91,6 +91,59 @@ describe Cline::Data, '#mcp_settings' do
     end
   end
 
+  describe '#save' do
+    it 'persists modified attributes to the cline_mcp_settings.json file' do
+      with_data(
+        mcp_settings: {
+          mcpServers: {
+            'test-server-1': {
+              autoApprove: %w[file-read command-run],
+              disabled: false,
+              timeout: 30,
+              type: 'stdio',
+              unknownAttribute: 'Unknown value'
+            }
+          }
+        }
+      ) do |data|
+        settings = data.mcp_settings
+        settings.mcp_servers['test-server-1'].disabled = true
+        settings.mcp_servers['test-server-2'] = Cline::McpSettings::McpServer.new(timeout: 45)
+        settings.save
+        file_content = JSON.parse(File.read(File.join(data.dir, 'settings/cline_mcp_settings.json')))
+        expect(file_content['mcpServers']['test-server-1']['disabled']).to be true
+        expect(file_content['mcpServers']['test-server-1']['autoApprove']).to eq %w[file-read command-run]
+        expect(file_content['mcpServers']['test-server-1']['timeout']).to eq 30
+        expect(file_content['mcpServers']['test-server-1']['type']).to eq 'stdio'
+        expect(file_content['mcpServers']['test-server-1']['unknownAttribute']).to eq 'Unknown value'
+        expect(file_content['mcpServers']['test-server-2']['timeout']).to eq 45
+      end
+    end
+
+    it 'persists a newly instantiated MCP settings file' do
+      with_data(mcp_settings: nil) do |data|
+        settings = data.mcp_settings(create: true)
+        settings.mcp_servers = Cline::Utils::Schema.map(Cline::McpSettings::McpServer).new
+        settings.mcp_servers['test-server'] = Cline::McpSettings::McpServer.new(
+          disabled: false,
+          type: 'sse',
+          url: 'http://localhost:8080/sse'
+        )
+        settings.save
+        expect(JSON.parse(File.read(File.join(data.dir, 'settings/cline_mcp_settings.json')))).to eq(
+          'mcpServers' => {
+            'test-server' => {
+              'autoApprove' => [],
+              'disabled' => false,
+              'type' => 'sse',
+              'url' => 'http://localhost:8080/sse'
+            }
+          }
+        )
+      end
+    end
+  end
+
   describe '#==' do
     it 'returns true when 2 MCP settings from different data directories have the same content' do
       settings_hash = {
