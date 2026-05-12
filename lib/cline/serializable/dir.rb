@@ -3,7 +3,7 @@ module Cline
     # Add features to initialize from and save an object to a directory.
     #
     # Provides:
-    # - `.from_dir(dir) -> [Object, nil]` Provides a new instance initialized from the directory, or nil if no directory.
+    # - `.open(dir) -> [Object, nil]` Provides a new instance initialized from the directory, or nil if no directory.
     # - `#dir -> [String]` The directory from which this object was initialized.
     # - `#subdir(path) -> [String]` Provide a subdirectory path from the directory the object was initialized from.
     #
@@ -19,9 +19,10 @@ module Cline
         #
         # @param dir [String] Directory used to initialize the new instance
         # @param args [Array] Extra parameters to give to the instance's constructor
+        # @param create [Boolean] Should the directory be created if it does not exist?
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
         # @return [Object, nil] The instance initialized from this directory, or nil if none
-        def from_dir(dir, *args, **kwargs)
+        def open(dir, *args, create: false, **kwargs)
           return unless ::File.exist?(dir) && ::File.directory?(dir)
 
           instance = new(*args, **kwargs)

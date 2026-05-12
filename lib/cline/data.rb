@@ -12,7 +12,7 @@ module Cline
     #
     # @return [Workspaces] Set of workspaces associated to this data directory
     def workspaces
-      @workspaces ||= Workspaces.from_dir(subdir('workspaces'))
+      @workspaces ||= Workspaces.open(subdir('workspaces'))
     end
 
     # Get tasks from this data directory
@@ -20,7 +20,7 @@ module Cline
     # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     # @return [Tasks] Set of tasks associated to this data directory
     def tasks(cline_models: self.cline_models)
-      @tasks ||= Tasks.from_dir(subdir('tasks'), cline_models:)
+      @tasks ||= Tasks.open(subdir('tasks'), cline_models:)
     end
 
     # Get global settings stored in this data directory

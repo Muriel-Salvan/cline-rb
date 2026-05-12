@@ -283,7 +283,7 @@ module Cline
     #
     # @return [Config] The config instance used by this Cli instance
     def config
-      @config ||= @config_dir.nil? ? Config.global : Config.from_dir(@config_dir)
+      @config ||= @config_dir.nil? ? Config.global : Config.open(@config_dir)
     end
 
     # Get all child PIDs recursively for a given parent PID

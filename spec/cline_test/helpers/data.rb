@@ -21,7 +21,7 @@ module ClineTest
       # @yieldparam [String] The data directory
       def with_data(global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, tasks: nil, cline_models: nil)
         with_data_dir(global_settings:, mcp_settings:, secrets:, workspaces:, tasks:, cline_models:) do |data_dir|
-          yield Cline::Data.from_dir(data_dir)
+          yield Cline::Data.open(data_dir)
         end
       end
 

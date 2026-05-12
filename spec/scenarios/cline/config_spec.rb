@@ -2,7 +2,7 @@ describe Cline::Config do
   describe '#skills' do
     it 'supports no skills information' do
       with_config_dir(skills: nil) do |config_dir|
-        expect(described_class.from_dir(config_dir).skills).to be_nil
+        expect(described_class.open(config_dir).skills).to be_nil
       end
     end
 
@@ -13,7 +13,7 @@ describe Cline::Config do
           'test-skill-2' => {}
         }
       ) do |config_dir|
-        skills = described_class.from_dir(config_dir).skills
+        skills = described_class.open(config_dir).skills
         expect(skills.keys).to eq %w[test-skill-1 test-skill-2]
         expect(skills['test-skill-1'].name).to eq 'test-skill-1'
         expect(skills['test-skill-2'].name).to eq 'test-skill-2'
@@ -24,7 +24,7 @@ describe Cline::Config do
   describe '#data' do
     it 'loads data from the config/data directory' do
       with_config_dir(global_settings: { cline_web_tools_enabled: true }) do |config_dir|
-        config = described_class.from_dir(config_dir)
+        config = described_class.open(config_dir)
         expect(config.data.global_settings.cline_web_tools_enabled).to be true
       end
     end
@@ -39,7 +39,7 @@ describe Cline::Config do
           }
         }
       ) do |config_dir|
-        config = described_class.from_dir(config_dir)
+        config = described_class.open(config_dir)
         expect(config.workspaces).to be(config.data.workspaces)
       end
     end
@@ -52,14 +52,14 @@ describe Cline::Config do
           }
         }
       ) do |config_dir|
-        config = described_class.from_dir(config_dir)
+        config = described_class.open(config_dir)
         expect(config.tasks).to be(config.data.tasks)
       end
     end
 
     it 'delegates global_settings' do
       with_config_dir(global_settings: { cline_web_tools_enabled: true }) do |config_dir|
-        config = described_class.from_dir(config_dir)
+        config = described_class.open(config_dir)
         expect(config.global_settings).to be(config.data.global_settings)
       end
     end
@@ -70,7 +70,7 @@ describe Cline::Config do
           mcp_servers: { server1: { disabled: false } }
         }
       ) do |config_dir|
-        config = described_class.from_dir(config_dir)
+        config = described_class.open(config_dir)
         expect(config.mcp_settings).to be(config.data.mcp_settings)
       end
     end
@@ -81,9 +81,9 @@ describe Cline::Config do
       skills = { 'test-skill' => {} }
       global_settings = { cline_web_tools_enabled: true }
       with_config_dir(skills:, global_settings: global_settings) do |config_dir1|
-        config1 = described_class.from_dir(config_dir1)
+        config1 = described_class.open(config_dir1)
         with_config_dir(skills:, global_settings: global_settings) do |config_dir2|
-          config2 = described_class.from_dir(config_dir2)
+          config2 = described_class.open(config_dir2)
           expect(config1).not_to equal(config2)
           expect(config1).to eq(config2)
         end
@@ -92,9 +92,9 @@ describe Cline::Config do
 
     it 'returns false for different skills' do
       with_config_dir(skills: { 'test-skill-1' => {} }) do |config_dir1|
-        config1 = described_class.from_dir(config_dir1)
+        config1 = described_class.open(config_dir1)
         with_config_dir(skills: { 'test-skill-2' => {} }) do |config_dir2|
-          config2 = described_class.from_dir(config_dir2)
+          config2 = described_class.open(config_dir2)
           expect(config1).not_to eq(config2)
         end
       end
@@ -103,9 +103,9 @@ describe Cline::Config do
     it 'returns false for different data' do
       skills = { 'test-skill' => {} }
       with_config_dir(skills:, global_settings: { cline_web_tools_enabled: true }) do |config_dir1|
-        config1 = described_class.from_dir(config_dir1)
+        config1 = described_class.open(config_dir1)
         with_config_dir(global_settings: { cline_web_tools_enabled: false }) do |config_dir2|
-          config2 = described_class.from_dir(config_dir2)
+          config2 = described_class.open(config_dir2)
           expect(config1).not_to eq(config2)
         end
       end

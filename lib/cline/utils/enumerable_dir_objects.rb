@@ -4,7 +4,7 @@ module Cline
   module Utils
     # Simple mixin providing an Enumerable and Set interfaces on objects initialized from
     #   a list of sub-directories.
-    # Classes including this mixin should call Class.from_dir(dir) to instantiate a new instance initialized from a directory,
+    # Classes including this mixin should call Class.open(dir) to instantiate a new instance initialized from a directory,
     #   and implement the method object_from(dir) to return the corresponding name and object parsed from a sub-directory.
     module EnumerableDirObjects
       extend Forwardable
@@ -55,7 +55,7 @@ module Cline
           #   0. [String] The object name
           #   1. [Object] The object itself
           define_method :object_from do |dir|
-            [File.basename(dir), object_class.from_dir(dir, *args, **kwargs)]
+            [File.basename(dir), object_class.open(dir, *args, **kwargs)]
           end
         end
       end

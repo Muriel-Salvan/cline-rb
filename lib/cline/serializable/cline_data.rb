@@ -18,21 +18,9 @@ module Cline
 
       # Class methods that should be made accessible to any class including our mixin
       module ClassMethods
+        # @!group Internal
+
         include File::ClassMethods
-
-        # Instantiate an instance of the including class from a given file.
-        #
-        # @param file [String] File path used to initialize the new instance
-        # @param args [Array] Extra parameters to give to the instance's constructor
-        # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
-        # @return [Object, nil] The instance, or nil if no file exists
-        def from_file(file, *args, **kwargs)
-          return unless ::File.exist?(file)
-
-          instance = from_cline_json(safe_read(file), *args, **kwargs)
-          instance.initialize_from_file(file)
-          instance
-        end
 
         # Instantiate an instance of the including class from a base directory.
         #
@@ -74,6 +62,20 @@ module Cline
           )
         end
 
+        # Instantiate an instance of the including class from a given file.
+        #
+        # @param file [String] File path used to initialize the new instance
+        # @param args [Array] Extra parameters to give to the instance's constructor
+        # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
+        # @return [Object, nil] The instance, or nil if no file exists
+        def from_file(file, *args, **kwargs)
+          return unless ::File.exist?(file)
+
+          instance = from_cline_json(safe_read(file), *args, **kwargs)
+          instance.initialize_from_file(file)
+          instance
+        end
+
         private
 
         # Try to read a file with retries in case other processes are using it.
@@ -101,6 +103,15 @@ module Cline
         end
       end
 
+      # Save the instance into the Cline data
+      #
+      # @param base_dir [String] Base directory in which the instance should be saved
+      def to_cline_data(base_dir = dir)
+        json_file = ::File.join(base_dir, self.class.cline_json_file)
+        FileUtils.mkdir_p(::File.dirname(json_file))
+        ::File.write(json_file, to_cline_json)
+      end
+
       # Include the mixin and configure it with the JSON file path
       #
       # @param calling_class [Class] The class that is calling this method
@@ -124,15 +135,6 @@ module Cline
       # @param base [Class] The base class
       def self.included(base)
         base.extend(ClassMethods)
-      end
-
-      # Save the instance into the Cline data
-      #
-      # @param base_dir [String] Base directory in which the instance should be saved
-      def to_cline_data(base_dir = dir)
-        json_file = ::File.join(base_dir, self.class.cline_json_file)
-        FileUtils.mkdir_p(::File.dirname(json_file))
-        ::File.write(json_file, to_cline_json)
       end
     end
   end

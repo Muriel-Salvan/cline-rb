@@ -11,7 +11,7 @@ require 'fileutils'
 require 'tmpdir'
 
 cline_models = Cline::Models.new({})
-original_tasks = Cline::Tasks.from_dir(tasks_dir, cline_models:)
+original_tasks = Cline::Tasks.open(tasks_dir, cline_models:)
 # Replicate the tasks dir into a temporary directory using cline-rb readers and writers
 Dir.mktmpdir do |temp_dir|
   original_tasks.each do |task_name, task|
@@ -23,7 +23,7 @@ Dir.mktmpdir do |temp_dir|
     end
   end
   # Load the temporary directory
-  new_tasks = Cline::Tasks.from_dir(temp_dir, cline_models:)
+  new_tasks = Cline::Tasks.open(temp_dir, cline_models:)
   # Compare both
   if original_tasks == new_tasks
     puts 'Tasks compatibility check - Success'

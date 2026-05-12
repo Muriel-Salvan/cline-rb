@@ -12,14 +12,14 @@ module Cline
     #
     # @return [Config] The global config for the current user
     def self.global
-      @global ||= Config.from_dir("#{Utils::Os.user_home_dir}/.cline")
+      @global ||= Config.open("#{Utils::Os.user_home_dir}/.cline")
     end
 
     # Get the local Cline config
     #
     # @return [Config] The local config for the current repository
     def self.local
-      @local ||= Config.from_dir('.cline')
+      @local ||= Config.open('.cline')
     end
 
     include Serializable::Dir
@@ -31,14 +31,14 @@ module Cline
     #
     # @return [Skills] Set of skills
     def skills
-      @skills ||= Skills.from_dir(subdir('skills'))
+      @skills ||= Skills.open(subdir('skills'))
     end
 
     # Get the data directory from this config
     #
     # @return [Data] The Cline data directory content
     def data
-      @data ||= Data.from_dir(subdir('data'))
+      @data ||= Data.open(subdir('data'))
     end
 
     # Equality check

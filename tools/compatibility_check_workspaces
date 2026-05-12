@@ -10,7 +10,7 @@ require 'cline'
 require 'fileutils'
 require 'tmpdir'
 
-original_config = Cline::Config.from_dir(config_dir)
+original_config = Cline::Config.open(config_dir)
 # Replicate the settings into a temporary directory using cline-rb readers and writers
 Dir.mktmpdir do |temp_dir|
   original_config.workspaces.each do |workspace_name, workspace|
@@ -22,7 +22,7 @@ Dir.mktmpdir do |temp_dir|
     end
   end
   # Load the temporary directory
-  new_workspaces = Cline::Workspaces.from_dir(temp_dir)
+  new_workspaces = Cline::Workspaces.open(temp_dir)
   # Compare both
   if original_config.workspaces == new_workspaces
     puts 'Workspaces compatibility check - Success'
