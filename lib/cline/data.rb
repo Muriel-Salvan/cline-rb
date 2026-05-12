@@ -10,45 +10,51 @@ module Cline
 
     # Get workspaces from this data directory
     #
+    # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Workspaces] Set of workspaces associated to this data directory
-    def workspaces
-      @workspaces ||= Workspaces.open(subdir('workspaces'))
+    def workspaces(create: self.create)
+      @workspaces ||= Workspaces.open(subdir('workspaces'), create:)
     end
 
     # Get tasks from this data directory
     #
     # @param cline_models [Models] The Cline models used to interpret the tasks' messages
+    # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Tasks] Set of tasks associated to this data directory
-    def tasks(cline_models: self.cline_models)
-      @tasks ||= Tasks.open(subdir('tasks'), cline_models:)
+    def tasks(cline_models: self.cline_models, create: self.create)
+      @tasks ||= Tasks.open(subdir('tasks'), cline_models:, create:)
     end
 
     # Get global settings stored in this data directory
     #
+    # @param create [Boolean] Should the data be created if it does not exist?
     # @return [GlobalSettings, nil] Global settings stored in this data directory, or nil if none
-    def global_settings
-      @global_settings ||= GlobalSettings.from_cline_data(@dir)
+    def global_settings(create: self.create)
+      @global_settings ||= GlobalSettings.from_cline_data(dir, create:)
     end
 
     # Get secrets stored in this data directory
     #
+    # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Secrets, nil] Secrets stored in this data directory, or nil if none
-    def secrets
-      @secrets ||= Secrets.from_cline_data(@dir)
+    def secrets(create: self.create)
+      @secrets ||= Secrets.from_cline_data(dir, create:)
     end
 
     # Get MCP settings stored in this data directory
     #
+    # @param create [Boolean] Should the data be created if it does not exist?
     # @return [McpSettings, nil] MCP settings stored in this data directory, or nil if none
-    def mcp_settings
-      @mcp_settings ||= McpSettings.from_cline_data(@dir)
+    def mcp_settings(create: self.create)
+      @mcp_settings ||= McpSettings.from_cline_data(dir, create:)
     end
 
     # Get the cached Cline models
     #
+    # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Models] Cached Cline models
-    def cline_models
-      @cline_models ||= Models.from_cline_data(@dir)
+    def cline_models(create: self.create)
+      @cline_models ||= Models.from_cline_data(dir, create:)
     end
 
     # Equality check

@@ -20,19 +20,23 @@ module Cline
       module ClassMethods
         # @!group Internal
 
-        include File::ClassMethods
-
         # Instantiate an instance of the including class from a base directory.
         #
         # @param base_dir [String] Base directory used to initialize the new instance
         # @param args [Array] Extra parameters to give to the instance's constructor
+        # @param create [Boolean] Should data be created if it does not exist?
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
         # @return [Object, nil] The instance, or nil if no Cline data exists
-        def from_cline_data(base_dir, *args, **kwargs)
-          instance = self.open(::File.join(base_dir, cline_json_file), *args, **kwargs)
+        def from_cline_data(base_dir, *args, create: false, **kwargs)
+          instance = self.open(
+            ::File.join(base_dir, cline_json_file),
+            *args,
+            default: create ? '{}' : nil,
+            **kwargs
+          )
           return unless instance
 
-          instance.initialize_from_dir(base_dir)
+          instance.initialize_from_dir(base_dir, create:)
           instance
         end
 
@@ -53,7 +57,7 @@ module Cline
             ::File.join(base_dir, cline_json_file),
             *args,
             on_change: proc do |instance|
-              instance.initialize_from_dir(base_dir)
+              instance.initialize_from_dir(base_dir, create: false)
               on_change.call(instance)
             end,
             monitoring_interval_secs:,
@@ -62,18 +66,15 @@ module Cline
           )
         end
 
-        # Instantiate an instance of the including class from a given file.
+        # Default factory for instances.
+        # This could be overriden by some classes that need to instantiate differently.
         #
-        # @param file [String] File path used to initialize the new instance
-        # @param args [Array] Extra parameters to give to the instance's constructor
-        # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
-        # @return [Object, nil] The instance, or nil if no file exists
-        def open(file, *args, **kwargs)
-          return unless ::File.exist?(file)
-
-          instance = from_cline_json(safe_read(file), *args, **kwargs)
-          instance.initialize_from_file(file)
-          instance
+        # @param file [String] File to initialize from.
+        # @param args [Array] Extra parameters to give to the instance's constructor.
+        # @param kwargs [Hash] Extra kwargs to give to the instance's constructor.
+        # @return [Object] A new instance.
+        def new_instance(file, *args, **kwargs)
+          from_cline_json(safe_read(file), *args, **kwargs)
         end
 
         private
@@ -118,8 +119,8 @@ module Cline
       # @param cline_json_file [String] The relative JSON file path to use
       def self.include_for(calling_class, cline_json_file)
         calling_class.class_eval do
-          include File
           include Dir
+          include File
           include ClineData
 
           class << self

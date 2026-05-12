@@ -7,9 +7,10 @@ module Cline
 
     # Get the workspace settings
     #
+    # @param create [Boolean] Should the data be created if it does not exist?
     # @return [WorkspaceSettings, nil] The workspace settings or nil if none
-    def settings
-      @settings ||= WorkspaceSettings.from_cline_data(@dir)
+    def settings(create: self.create)
+      @settings ||= WorkspaceSettings.from_cline_data(dir, create:)
     end
 
     # Equality check

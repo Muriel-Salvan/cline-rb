@@ -19,7 +19,7 @@ module Cline
     #   0. [String] The object name
     #   1. [Object] The object itself
     def object_from(dir)
-      [File.basename(dir), Task.open(dir, cline_models: @cline_models)]
+      [File.basename(dir), Task.open(dir, cline_models: @cline_models, create:)]
     end
   end
 end

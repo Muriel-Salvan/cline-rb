@@ -5,6 +5,24 @@ describe Cline::Data, '#cline_models' do
     end
   end
 
+  it 'initializes cline_models when data is initialized with create option' do
+    with_data(cline_models: nil, create: true) do |data|
+      cline_models = data.cline_models
+      expect(cline_models).not_to be_nil
+      expect(cline_models).to be_empty
+      expect(File.exist?(File.join(data.dir, 'cache/cline_models.json'))).to be true
+    end
+  end
+
+  it 'initializes cline_models when create option is given' do
+    with_data(cline_models: nil) do |data|
+      cline_models = data.cline_models(create: true)
+      expect(cline_models).not_to be_nil
+      expect(cline_models).to be_empty
+      expect(File.exist?(File.join(data.dir, 'cache/cline_models.json'))).to be true
+    end
+  end
+
   it 'reads all attributes of the models' do
     with_data(
       cline_models: {

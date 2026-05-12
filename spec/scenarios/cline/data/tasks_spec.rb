@@ -5,6 +5,20 @@ describe Cline::Data, '#tasks' do
     end
   end
 
+  it 'initializes tasks when data is initialized with create option' do
+    with_data(tasks: nil, create: true) do |data|
+      expect(data.tasks).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'tasks'))).to be true
+    end
+  end
+
+  it 'initializes tasks when create option is given' do
+    with_data(tasks: nil) do |data|
+      expect(data.tasks(create: true)).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'tasks'))).to be true
+    end
+  end
+
   it 'returns Tasks instance with correct count when tasks exist' do
     with_data(
       tasks: {

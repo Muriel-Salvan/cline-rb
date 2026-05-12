@@ -5,6 +5,20 @@ describe Cline::Data, '#workspaces' do
     end
   end
 
+  it 'initializes workspaces when data is initialized with create option' do
+    with_data(workspaces: nil, create: true) do |data|
+      expect(data.workspaces).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'workspaces'))).to be true
+    end
+  end
+
+  it 'initializes workspaces when create option is given' do
+    with_data(workspaces: nil) do |data|
+      expect(data.workspaces(create: true)).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'workspaces'))).to be true
+    end
+  end
+
   it 'returns Workspaces instance with correct count when workspaces exist' do
     with_data(
       workspaces: {

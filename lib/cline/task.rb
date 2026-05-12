@@ -10,9 +10,10 @@ module Cline
 
     # Get the task's messages
     #
+    # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Messages, nil] The task's messages, or nil if none
-    def messages
-      @messages ||= Messages.from_cline_data(@dir, cline_models: @cline_models)
+    def messages(create: self.create)
+      @messages ||= Messages.from_cline_data(dir, cline_models: @cline_models, create:)
     end
 
     # Equality check

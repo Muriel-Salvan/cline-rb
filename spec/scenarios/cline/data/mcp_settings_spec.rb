@@ -5,6 +5,20 @@ describe Cline::Data, '#mcp_settings' do
     end
   end
 
+  it 'initializes mcp_settings when data is initialized with create option' do
+    with_data(mcp_settings: nil, create: true) do |data|
+      expect(data.mcp_settings).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'settings/cline_mcp_settings.json'))).to be true
+    end
+  end
+
+  it 'initializes mcp_settings when create option is given' do
+    with_data(mcp_settings: nil) do |data|
+      expect(data.mcp_settings(create: true)).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'settings/cline_mcp_settings.json'))).to be true
+    end
+  end
+
   it 'ignores extra unknown parameters from MCP settings file' do
     with_data(
       mcp_settings: {

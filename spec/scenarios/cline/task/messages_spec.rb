@@ -5,6 +5,24 @@ describe Cline::Task, '#messages' do
     end
   end
 
+  it 'initializes messages when task is initialized with create option' do
+    with_task(messages: nil, create: true) do |task|
+      messages = task.messages
+      expect(messages).not_to be_nil
+      expect(messages).to be_empty
+      expect(File.exist?(File.join(task.dir, 'ui_messages.json'))).to be true
+    end
+  end
+
+  it 'initializes messages when create option is given' do
+    with_task(messages: nil) do |task|
+      messages = task.messages(create: true)
+      expect(messages).not_to be_nil
+      expect(messages).to be_empty
+      expect(File.exist?(File.join(task.dir, 'ui_messages.json'))).to be true
+    end
+  end
+
   it 'reads all attributes of the messages' do
     with_task(
       messages: [

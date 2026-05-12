@@ -5,6 +5,20 @@ describe Cline::Data, '#global_settings' do
     end
   end
 
+  it 'initializes global_settings when data is initialized with create option' do
+    with_data(global_settings: nil, create: true) do |data|
+      expect(data.global_settings).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'globalState.json'))).to be true
+    end
+  end
+
+  it 'initializes global_settings when create option is given' do
+    with_data(global_settings: nil) do |data|
+      expect(data.global_settings(create: true)).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'globalState.json'))).to be true
+    end
+  end
+
   it 'ignores extra unknown parameters from global settings file' do
     with_data(
       global_settings: {

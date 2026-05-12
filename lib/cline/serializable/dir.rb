@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Cline
   module Serializable
     # Add features to initialize from and save an object to a directory.
@@ -23,14 +25,28 @@ module Cline
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
         # @return [Object, nil] The instance initialized from this directory, or nil if none
         def open(dir, *args, create: false, **kwargs)
-          return unless ::File.exist?(dir) && ::File.directory?(dir)
+          unless ::File.exist?(dir) && ::File.directory?(dir)
+            return unless create
 
-          instance = new(*args, **kwargs)
-          instance.initialize_from_dir(dir)
+            FileUtils.mkdir_p dir
+          end
+          instance = new_instance(dir, *args, **kwargs)
+          instance.initialize_from_dir(dir, create:)
           instance
         end
 
-        # @!endgroup
+        # @!group Internal
+
+        # Default factory for instances.
+        # This could be overriden by some classes that need to instantiate differently.
+        #
+        # @param _dir [String] The directory to create the instance for.
+        # @param args [Array] Extra parameters to give to the instance's constructor.
+        # @param kwargs [Hash] Extra kwargs to give to the instance's constructor.
+        # @return [Object] A new instance.
+        def new_instance(_dir, *args, **kwargs)
+          new(*args, **kwargs)
+        end
       end
 
       # @!group Internal
@@ -45,11 +61,16 @@ module Cline
       # @return [String] The directory used for the object's initialization
       attr_reader :dir
 
+      # @return [Boolean] Should data be created if it does not exist?
+      attr_reader :create
+
       # Initialize this instance from a directory
       #
       # @param dir [String] The directory to be used to initialize this instance
-      def initialize_from_dir(dir)
+      # @param create [Boolean] Should data be created if it does not exist?
+      def initialize_from_dir(dir, create:)
         @dir = dir
+        @create = create
         from_dir if respond_to?(:from_dir, true)
       end
 

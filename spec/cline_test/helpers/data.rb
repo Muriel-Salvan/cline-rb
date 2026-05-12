@@ -17,11 +17,12 @@ module ClineTest
       #   Tasks data is itself a hash that can describe the task with the following keys:
       #   * messages [Array<Hash>, nil] The messages to create, or nil if none
       # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
+      # @param create [Boolean] Flag to be given to the data object
       # @yield [data_dir] Block called with the data directory ready
       # @yieldparam [String] The data directory
-      def with_data(global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, tasks: nil, cline_models: nil)
+      def with_data(global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, tasks: nil, cline_models: nil, create: false)
         with_data_dir(global_settings:, mcp_settings:, secrets:, workspaces:, tasks:, cline_models:) do |data_dir|
-          yield Cline::Data.open(data_dir)
+          yield Cline::Data.open(data_dir, create:)
         end
       end
 

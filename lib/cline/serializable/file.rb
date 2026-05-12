@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Cline
   module Serializable
     # Add features to initialize from and save an object to a file.
@@ -19,12 +21,18 @@ module Cline
         #
         # @param file [String] File path used to initialize the new instance
         # @param args [Array] Extra parameters to give to the instance's constructor
+        # @param default [String, nil] Default file content to be created, or nil to only read existing one
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
         # @return [Object, nil] The instance, or nil if no file exists
-        def open(file, *args, **kwargs)
-          return unless ::File.exist?(file)
+        def open(file, *args, default: nil, **kwargs)
+          unless ::File.exist?(file)
+            return unless default
 
-          instance = new(*args, **kwargs)
+            FileUtils.mkdir_p(::File.dirname(file))
+            ::File.write(file, default)
+          end
+
+          instance = new_instance(file, *args, **kwargs)
           instance.initialize_from_file(file)
           instance
         end
@@ -45,12 +53,23 @@ module Cline
           monitor = Utils::FileMonitor.new(
             file,
             on_change: proc do |_mtime|
-              on_change.call(self.open(file, *args, **kwargs))
+              on_change.call(self.open(file, *args, default: nil, **kwargs))
             end,
             monitoring_interval_secs:
           )
           monitor.start(&)
           monitor unless block_given?
+        end
+
+        # Default factory for instances.
+        # This could be overriden by some classes that need to instantiate differently.
+        #
+        # @param _file [String] File to initialize from.
+        # @param args [Array] Extra parameters to give to the instance's constructor.
+        # @param kwargs [Hash] Extra kwargs to give to the instance's constructor.
+        # @return [Object] A new instance.
+        def new_instance(_file, *args, **kwargs)
+          new(*args, **kwargs)
         end
       end
 

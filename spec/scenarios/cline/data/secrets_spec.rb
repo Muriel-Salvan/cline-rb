@@ -5,6 +5,20 @@ describe Cline::Data, '#secrets' do
     end
   end
 
+  it 'initializes secrets when data is initialized with create option' do
+    with_data(secrets: nil, create: true) do |data|
+      expect(data.secrets).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'secrets.json'))).to be true
+    end
+  end
+
+  it 'initializes secrets when create option is given' do
+    with_data(secrets: nil) do |data|
+      expect(data.secrets(create: true)).not_to be_nil
+      expect(File.exist?(File.join(data.dir, 'secrets.json'))).to be true
+    end
+  end
+
   it 'ignores extra unknown parameters from secrets file' do
     with_data(
       secrets: {
