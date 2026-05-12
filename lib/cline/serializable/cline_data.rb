@@ -29,7 +29,7 @@ module Cline
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
         # @return [Object, nil] The instance, or nil if no Cline data exists
         def from_cline_data(base_dir, *args, **kwargs)
-          instance = from_file(::File.join(base_dir, cline_json_file), *args, **kwargs)
+          instance = self.open(::File.join(base_dir, cline_json_file), *args, **kwargs)
           return unless instance
 
           instance.initialize_from_dir(base_dir)
@@ -68,7 +68,7 @@ module Cline
         # @param args [Array] Extra parameters to give to the instance's constructor
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
         # @return [Object, nil] The instance, or nil if no file exists
-        def from_file(file, *args, **kwargs)
+        def open(file, *args, **kwargs)
           return unless ::File.exist?(file)
 
           instance = from_cline_json(safe_read(file), *args, **kwargs)

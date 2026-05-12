@@ -3,7 +3,7 @@ module Cline
     # Add features to initialize from and save an object to a file.
     #
     # Provides:
-    # - `.from_file(file) -> [Object, nil]` Provides a new instance initialized from the file, or nil if no file.
+    # - `.open(file) -> [Object, nil]` Provides a new instance initialized from the file, or nil if no file.
     # - `.monitor_file_changes(file, on_change)` Provides a monitor to be notified on file changes.
     # - `#file -> [String]` The file from which this object was initialized.
     #
@@ -21,7 +21,7 @@ module Cline
         # @param args [Array] Extra parameters to give to the instance's constructor
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
         # @return [Object, nil] The instance, or nil if no file exists
-        def from_file(file, *args, **kwargs)
+        def open(file, *args, **kwargs)
           return unless ::File.exist?(file)
 
           instance = new(*args, **kwargs)
@@ -45,7 +45,7 @@ module Cline
           monitor = Utils::FileMonitor.new(
             file,
             on_change: proc do |_mtime|
-              on_change.call(from_file(file, *args, **kwargs))
+              on_change.call(self.open(file, *args, **kwargs))
             end,
             monitoring_interval_secs:
           )
