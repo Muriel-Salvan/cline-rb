@@ -8,7 +8,7 @@ module Cline
 
     # @!group Public API
 
-    Utils::SerializableToJson.include_for(self, 'cache/cline_models.json')
+    Serializable::ClineData.include_for(self, 'cache/cline_models.json')
     include Enumerable
 
     # Delegates hash methods to the internal models map

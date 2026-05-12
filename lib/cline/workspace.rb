@@ -3,13 +3,13 @@ module Cline
   class Workspace
     # @!group Public API
 
-    include Utils::InitializableFromDir
+    include Serializable::Dir
 
     # Get the workspace settings
     #
     # @return [WorkspaceSettings, nil] The workspace settings or nil if none
     def settings
-      @settings ||= WorkspaceSettings.json_from_base_dir(@dir)
+      @settings ||= WorkspaceSettings.from_cline_data(@dir)
     end
 
     # Equality check

@@ -16,7 +16,7 @@ Dir.mktmpdir do |temp_dir|
   original_config.workspaces.each do |workspace_name, workspace|
     puts "Save workspace #{workspace_name}"
     if workspace.settings
-      workspace.settings.json_to_base_dir("#{temp_dir}/#{workspace_name}")
+      workspace.settings.to_cline_data("#{temp_dir}/#{workspace_name}")
     else
       FileUtils.mkdir_p("#{temp_dir}/#{workspace_name}")
     end

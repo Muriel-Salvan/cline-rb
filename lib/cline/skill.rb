@@ -3,7 +3,7 @@ module Cline
   class Skill
     # @!group Public API
 
-    include Utils::InitializableFromDir
+    include Serializable::Dir
 
     # Get the skill's name
     #

@@ -1,10 +1,16 @@
 module Cline
-  module Utils
-    # Provide a class the capability to initialize itself from a directory, while keeping the directory private and outside the class' constructor.
-    # This provides a class.from_dir(dir) method to the extended class.
-    # Then sub-classes can use the instance method subdir to reach to sub-directories of the instance.
-    # The extended class should implement the method initialize_from_dir(dir).
-    module InitializableFromDir
+  module Serializable
+    # Add features to initialize from and save an object to a directory.
+    #
+    # Provides:
+    # - `.from_dir(dir) -> [Object, nil]` Provides a new instance initialized from the directory, or nil if no directory.
+    # - `#dir -> [String]` The directory from which this object was initialized.
+    # - `#subdir(path) -> [String]` Provide a subdirectory path from the directory the object was initialized from.
+    #
+    # Requires:
+    # - `#to_dir(dir)` Save an instance in a directory
+    # - `#from_dir` (Optional) Initialize the instance from the directory
+    module Dir
       # Class methods that should be made accessible to any class including our mixin
       module ClassMethods
         # @!group Public API
@@ -16,7 +22,7 @@ module Cline
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor
         # @return [Object, nil] The instance initialized from this directory, or nil if none
         def from_dir(dir, *args, **kwargs)
-          return unless File.exist?(dir) && File.directory?(dir)
+          return unless ::File.exist?(dir) && ::File.directory?(dir)
 
           instance = new(*args, **kwargs)
           instance.initialize_from_dir(dir)
@@ -35,11 +41,15 @@ module Cline
         base.extend(ClassMethods)
       end
 
+      # @return [String] The directory used for the object's initialization
+      attr_reader :dir
+
       # Initialize this instance from a directory
       #
       # @param dir [String] The directory to be used to initialize this instance
       def initialize_from_dir(dir)
         @dir = dir
+        from_dir if respond_to?(:from_dir, true)
       end
 
       # Return the path to a sub-directory of our instance directory
@@ -47,7 +57,7 @@ module Cline
       # @param path [String] The relative sub-directory path
       # @return [String] The full path to the sub-directory
       def subdir(path)
-        File.join(@dir, path)
+        ::File.join(dir, path)
       end
     end
   end

@@ -22,7 +22,7 @@ module Cline
       @local ||= Config.from_dir('.cline')
     end
 
-    include Utils::InitializableFromDir
+    include Serializable::Dir
 
     # Give access to the data getters
     def_delegators :data, *%i[global_settings mcp_settings tasks workspaces]

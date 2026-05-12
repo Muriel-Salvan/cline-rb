@@ -1,7 +1,7 @@
 module Cline
   # MCP settings
   class McpSettings < Schema
-    Utils::SerializableToJson.include_for(self, 'settings/cline_mcp_settings.json')
+    Serializable::ClineData.include_for(self, 'settings/cline_mcp_settings.json')
 
     # Settings associated to 1 MCP server
     class McpServer < Schema

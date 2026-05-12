@@ -7,7 +7,7 @@ module Cline
 
     # @!group Public API
 
-    Utils::SerializableToJson.include_for(self, 'ui_messages.json')
+    Serializable::ClineData.include_for(self, 'ui_messages.json')
     include Enumerable
 
     # Delegates enumerating methods to the internal messages

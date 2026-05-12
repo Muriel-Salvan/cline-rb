@@ -6,7 +6,7 @@ module Cline
   class Data
     # @!group Public API
 
-    include Utils::InitializableFromDir
+    include Serializable::Dir
 
     # Get workspaces from this data directory
     #
@@ -27,28 +27,28 @@ module Cline
     #
     # @return [GlobalSettings, nil] Global settings stored in this data directory, or nil if none
     def global_settings
-      @global_settings ||= GlobalSettings.json_from_base_dir(@dir)
+      @global_settings ||= GlobalSettings.from_cline_data(@dir)
     end
 
     # Get secrets stored in this data directory
     #
     # @return [Secrets, nil] Secrets stored in this data directory, or nil if none
     def secrets
-      @secrets ||= Secrets.json_from_base_dir(@dir)
+      @secrets ||= Secrets.from_cline_data(@dir)
     end
 
     # Get MCP settings stored in this data directory
     #
     # @return [McpSettings, nil] MCP settings stored in this data directory, or nil if none
     def mcp_settings
-      @mcp_settings ||= McpSettings.json_from_base_dir(@dir)
+      @mcp_settings ||= McpSettings.from_cline_data(@dir)
     end
 
     # Get the cached Cline models
     #
     # @return [Models] Cached Cline models
     def cline_models
-      @cline_models ||= Models.json_from_base_dir(@dir)
+      @cline_models ||= Models.from_cline_data(@dir)
     end
 
     # Equality check

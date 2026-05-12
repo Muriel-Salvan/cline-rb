@@ -13,8 +13,8 @@ require 'tmpdir'
 original_config = Cline::Config.from_dir(config_dir)
 # Replicate the settings into a temporary directory using cline-rb readers and writers
 Dir.mktmpdir do |temp_dir|
-  original_config.global_settings.json_to_base_dir(temp_dir)
-  original_config.mcp_settings.json_to_base_dir(temp_dir)
+  original_config.global_settings.to_cline_data(temp_dir)
+  original_config.mcp_settings.to_cline_data(temp_dir)
   # Load the temporary directory
   new_data = Cline::Data.from_dir(temp_dir)
   # Compare both

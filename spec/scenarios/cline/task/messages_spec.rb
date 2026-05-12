@@ -87,7 +87,7 @@ describe Cline::Task, '#messages' do
       ]
     ) do |task|
       read_call_count = 0
-      allow(File).to receive(:read).with(File.join(task.instance_variable_get(:@dir), Cline::Messages.json_file_path)) do |*_args|
+      allow(File).to receive(:read).with(File.join(task.dir, Cline::Messages.cline_json_file)) do |*_args|
         read_call_count += 1
         raise Errno::EACCES
       end
@@ -104,7 +104,7 @@ describe Cline::Task, '#messages' do
     ) do |task|
       read_call_count = 0
       original_read = File.method(:read)
-      allow(File).to receive(:read).with(File.join(task.instance_variable_get(:@dir), Cline::Messages.json_file_path)) do |*args|
+      allow(File).to receive(:read).with(File.join(task.dir, Cline::Messages.cline_json_file)) do |*args|
         read_call_count += 1
         raise Errno::EACCES if read_call_count == 1
 

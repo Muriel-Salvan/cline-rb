@@ -6,13 +6,13 @@ module Cline
   class Task
     # @!group Public API
 
-    include Utils::InitializableFromDir
+    include Serializable::Dir
 
     # Get the task's messages
     #
     # @return [Messages, nil] The task's messages, or nil if none
     def messages
-      @messages ||= Messages.json_from_base_dir(@dir, cline_models: @cline_models)
+      @messages ||= Messages.from_cline_data(@dir, cline_models: @cline_models)
     end
 
     # Equality check
@@ -40,7 +40,7 @@ module Cline
     def monitor_messages(on_message:, ignore_partials: false, monitoring_interval_secs: 1, &)
       # Keep messages per timestamp to detect updates
       messages = {}
-      Messages.monitor_changes(
+      Messages.monitor_cline_data_changes(
         @dir,
         cline_models: @cline_models,
         on_change: proc do |new_messages|

@@ -1,7 +1,7 @@
 module Cline
   # Workspace settings from workspaceState.json
   class WorkspaceSettings < Schema
-    Utils::SerializableToJson.include_for(self, 'workspaceState.json')
+    Serializable::ClineData.include_for(self, 'workspaceState.json')
 
     # @return [Hash{String => Boolean}] Local skills toggle states
     attribute :local_skills_toggles, Utils::Schema.map(:boolean)

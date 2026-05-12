@@ -32,7 +32,7 @@ module Cline
       #
       # @param base [Class] The base class
       def self.included(base)
-        base.include(InitializableFromDir)
+        base.include(Serializable::Dir)
       end
 
       # Include the mixin and configure it for a specific object class
