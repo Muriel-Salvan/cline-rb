@@ -9,6 +9,7 @@ module ClineTest
       # @param skills [Hash{String => Hash{Symbol => Object}}, nil] Skills definitions (key: name, value: content)
       #   Skills data is itself a hash that can describe the skill with the following keys:
       #   * content [String, nil] The skills markdown content, or nil if none
+      #   * files [Hash{String => String}, nil] Additional files to create in the skill directory (key: relative path, value: file content)
       # @param global_settings [Hash, nil] The global settings file content, or nil if none (see #with_data_dir)
       # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none (see #with_data_dir)
       # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none (see #with_data_dir)
@@ -29,6 +30,7 @@ module ClineTest
       # @param skills [Hash{String => Hash{Symbol => Object}}, nil] Skills definitions (key: name, value: content)
       #   Skills data is itself a hash that can describe the skill with the following keys:
       #   * content [String, nil] The skills markdown content, or nil if none
+      #   * files [Hash{String => String}, nil] Additional files to create in the skill directory (key: relative path, value: file content)
       # @param global_settings [Hash, nil] The global settings file content, or nil if none (see #with_data_dir)
       # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none (see #with_data_dir)
       # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none (see #with_data_dir)
@@ -49,6 +51,7 @@ module ClineTest
       # @param skills [Hash{String => Hash{Symbol => Object}}, nil] Skills definitions (key: name, value: content)
       #   Skills data is itself a hash that can describe the skill with the following keys:
       #   * content [String, nil] The skills markdown content, or nil if none
+      #   * files [Hash{String => String}, nil] Additional files to create in the skill directory (key: relative path, value: file content)
       # @param global_settings [Hash, nil] The global settings file content, or nil if none (see #setup_data_dir)
       # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none (see #setup_data_dir)
       # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none (see #setup_data_dir)
@@ -58,9 +61,18 @@ module ClineTest
         if skills
           skills_dir = File.join(config_dir, 'skills')
           skills.each do |skill_name, skill_data|
+            # Set default values
+            skill_data = {
+              files: []
+            }.merge(skill_data)
             skill_dir = File.join(skills_dir, skill_name)
             FileUtils.mkdir_p(skill_dir)
             File.write(File.join(skill_dir, 'SKILL.md'), skill_data[:content]) if skill_data[:content]
+            skill_data[:files].each do |file_path, file_content|
+              full_path = File.join(skill_dir, file_path)
+              FileUtils.mkdir_p(File.dirname(full_path))
+              File.write(full_path, file_content)
+            end
           end
         end
         data_dir = File.join(config_dir, 'data')
