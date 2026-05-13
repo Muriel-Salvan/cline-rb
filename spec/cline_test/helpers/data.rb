@@ -66,6 +66,7 @@ module ClineTest
         end
         if workspaces
           workspaces_dir = File.join(data_dir, 'workspaces')
+          FileUtils.mkdir_p(workspaces_dir)
           workspaces.each do |workspace_name, workspace_data|
             workspace_dir = File.join(workspaces_dir, workspace_name)
             FileUtils.mkdir_p(workspace_dir)
@@ -74,6 +75,7 @@ module ClineTest
         end
         if tasks
           tasks_dir = File.join(data_dir, 'tasks')
+          FileUtils.mkdir_p(tasks_dir)
           tasks.each do |task_name, task_data|
             task_dir = File.join(tasks_dir, task_name)
             FileUtils.mkdir_p(task_dir)

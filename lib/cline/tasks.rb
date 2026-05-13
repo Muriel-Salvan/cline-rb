@@ -15,10 +15,11 @@ module Cline
     # Get an object and its name from a sub-directory
     #
     # @param dir [String] The directory containing the object
+    # @param create [Boolean] Should the instance be created if it does not exist?
     # @return [Array(String, Object)] Return 2 values:
     #   0. [String] The object name
     #   1. [Object] The object itself
-    def object_from(dir)
+    def object_from(dir, create:)
       [File.basename(dir), Task.open(dir, cline_models: @cline_models, create:)]
     end
   end

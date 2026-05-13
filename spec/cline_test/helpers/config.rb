@@ -60,6 +60,7 @@ module ClineTest
       def setup_config_dir(config_dir, skills: nil, global_settings: nil, mcp_settings: nil, workspaces: nil, tasks: nil, cline_models: nil)
         if skills
           skills_dir = File.join(config_dir, 'skills')
+          FileUtils.mkdir_p(skills_dir)
           skills.each do |skill_name, skill_data|
             # Set default values
             skill_data = {
