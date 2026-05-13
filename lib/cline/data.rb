@@ -13,7 +13,7 @@ module Cline
     # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Workspaces] Set of workspaces associated to this data directory
     def workspaces(create: self.create)
-      @workspaces ||= Workspaces.open(subdir('workspaces'), create:)
+      @workspaces ||= Workspaces.open(subpath('workspaces'), create:)
     end
 
     # Get tasks from this data directory
@@ -22,7 +22,7 @@ module Cline
     # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Tasks] Set of tasks associated to this data directory
     def tasks(cline_models: self.cline_models, create: self.create)
-      @tasks ||= Tasks.open(subdir('tasks'), cline_models:, create:)
+      @tasks ||= Tasks.open(subpath('tasks'), cline_models:, create:)
     end
 
     # Get global settings stored in this data directory

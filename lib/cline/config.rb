@@ -32,7 +32,7 @@ module Cline
     # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Skills] Set of skills
     def skills(create: self.create)
-      @skills ||= Skills.open(subdir('skills'), create:)
+      @skills ||= Skills.open(subpath('skills'), create:)
     end
 
     # Get the data directory from this config
@@ -40,7 +40,7 @@ module Cline
     # @param create [Boolean] Should the data be created if it does not exist?
     # @return [Data] The Cline data directory content
     def data(create: self.create)
-      @data ||= Data.open(subdir('data'), create:)
+      @data ||= Data.open(subpath('data'), create:)
     end
 
     # Equality check

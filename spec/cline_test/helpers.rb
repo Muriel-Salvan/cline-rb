@@ -5,6 +5,7 @@ module ClineTest
     include Data
     include Debug
     include Os
+    include Skill
     include Task
     include TempDir
   end

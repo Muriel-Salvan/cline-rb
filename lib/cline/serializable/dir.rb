@@ -7,7 +7,7 @@ module Cline
     # Provides:
     # - `.open(dir) -> [Object, nil]` Provides a new instance initialized from the directory, or nil if no directory.
     # - `#dir -> [String]` The directory from which this object was initialized.
-    # - `#subdir(path) -> [String]` Provide a subdirectory path from the directory the object was initialized from.
+    # - `#subpath(path) -> [String]` Provide a sub-path from the directory the object was initialized from.
     module Dir
       # Class methods that should be made accessible to any class including our mixin
       module ClassMethods
@@ -69,11 +69,11 @@ module Cline
         @create = create
       end
 
-      # Return the path to a sub-directory of our instance directory
+      # Return the path to a sub-path of our instance directory
       #
-      # @param path [String] The relative sub-directory path
-      # @return [String] The full path to the sub-directory
-      def subdir(path)
+      # @param path [String] The relative sub-path
+      # @return [String] The full path to the sub-path
+      def subpath(path)
         ::File.join(dir, path)
       end
     end
