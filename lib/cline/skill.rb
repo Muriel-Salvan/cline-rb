@@ -9,7 +9,7 @@ module Cline
     #
     # @return [String] Skill name
     def name
-      File.basename(@dir)
+      File.basename(dir)
     end
 
     # Equality check

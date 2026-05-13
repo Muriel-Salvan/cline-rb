@@ -42,7 +42,7 @@ module Cline
       # Keep messages per timestamp to detect updates
       messages = {}
       Messages.monitor_cline_data_changes(
-        @dir,
+        dir,
         cline_models: @cline_models,
         on_change: proc do |new_messages|
           # Update the messages we have

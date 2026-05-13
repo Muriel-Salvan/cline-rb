@@ -73,7 +73,7 @@ module Cline
       # @return [Hash{String => Object}] The objects, per object name
       def objects_set
         @objects_set ||= Dir
-          .glob(File.join(@dir, '*'))
+          .glob(File.join(dir, '*'))
           .select { |path| File.directory?(path) }
           .to_h { |subdir| object_from(subdir) }
       end

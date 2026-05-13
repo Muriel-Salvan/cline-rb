@@ -6,7 +6,7 @@ describe Cline::Task, '#monitor_messages' do
   # @param task [Cline::Task] Task to write messages for
   # @param messages [Array<Hash>, nil] Messages to write
   def write_messages(task, messages)
-    json_file = File.join(task.instance_variable_get(:@dir), 'ui_messages.json')
+    json_file = File.join(task.dir, 'ui_messages.json')
     if messages
       File.write(json_file, messages.to_json)
     else
