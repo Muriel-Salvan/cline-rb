@@ -22,9 +22,9 @@ describe Cline::Data, '#secrets' do
   it 'ignores extra unknown parameters from secrets file' do
     with_data(
       secrets: {
-        cline_api_key: 'sk_abf',
-        unknown_parameter: 'should be ignored',
-        another_extra_field: 12_345
+        clineApiKey: 'sk_abf',
+        unknownParameter: 'should be ignored',
+        anotherExtraField: 12_345
       }
     ) do |data|
       secrets = data.secrets
@@ -32,7 +32,9 @@ describe Cline::Data, '#secrets' do
       expect(secrets.cline_api_key.to_unprotected).to eq 'sk_abf'
       # Verify unknown parameters are not present on the object
       expect(secrets).not_to respond_to(:unknown_parameter)
+      expect(secrets).not_to respond_to(:unknownParameter)
       expect(secrets).not_to respond_to(:another_extra_field)
+      expect(secrets).not_to respond_to(:anotherExtraField)
     end
   end
 
@@ -178,8 +180,8 @@ describe Cline::Data, '#secrets' do
     end
 
     it 'returns false when 2 secrets have unknown attributes with different values' do
-      with_data(secrets: { clineApiKey: 'sk_abf', unknown_field: 1 }) do |data1|
-        with_data(secrets: { clineApiKey: 'sk_abf', unknown_field: 2 }) do |data2|
+      with_data(secrets: { clineApiKey: 'sk_abf', unknownField: 1 }) do |data1|
+        with_data(secrets: { clineApiKey: 'sk_abf', unknownField: 2 }) do |data2|
           expect(data1.secrets).not_to eq(data2.secrets)
         end
       end

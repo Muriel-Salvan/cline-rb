@@ -65,10 +65,10 @@ describe Cline::Data, '#workspaces' do
     it 'ignores extra unknown parameters from workspaceState.json file' do
       with_workspace(
         settings: {
-          local_skills_toggles: { skill1: true, skill2: false },
-          local_cline_rules_toggles: { rule1: true },
-          this_is_an_unknown_parameter: 'should be ignored',
-          another_extra_field: 12_345
+          localSkillsToggles: { skill1: true, skill2: false },
+          localClineRulesToggles: { rule1: true },
+          thisIsAnUnknownParameter: 'should be ignored',
+          anotherExtraField: 12_345
         }
       ) do |workspace|
         settings = workspace.settings
@@ -77,20 +77,22 @@ describe Cline::Data, '#workspaces' do
         expect(settings.local_cline_rules_toggles.to_h).to eq({ 'rule1' => true })
         # Verify unknown parameters are not present on the object
         expect(settings).not_to respond_to(:this_is_an_unknown_parameter)
+        expect(settings).not_to respond_to(:thisIsAnUnknownParameter)
         expect(settings).not_to respond_to(:another_extra_field)
+        expect(settings).not_to respond_to(:anotherExtraField)
       end
     end
 
     it 'loads all settings' do
       with_workspace(
         settings: {
-          local_skills_toggles: { skill1: true, skill2: false, skill3: true },
-          local_cline_rules_toggles: { rule1: true, rule2: false },
-          local_agents_rules_toggles: { agent1: false, agent2: true },
-          workflow_toggles: { flow1: true, flow2: true, flow3: false },
-          local_windsurf_rules_toggles: { windsurf1: false },
-          local_cursor_rules_toggles: { cursor1: true, cursor2: true },
-          __vscode_migration_version: 7
+          localSkillsToggles: { skill1: true, skill2: false, skill3: true },
+          localClineRulesToggles: { rule1: true, rule2: false },
+          localAgentsRulesToggles: { agent1: false, agent2: true },
+          workflowToggles: { flow1: true, flow2: true, flow3: false },
+          localWindsurfRulesToggles: { windsurf1: false },
+          localCursorRulesToggles: { cursor1: true, cursor2: true },
+          __vscodeMigrationVersion: 7
         }
       ) do |workspace|
         settings = workspace.settings
@@ -135,7 +137,7 @@ describe Cline::Data, '#workspaces' do
           settings.local_skills_toggles = Cline::Utils::Schema.map(:boolean).new
           settings.local_skills_toggles['skill1'] = true
           settings.save
-          expect(JSON.parse(File.read(File.join(workspace.dir, 'workspaceState.json')))).to eq (
+          expect(JSON.parse(File.read(File.join(workspace.dir, 'workspaceState.json')))).to eq(
             {
               'localSkillsToggles' => {
                 'skill1' => true
@@ -149,8 +151,8 @@ describe Cline::Data, '#workspaces' do
     describe '#==' do
       it 'returns true when 2 workspaces from different data directories have the same settings' do
         settings_hash = {
-          local_skills_toggles: { skill1: true, skill2: false },
-          local_cline_rules_toggles: { rule1: true }
+          localSkillsToggles: { skill1: true, skill2: false },
+          localClineRulesToggles: { rule1: true }
         }
 
         with_workspace(settings: settings_hash) do |workspace1|
@@ -165,8 +167,8 @@ describe Cline::Data, '#workspaces' do
       end
 
       it 'returns false when 2 workspaces have different setting attributes' do
-        with_workspace(settings: { local_skills_toggles: { skill1: true } }) do |workspace1|
-          with_workspace(settings: { local_skills_toggles: { skill1: false } }) do |workspace2|
+        with_workspace(settings: { localSkillsToggles: { skill1: true } }) do |workspace1|
+          with_workspace(settings: { localSkillsToggles: { skill1: false } }) do |workspace2|
             expect(workspace1).not_to eq(workspace2)
             expect(workspace1.settings).not_to eq(workspace2.settings)
           end
@@ -174,8 +176,8 @@ describe Cline::Data, '#workspaces' do
       end
 
       it 'returns false when 2 workspaces have different setting attributes that are unknown' do
-        with_workspace(settings: { unknown_attribute: 1 }) do |workspace1|
-          with_workspace(settings: { unknown_attribute: 2 }) do |workspace2|
+        with_workspace(settings: { unknownAttribute: 1 }) do |workspace1|
+          with_workspace(settings: { unknownAttribute: 2 }) do |workspace2|
             expect(workspace1).not_to eq(workspace2)
             expect(workspace1.settings).not_to eq(workspace2.settings)
           end

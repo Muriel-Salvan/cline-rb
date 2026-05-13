@@ -65,7 +65,7 @@ describe Cline::Data, '#cline_models' do
         'test/model-1' => {
           'name' => 'Test Model 1',
           'maxTokens' => 1000,
-          'this_is_an_unknown_parameter' => 'should be ignored'
+          'thisIsAnUnknownParameter' => 'should be ignored'
         }
       }
     ) do |data|
@@ -75,6 +75,7 @@ describe Cline::Data, '#cline_models' do
       expect(models['test/model-1'].max_tokens).to eq 1000
       # Verify unknown parameters are not present on the object
       expect(models['test/model-1']).not_to respond_to(:this_is_an_unknown_parameter)
+      expect(models['test/model-1']).not_to respond_to(:thisIsAnUnknownParameter)
     end
   end
 

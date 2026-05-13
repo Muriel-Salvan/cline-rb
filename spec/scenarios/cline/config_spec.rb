@@ -58,7 +58,7 @@ describe Cline::Config do
     end
 
     it 'delegates global_settings' do
-      with_config_dir(global_settings: { cline_web_tools_enabled: true }) do |config_dir|
+      with_config_dir(global_settings: { clineWebToolsEnabled: true }) do |config_dir|
         config = described_class.open(config_dir)
         expect(config.global_settings).to be(config.data.global_settings)
       end
@@ -67,7 +67,7 @@ describe Cline::Config do
     it 'delegates mcp_settings' do
       with_config_dir(
         mcp_settings: {
-          mcp_servers: { server1: { disabled: false } }
+          mcpServers: { server1: { disabled: false } }
         }
       ) do |config_dir|
         config = described_class.open(config_dir)

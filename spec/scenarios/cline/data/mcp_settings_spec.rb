@@ -22,17 +22,17 @@ describe Cline::Data, '#mcp_settings' do
   it 'ignores extra unknown parameters from MCP settings file' do
     with_data(
       mcp_settings: {
-        mcp_servers: {
+        mcpServers: {
           'test-server': {
-            auto_approve: %w[file-read command-run],
+            autoApprove: %w[file-read command-run],
             disabled: false,
             timeout: 30,
             type: 'stdio',
-            this_is_an_unknown_parameter: 'should be ignored',
-            another_extra_field: 12_345
+            thisIsAnUnknownParameter: 'should be ignored',
+            anotherExtraField: 12_345
           }
         },
-        top_level_unknown: 'also ignored'
+        topLevelUnknown: 'also ignored'
       }
     ) do |data|
       mcp_settings = data.mcp_settings
@@ -44,23 +44,26 @@ describe Cline::Data, '#mcp_settings' do
       expect(servers['test-server'].type).to eq 'stdio'
       # Verify unknown parameters are not present on the object
       expect(servers['test-server']).not_to respond_to(:this_is_an_unknown_parameter)
+      expect(servers['test-server']).not_to respond_to(:thisIsAnUnknown_parameter)
       expect(servers['test-server']).not_to respond_to(:another_extra_field)
+      expect(servers['test-server']).not_to respond_to(:anotherExtraField)
       expect(mcp_settings).not_to respond_to(:top_level_unknown)
+      expect(mcp_settings).not_to respond_to(:topLevelUnknown)
     end
   end
 
   it 'loads all MCP settings attributes' do
     with_data(
       mcp_settings: {
-        mcp_servers: {
+        mcpServers: {
           'stdio-server': {
-            auto_approve: %w[file-read command-run edit-files],
+            autoApprove: %w[file-read command-run edit-files],
             disabled: false,
             timeout: 60,
             type: 'stdio'
           },
           'sse-server': {
-            auto_approve: [],
+            autoApprove: [],
             disabled: true,
             timeout: 120,
             type: 'sse',
@@ -147,9 +150,9 @@ describe Cline::Data, '#mcp_settings' do
   describe '#==' do
     it 'returns true when 2 MCP settings from different data directories have the same content' do
       settings_hash = {
-        mcp_servers: {
+        mcpServers: {
           'test-server': {
-            auto_approve: %w[file-read command-run],
+            autoApprove: %w[file-read command-run],
             disabled: false,
             timeout: 30,
             type: 'stdio'
@@ -168,24 +171,24 @@ describe Cline::Data, '#mcp_settings' do
     end
 
     it 'returns false when 2 MCP settings have different server attributes' do
-      with_data(mcp_settings: { mcp_servers: { test: { disabled: false } } }) do |data1|
-        with_data(mcp_settings: { mcp_servers: { test: { disabled: true } } }) do |data2|
+      with_data(mcp_settings: { mcpServers: { test: { disabled: false } } }) do |data1|
+        with_data(mcp_settings: { mcpServers: { test: { disabled: true } } }) do |data2|
           expect(data1.mcp_settings).not_to eq(data2.mcp_settings)
         end
       end
     end
 
     it 'returns false when 2 MCP settings have different server lists' do
-      with_data(mcp_settings: { mcp_servers: { server1: { disabled: false } } }) do |data1|
-        with_data(mcp_settings: { mcp_servers: { server2: { disabled: false } } }) do |data2|
+      with_data(mcp_settings: { mcpServers: { server1: { disabled: false } } }) do |data1|
+        with_data(mcp_settings: { mcpServers: { server2: { disabled: false } } }) do |data2|
           expect(data1.mcp_settings).not_to eq(data2.mcp_settings)
         end
       end
     end
 
     it 'returns false when 2 MCP settings have different unknown attributes' do
-      with_data(mcp_settings: { mcp_servers: { server1: { unknown_attribute: 1 } } }) do |data1|
-        with_data(mcp_settings: { mcp_servers: { server2: { unknown_attribute: 2 } } }) do |data2|
+      with_data(mcp_settings: { mcpServers: { server1: { unknownAttribute: 1 } } }) do |data1|
+        with_data(mcp_settings: { mcpServers: { server2: { unknownAttribute: 2 } } }) do |data2|
           expect(data1.mcp_settings).not_to eq(data2.mcp_settings)
         end
       end

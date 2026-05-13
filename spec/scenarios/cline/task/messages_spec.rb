@@ -76,7 +76,9 @@ describe Cline::Task, '#messages' do
       expect(messages.first.text).to eq 'Hello'
       # Verify unknown parameters are not present on the object
       expect(messages.first).not_to respond_to(:this_is_an_unknown_parameter)
+      expect(messages.first).not_to respond_to(:thisIsAnUnknownParameter)
       expect(messages[1]).not_to respond_to(:another_extra_field)
+      expect(messages[1]).not_to respond_to(:anotherExtraField)
     end
   end
 
@@ -141,7 +143,7 @@ describe Cline::Task, '#messages' do
           text: 'Hello'
         )
         messages.save
-        expect(JSON.parse(File.read(File.join(task.dir, 'ui_messages.json')), symbolize_names: true)).to eq (
+        expect(JSON.parse(File.read(File.join(task.dir, 'ui_messages.json')), symbolize_names: true)).to eq(
           [
             {
               ts: 100,

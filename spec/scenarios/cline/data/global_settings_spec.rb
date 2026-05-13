@@ -22,13 +22,13 @@ describe Cline::Data, '#global_settings' do
   it 'ignores extra unknown parameters from global settings file' do
     with_data(
       global_settings: {
-        cline_web_tools_enabled: true,
-        this_is_an_unknown_parameter: 'should be ignored',
-        another_extra_field: 12_345,
-        focus_chain_settings: {
+        clineWebToolsEnabled: true,
+        thisIsAnUnknownParameter: 'should be ignored',
+        anotherExtraField: 12_345,
+        focusChainSettings: {
           enabled: true,
-          unknown_nested_parameter: 'also ignored',
-          remind_cline_interval: 5
+          unknownNestedParameter: 'also ignored',
+          remindClineInterval: 5
         }
       }
     ) do |data|
@@ -39,27 +39,30 @@ describe Cline::Data, '#global_settings' do
       expect(global_settings.focus_chain_settings.remind_cline_interval).to eq 5
       # Verify unknown parameters are not present on the object
       expect(global_settings).not_to respond_to(:this_is_an_unknown_parameter)
+      expect(global_settings).not_to respond_to(:thisIsAnUnknownParameter)
       expect(global_settings).not_to respond_to(:another_extra_field)
+      expect(global_settings).not_to respond_to(:anotherExtraField)
       expect(global_settings.focus_chain_settings).not_to respond_to(:unknown_nested_parameter)
+      expect(global_settings.focus_chain_settings).not_to respond_to(:unknownNestedParameter)
     end
   end
 
   it 'loads all global settings attributes (features)' do
     with_data(
       global_settings: {
-        focus_chain_settings: {
+        focusChainSettings: {
           enabled: true,
-          remind_cline_interval: 5
+          remindClineInterval: 5
         },
-        cline_web_tools_enabled: true,
-        double_check_completion_enabled: false,
-        enable_parallel_tool_calling: true,
-        strict_plan_mode_enabled: false,
-        subagents_enabled: true,
-        use_auto_condense: false,
-        native_tool_call_enabled: true,
-        enable_checkpoints_setting: false,
-        background_edit_enabled: true
+        clineWebToolsEnabled: true,
+        doubleCheckCompletionEnabled: false,
+        enableParallelToolCalling: true,
+        strictPlanModeEnabled: false,
+        subagentsEnabled: true,
+        useAutoCondense: false,
+        nativeToolCallEnabled: true,
+        enableCheckpointsSetting: false,
+        backgroundEditEnabled: true
       }
     ) do |data|
       global_settings = data.global_settings
@@ -81,51 +84,51 @@ describe Cline::Data, '#global_settings' do
   it 'loads all global settings attributes (models)' do
     with_data(
       global_settings: {
-        act_mode_open_router_model_info: {
+        actModeOpenRouterModelInfo: {
           name: 'test-model',
-          max_tokens: 4096,
-          context_window: 8192,
-          supports_images: true,
-          supports_prompt_cache: false,
-          input_price: 0.0001,
-          output_price: 0.0002,
-          cache_reads_price: 0.00005,
+          maxTokens: 4096,
+          contextWindow: 8192,
+          supportsImages: true,
+          supportsPromptCache: false,
+          inputPrice: 0.0001,
+          outputPrice: 0.0002,
+          cacheReadsPrice: 0.00005,
           description: 'Test model',
-          thinking_config: {
-            max_budget: 100
+          thinkingConfig: {
+            maxBudget: 100
           }
         },
-        plan_mode_open_router_model_info: {
+        planModeOpenRouterModelInfo: {
           name: 'plan-model',
-          max_tokens: 2048,
-          context_window: 4096,
-          supports_images: false,
-          supports_prompt_cache: true,
-          input_price: 0.00005,
-          output_price: 0.0001,
-          cache_reads_price: 0.00002,
+          maxTokens: 2048,
+          contextWindow: 4096,
+          supportsImages: false,
+          supportsPromptCache: true,
+          inputPrice: 0.00005,
+          outputPrice: 0.0001,
+          cacheReadsPrice: 0.00002,
           description: 'Plan model',
-          thinking_config: {
-            max_budget: 200
+          thinkingConfig: {
+            maxBudget: 200
           }
         },
-        act_mode_cline_model_info: {
+        actModeClineModelInfo: {
           name: 'cline-act',
-          max_tokens: 8192
+          maxTokens: 8192
         },
-        plan_mode_cline_model_info: {
+        planModeClineModelInfo: {
           name: 'cline-plan',
-          max_tokens: 4096
+          maxTokens: 4096
         },
-        act_mode_api_provider: 'openrouter',
-        plan_mode_api_provider: 'anthropic',
-        act_mode_cline_model_id: 'cline-act-01',
-        plan_mode_cline_model_id: 'cline-plan-01',
-        act_mode_reasoning_effort: 'high',
-        plan_mode_reasoning_effort: 'low',
-        plan_mode_thinking_budget_tokens: 4000,
-        act_mode_thinking_budget_tokens: 8000,
-        act_mode_open_router_model_id: 'openrouter/act-model'
+        actModeApiProvider: 'openrouter',
+        planModeApiProvider: 'anthropic',
+        actModeClineModelId: 'cline-act-01',
+        planModeClineModelId: 'cline-plan-01',
+        actModeReasoningEffort: 'high',
+        planModeReasoningEffort: 'low',
+        planModeThinkingBudgetTokens: 4000,
+        actModeThinkingBudgetTokens: 8000,
+        actModeOpenRouterModelId: 'openrouter/act-model'
       }
     ) do |data|
       global_settings = data.global_settings
@@ -168,24 +171,24 @@ describe Cline::Data, '#global_settings' do
   it 'loads all global settings attributes (auto_approval)' do
     with_data(
       global_settings: {
-        auto_approval_settings: {
+        autoApprovalSettings: {
           enabled: true,
           version: 1,
-          max_requests: 10,
-          enable_notifications: false,
+          maxRequests: 10,
+          enableNotifications: false,
           favorites: %w[file-read command-run],
           actions: {
-            read_files: true,
-            read_files_externally: false,
-            edit_files: true,
-            edit_files_externally: false,
-            execute_safe_commands: true,
-            execute_all_commands: false,
-            use_browser: true,
-            use_mcp: false
+            readFiles: true,
+            readFilesExternally: false,
+            editFiles: true,
+            editFilesExternally: false,
+            executeSafeCommands: true,
+            executeAllCommands: false,
+            useBrowser: true,
+            useMcp: false
           }
         },
-        yolo_mode_toggled: true
+        yoloModeToggled: true
       }
     ) do |data|
       global_settings = data.global_settings
@@ -209,16 +212,16 @@ describe Cline::Data, '#global_settings' do
   it 'loads all global settings attributes (browser)' do
     with_data(
       global_settings: {
-        browser_settings: {
+        browserSettings: {
           viewport: {
             width: 1280,
             height: 720
           },
-          remote_browser_enabled: true,
-          remote_browser_host: 'localhost:9222',
-          chrome_executable_path: '/usr/bin/chrome',
-          disable_tool_use: false,
-          custom_args: '--no-sandbox'
+          remoteBrowserEnabled: true,
+          remoteBrowserHost: 'localhost:9222',
+          chromeExecutablePath: '/usr/bin/chrome',
+          disableToolUse: false,
+          customArgs: '--no-sandbox'
         }
       }
     ) do |data|
@@ -236,22 +239,22 @@ describe Cline::Data, '#global_settings' do
   it 'loads all global settings attributes (workspace)' do
     with_data(
       global_settings: {
-        workspace_roots: [
+        workspaceRoots: [
           {
             path: '/workspace/project1',
             name: 'Project 1',
             vcs: 'git',
-            commit_hash: 'abc123'
+            commitHash: 'abc123'
           },
           {
             path: '/workspace/project2',
             name: 'Project 2',
             vcs: 'git',
-            commit_hash: 'def456'
+            commitHash: 'def456'
           }
         ],
-        primary_root_index: 0,
-        multi_root_enabled: true
+        primaryRootIndex: 0,
+        multiRootEnabled: true
       }
     ) do |data|
       global_settings = data.global_settings
@@ -268,17 +271,17 @@ describe Cline::Data, '#global_settings' do
   it 'loads all global settings attributes (api_providers)' do
     with_data(
       global_settings: {
-        open_ai_headers: { 'Authorization' => 'Bearer test' },
-        sap_ai_core_use_orchestration_mode: true,
-        anthropic_base_url: 'https://api.anthropic.com',
-        open_router_provider_sorting: 'price',
-        aws_authentication: 'profile',
-        ollama_api_options_ctx_num: '8192',
-        lm_studio_base_url: 'http://localhost:1234',
-        lm_studio_max_tokens: '4096',
-        gemini_base_url: 'https://generativelanguage.googleapis.com',
-        azure_api_version: '2024-02-01',
-        request_timeout_ms: 30_000
+        openAiHeaders: { 'Authorization' => 'Bearer test' },
+        sapAiCoreUseOrchestrationMode: true,
+        anthropicBaseUrl: 'https://api.anthropic.com',
+        openRouterProviderSorting: 'price',
+        awsAuthentication: 'profile',
+        ollamaApiOptionsCtxNum: '8192',
+        lmStudioBaseUrl: 'http://localhost:1234',
+        lmStudioMaxTokens: '4096',
+        geminiBaseUrl: 'https://generativelanguage.googleapis.com',
+        azureApiVersion: '2024-02-01',
+        requestTimeoutMs: 30_000
       }
     ) do |data|
       global_settings = data.global_settings
@@ -300,18 +303,18 @@ describe Cline::Data, '#global_settings' do
   it 'loads all global settings attributes (general)' do
     with_data(
       global_settings: {
-        welcome_view_completed: true,
-        custom_prompt: 'Custom prompt text',
-        default_terminal_profile: 'bash',
-        telemetry_setting: 'disabled',
-        oca_mode: 'full',
-        cline_version: '1.0.0',
-        last_shown_announcement_id: 'announce-123',
-        vscode_terminal_execution_mode: 'integrated',
-        is_new_user: false,
-        mcp_display_mode: 'list',
-        last_dismissed_info_banner_version: 5,
-        last_dismissed_model_banner_version: 3
+        welcomeViewCompleted: true,
+        customPrompt: 'Custom prompt text',
+        defaultTerminalProfile: 'bash',
+        telemetrySetting: 'disabled',
+        ocaMode: 'full',
+        clineVersion: '1.0.0',
+        lastShownAnnouncementId: 'announce-123',
+        vscodeTerminalExecutionMode: 'integrated',
+        isNewUser: false,
+        mcpDisplayMode: 'list',
+        lastDismissedInfoBannerVersion: 5,
+        lastDismissedModelBannerVersion: 3
       }
     ) do |data|
       global_settings = data.global_settings
@@ -333,12 +336,12 @@ describe Cline::Data, '#global_settings' do
   it 'loads all global settings attributes (toggles)' do
     with_data(
       global_settings: {
-        remote_rules_toggles: { 'rule1' => true, 'rule2' => false },
-        remote_workflow_toggles: { 'workflow1' => true },
-        global_workflow_toggles: { 'workflow_a' => false, 'workflow_b' => true },
-        global_cline_rules_toggles: { 'core_rule' => true },
-        remote_skills_toggles: { 'skill_x' => false, 'skill_y' => true },
-        global_skills_toggles: { 'default_skill' => true }
+        remoteRulesToggles: { 'rule1' => true, 'rule2' => false },
+        remoteWorkflowToggles: { 'workflow1' => true },
+        globalWorkflowToggles: { 'workflow_a' => false, 'workflow_b' => true },
+        globalClineRulesToggles: { 'core_rule' => true },
+        remoteSkillsToggles: { 'skill_x' => false, 'skill_y' => true },
+        globalSkillsToggles: { 'default_skill' => true }
       }
     ) do |data|
       global_settings = data.global_settings
@@ -393,10 +396,10 @@ describe Cline::Data, '#global_settings' do
   describe '#==' do
     it 'returns true when 2 global settings from different data directories have the same content' do
       settings_hash = {
-        cline_web_tools_enabled: true,
-        focus_chain_settings: {
+        clineWebToolsEnabled: true,
+        focusChainSettings: {
           enabled: true,
-          remind_cline_interval: 5
+          remindClineInterval: 5
         }
       }
       with_data(global_settings: settings_hash) do |data1|
@@ -411,24 +414,24 @@ describe Cline::Data, '#global_settings' do
     end
 
     it 'returns false when 2 global settings have different attributes' do
-      with_data(global_settings: { cline_web_tools_enabled: true }) do |data1|
-        with_data(global_settings: { cline_web_tools_enabled: false }) do |data2|
+      with_data(global_settings: { clineWebToolsEnabled: true }) do |data1|
+        with_data(global_settings: { clineWebToolsEnabled: false }) do |data2|
           expect(data1.global_settings).not_to eq(data2.global_settings)
         end
       end
     end
 
     it 'returns false when 2 global settings have different nested attributes' do
-      with_data(global_settings: { focus_chain_settings: { enabled: true } }) do |data1|
-        with_data(global_settings: { focus_chain_settings: { enabled: false } }) do |data2|
+      with_data(global_settings: { focusChainSettings: { enabled: true } }) do |data1|
+        with_data(global_settings: { focusChainSettings: { enabled: false } }) do |data2|
           expect(data1.global_settings).not_to eq(data2.global_settings)
         end
       end
     end
 
     it 'returns false when 2 global settings have unknown attributes' do
-      with_data(global_settings: { focus_chain_settings: { unknown_attribute: 1 } }) do |data1|
-        with_data(global_settings: { focus_chain_settings: { unknown_attribute: 2 } }) do |data2|
+      with_data(global_settings: { focusChainSettings: { unknownAttribute: 1 } }) do |data1|
+        with_data(global_settings: { focusChainSettings: { unknownAttribute: 2 } }) do |data2|
           expect(data1.global_settings).not_to eq(data2.global_settings)
         end
       end

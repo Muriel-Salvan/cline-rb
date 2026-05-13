@@ -6,7 +6,7 @@ describe Cline::Config, '#data' do
   end
 
   it 'loads data from the config/data directory' do
-    with_config_dir(global_settings: { cline_web_tools_enabled: true }) do |config_dir|
+    with_config_dir(global_settings: { clineWebToolsEnabled: true }) do |config_dir|
       expect(described_class.open(config_dir).data.global_settings.cline_web_tools_enabled).to be true
     end
   end
