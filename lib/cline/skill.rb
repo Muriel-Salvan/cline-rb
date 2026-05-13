@@ -29,7 +29,15 @@ module Cline
     def ==(other)
       other.is_a?(Skill) &&
         other.name == name &&
-        other.all_files == all_files
+        other.files.compact == files.compact
+    end
+
+    # Get the files of this skill
+    #
+    # @return [Hash{String => FileContent, nil}] The files
+    def files
+      discover_files
+      @files
     end
 
     # @!group Internal
@@ -37,25 +45,20 @@ module Cline
     # Constructor
     def initialize
       @files = {}
-    end
-
-    protected
-
-    # Get all the files of this skill
-    #
-    # @return [Hash{String => FileContent, nil}] The files
-    def all_files
-      discover_files
-      @files.compact
+      @files_discovered = false
     end
 
     private
 
     # Discover all files of this skill.
+    # Remember when files were discovered to cache it.
     def discover_files
+      return if @files_discovered
+
       Dir.glob("#{dir}/**/*", File::FNM_DOTMATCH).each do |path|
         skill_file_content(path.gsub(%r{^#{Regexp.escape(dir)}/}, '')) unless File.directory?(path)
       end
+      @files_discovered = true
     end
 
     # Get the file content from a file path in this skill
