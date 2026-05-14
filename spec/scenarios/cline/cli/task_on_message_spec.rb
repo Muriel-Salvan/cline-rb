@@ -10,10 +10,10 @@ describe Cline::Cli, '#task' do
     #   * previous_version [Message, nil] Previous version of this message, or nil if it is a new one.
     def capture_messages(mock_config = {}, monitoring_interval_secs: 0.1)
       messages_received = []
-      with_config_dir do |config_dir|
-        mock_commands("cline --config #{config_dir}" => mock_config)
+      with_config do |config|
+        mock_commands("cline --config #{config.dir}" => mock_config)
         # Create CLI instance with our test config directory
-        described_class.new(config: config_dir).task(
+        described_class.new(config: config.dir).task(
           'Test prompt',
           on_message: proc { |message, last, previous|
             messages_received << {
