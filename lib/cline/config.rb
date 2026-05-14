@@ -53,6 +53,14 @@ module Cline
         other.data == data
     end
 
+    # Return a Cli instance that uses this config
+    #
+    # @param kwargs [Hash{Symbol => Object}] Global options (see #Cli.COMMANDS[:global])
+    # @return [Cli] Cli instance that is running using this config
+    def cli(**kwargs)
+      Cli.new(config: dir, **kwargs)
+    end
+
     # @!group Internal
 
     # Remove caches.
