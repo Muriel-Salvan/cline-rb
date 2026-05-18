@@ -40,6 +40,24 @@ module Cline
       @files
     end
 
+    # Save the skill files
+    def save
+      raise 'This instance has not been initialized from a Skill directory' unless dir
+
+      # First create/update all known files
+      files.each do |file_path, file_content|
+        next unless file_content
+
+        file_full_path = File.join(dir, file_path)
+        FileUtils.mkdir_p(File.dirname(file_full_path))
+        File.write(file_full_path, file_content.content)
+      end
+      # Then delete any file that is not known
+      each_file do |file_path|
+        File.unlink(File.join(dir, file_path)) unless files[file_path]
+      end
+    end
+
     # @!group Internal
 
     # Constructor
@@ -50,13 +68,24 @@ module Cline
 
     private
 
+    # Loop over all existing relative file paths inside our directory
+    #
+    # @yield The code to execute for each file found
+    # @yieldparam file_path [String] The relative file path
+    def each_file
+      dir_regexp = %r{^#{Regexp.escape(dir)}/}
+      Dir.glob("#{dir}/**/*", File::FNM_DOTMATCH).each do |path|
+        yield(path.gsub(dir_regexp, '')) unless File.directory?(path)
+      end
+    end
+
     # Discover all files of this skill.
     # Remember when files were discovered to cache it.
     def discover_files
       return if @files_discovered
 
-      Dir.glob("#{dir}/**/*", File::FNM_DOTMATCH).each do |path|
-        skill_file_content(path.gsub(%r{^#{Regexp.escape(dir)}/}, '')) unless File.directory?(path)
+      each_file do |file_path|
+        skill_file_content(file_path)
       end
       @files_discovered = true
     end
