@@ -18,7 +18,7 @@ module Cline
 
       # Save the instance into the Cline data
       def save
-        raise 'This instance has not been initialized from a Cline directory' unless file
+        raise 'This instance has not been initialized from a Cline file' unless file
 
         FileUtils.mkdir_p(::File.dirname(file))
         ::File.write(file, to_cline_json)
@@ -39,7 +39,7 @@ module Cline
         # @return [Object, nil] The instance, or nil if no Cline data exists
         def from_cline_data(base_dir, *args, create: false, **kwargs)
           instance = self.open(
-            ::File.join(base_dir, cline_json_file),
+            ::File.join(base_dir, cline_json_file(base_dir)),
             *args,
             default: create ? '{}' : nil,
             **kwargs
@@ -64,7 +64,7 @@ module Cline
         #   stopped by the caller when monitoring should end.
         def monitor_cline_data_changes(base_dir, *args, on_change:, monitoring_interval_secs: 1, **kwargs, &)
           monitor_file_changes(
-            ::File.join(base_dir, cline_json_file),
+            ::File.join(base_dir, cline_json_file(base_dir)),
             *args,
             on_change: proc do |instance|
               instance.initialize_from_dir(base_dir, create: false)
@@ -88,6 +88,14 @@ module Cline
         end
 
         private
+
+        # Get the relative JSON file path from the base directory
+        #
+        # @param base_dir [String] The base directory
+        # @return [String] The relative JSON file path
+        def cline_json_file(base_dir)
+          cline_json_file_def.is_a?(Proc) ? cline_json_file_def.call(base_dir) : cline_json_file_def
+        end
 
         # Try to read a file with retries in case other processes are using it.
         #
@@ -116,9 +124,13 @@ module Cline
 
       # Include the mixin and configure it with the JSON file path
       #
-      # @param calling_class [Class] The class that is calling this method
-      # @param cline_json_file [String] The relative JSON file path to use
-      def self.include_for(calling_class, cline_json_file)
+      # @param calling_class [Class] The class that is calling this method.
+      # @param cline_json_file_def [String, #call] The definition of the relative JSON file path to use. Can be one of:
+      #   - [String] The static relative JSON file path to be used.
+      #   - [#call] A proc that can devise dynamically the relative file path from the base directory:
+      #     - Param base_dir [String] The base directory from which the JSON file is searched.
+      #     - Return [String] The corresponding relative JSON file path from base_dir.
+      def self.include_for(calling_class, cline_json_file_def)
         calling_class.class_eval do
           include Dir
           include File
@@ -126,10 +138,10 @@ module Cline
 
           class << self
             # @return [String] The relative JSON file path
-            attr_accessor :cline_json_file
+            attr_accessor :cline_json_file_def
           end
         end
-        calling_class.cline_json_file = cline_json_file
+        calling_class.cline_json_file_def = cline_json_file_def
       end
 
       # Hook used when this mixin is included in a base class

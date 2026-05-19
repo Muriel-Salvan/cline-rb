@@ -1,6 +1,3 @@
-require 'fileutils'
-require 'json'
-
 module Cline
   # A task defined in a directory
   class Task

@@ -15,9 +15,9 @@ describe Cline::TaskMessage, '#usage' do
               cacheWrites: 150
             }
           ),
-          model_info: {
-            provider_id: 'openai',
-            model_id: 'gpt-4',
+          modelInfo: {
+            providerId: 'openai',
+            modelId: 'gpt-4',
             mode: 'act'
           }
         }
@@ -44,7 +44,7 @@ describe Cline::TaskMessage, '#usage' do
         type: 'say',
         say: 'api_req_started',
         text: JSON.generate({ tokensIn: 1000, tokensOut: 500 }),
-        model_info: { model_id: 'test/model' }
+        modelInfo: { modelId: 'test/model' }
       }
     ]
     with_task(
@@ -75,9 +75,9 @@ describe Cline::TaskMessage, '#usage' do
               tokensOut: 200
             }
           ),
-          model_info: {
-            provider_id: 'test',
-            model_id: 'unknown/model',
+          modelInfo: {
+            providerId: 'test',
+            modelId: 'unknown/model',
             mode: 'act'
           }
         }

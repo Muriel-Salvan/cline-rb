@@ -10,7 +10,7 @@ describe Cline::Config, '.global' do
         # Create .cline directory structure
         cline_dir = File.join(tmp_dir, '.cline')
         FileUtils.mkdir_p(cline_dir)
-        setup_config_dir(cline_dir, global_settings: { default_terminal_profile: 'test-profile' })
+        setup_config_dir(cline_dir, global_settings: { defaultTerminalProfile: 'test-profile' })
         example.run
       end
     ensure
@@ -29,6 +29,7 @@ describe Cline::Config, '.global' do
     end
 
     before do
+      allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with('USERPROFILE').and_return(tmp_dir)
     end
 

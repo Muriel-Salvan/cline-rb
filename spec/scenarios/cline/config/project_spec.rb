@@ -10,7 +10,7 @@ describe Cline::Config, '.project' do
         # Create .cline directory structure
         cline_dir = File.join(tmp_dir, '.cline')
         FileUtils.mkdir_p(cline_dir)
-        setup_config_dir(cline_dir, global_settings: { cline_web_tools_enabled: true })
+        setup_config_dir(cline_dir, global_settings: { clineWebToolsEnabled: true })
 
         # Change to temporary directory for the test
         Dir.chdir(tmp_dir) do

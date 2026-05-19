@@ -32,12 +32,12 @@ describe Cline::Task, '#messages' do
           say: 'execution_start',
           ask: 'approval',
           text: 'This is a test message',
-          model_info: {
-            provider_id: 'openai',
-            model_id: 'gpt-4',
+          modelInfo: {
+            providerId: 'openai',
+            modelId: 'gpt-4',
             mode: 'act'
           },
-          conversation_history_index: 5,
+          conversationHistoryIndex: 5,
           partial: false
         }
       ]
@@ -164,7 +164,7 @@ describe Cline::Task, '#messages' do
       ]
     ) do |task|
       read_call_count = 0
-      allow(File).to receive(:read).with(File.join(task.dir, Cline::TaskMessages.cline_json_file)) do |*_args|
+      allow(File).to receive(:read).with(File.join(task.dir, Cline::TaskMessages.cline_json_file_def)) do |*_args|
         read_call_count += 1
         raise Errno::EACCES
       end
@@ -181,7 +181,7 @@ describe Cline::Task, '#messages' do
     ) do |task|
       read_call_count = 0
       original_read = File.method(:read)
-      allow(File).to receive(:read).with(File.join(task.dir, Cline::TaskMessages.cline_json_file)) do |*args|
+      allow(File).to receive(:read).with(File.join(task.dir, Cline::TaskMessages.cline_json_file_def)) do |*args|
         read_call_count += 1
         raise Errno::EACCES if read_call_count == 1
 
