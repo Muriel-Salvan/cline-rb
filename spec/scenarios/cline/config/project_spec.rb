@@ -1,10 +1,10 @@
-describe Cline::Config, '.local' do
+describe Cline::Config, '.project' do
   around do |example|
     # Backup original value as it is a global cache
-    original_local = described_class.instance_variable_get(:@local)
+    original_project = described_class.instance_variable_get(:@project)
     begin
       # Clear cache
-      described_class.remove_instance_variable(:@local) if described_class.instance_variable_defined?(:@local)
+      described_class.remove_instance_variable(:@project) if described_class.instance_variable_defined?(:@project)
       with_temp_dir do |tmp_dir|
         tmp_dir = tmp_dir.gsub('\\', '/')
         # Create .cline directory structure
@@ -18,11 +18,11 @@ describe Cline::Config, '.local' do
         end
       end
     ensure
-      described_class.instance_variable_set(:@local, original_local)
+      described_class.instance_variable_set(:@project, original_project)
     end
   end
 
-  it 'loads local config from current working directory .cline' do
-    expect(described_class.local.global_settings.cline_web_tools_enabled).to be true
+  it 'loads project config from current working directory .cline' do
+    expect(described_class.project.global_settings.cline_web_tools_enabled).to be true
   end
 end

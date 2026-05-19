@@ -15,11 +15,11 @@ module Cline
       @global ||= Config.open("#{Utils::Os.user_home_dir}/.cline")
     end
 
-    # Get the local Cline config
+    # Get the project Cline config
     #
-    # @return [Config] The local config for the current repository
-    def self.local
-      @local ||= Config.open('.cline')
+    # @return [Config] The project config for the current repository
+    def self.project
+      @project ||= Config.open('.cline')
     end
 
     include Serializable::Dir
