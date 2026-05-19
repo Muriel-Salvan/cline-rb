@@ -34,7 +34,8 @@ module Cline
     # @return [Boolean] True if objects are equal
     def ==(other)
       other.is_a?(Session) &&
-        other.data == data
+        other.data == data &&
+        other.messages == messages
     end
 
     # Monitor messages with a callback called when new or updated messages arrive
