@@ -70,5 +70,17 @@ describe Cline::Config do
         expect(config.mcp_settings).to be(config.data.mcp_settings)
       end
     end
+
+    it 'delegates sessions' do
+      with_config(
+        sessions: {
+          'test-session' => {
+            messages: [{ ts: 123, type: 'user', text: 'Hello' }]
+          }
+        }
+      ) do |config|
+        expect(config.sessions).to be(config.data.sessions)
+      end
+    end
   end
 end
