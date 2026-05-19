@@ -44,40 +44,39 @@ describe Cline::Session, '#data' do
         prompt: 'Test prompt',
         messages_path: 'path/to/messages.json',
         metadata: {
-          title: 'Test session'
-          # TODO: Add all other attributes:
-          # "checkpoint": {
-          #   "latest": {
-          #     "ref": "0d07d92af208720d4fe3636d18bd4d9fb6688362",
-          #     "createdAt": 1779133220819,
-          #     "runCount": 1,
-          #     "kind": "stash"
-          #   },
-          #   "history": [
-          #     {
-          #       "ref": "0d07d92af208720d4fe3636d18bd4d9fb6688362",
-          #       "createdAt": 1779133220819,
-          #       "runCount": 1,
-          #       "kind": "stash"
-          #     }
-          #   ]
-          # },
-          # "totalCost": 0.0001391152,
-          # "aggregatedAgentsCost": 0.0001391152,
-          # "usage": {
-          #   "inputTokens": 10238,
-          #   "outputTokens": 270,
-          #   "cacheReadTokens": 9984,
-          #   "cacheWriteTokens": 0,
-          #   "totalCost": 0.0001391152
-          # },
-          # "aggregateUsage": {
-          #   "inputTokens": 10238,
-          #   "outputTokens": 270,
-          #   "cacheReadTokens": 9984,
-          #   "cacheWriteTokens": 0,
-          #   "totalCost": 0.0001391152
-          # }
+          title: 'Test session',
+          checkpoint: {
+            latest: {
+              ref: '0d07d92af208720d4fe3636d18bd4d9fb6688362',
+              createdAt: 1_779_133_220_819,
+              runCount: 1,
+              kind: 'stash'
+            },
+            history: [
+              {
+                ref: '0d07d92af208720d4fe3636d18bd4d9fb6688362',
+                createdAt: 1_779_133_220_819,
+                runCount: 1,
+                kind: 'stash'
+              }
+            ]
+          },
+          totalCost: 0.0001391152,
+          aggregatedAgentsCost: 0.0001391152,
+          usage: {
+            inputTokens: 10_238,
+            outputTokens: 270,
+            cacheReadTokens: 9_984,
+            cacheWriteTokens: 0,
+            totalCost: 0.0001391152
+          },
+          aggregateUsage: {
+            inputTokens: 10_238,
+            outputTokens: 270,
+            cacheReadTokens: 9_984,
+            cacheWriteTokens: 0,
+            totalCost: 0.0001391152
+          }
         }
       }
     ) do |session|
@@ -99,7 +98,32 @@ describe Cline::Session, '#data' do
       expect(session_data.messages_path).to eq 'path/to/messages.json'
       expect(session_data.metadata).not_to be_nil
       expect(session_data.metadata.title).to eq 'Test session'
-      # TODO: Add expectations for all other attributes as well
+      expect(session_data.metadata.checkpoint).not_to be_nil
+      expect(session_data.metadata.checkpoint.latest).not_to be_nil
+      expect(session_data.metadata.checkpoint.latest.ref).to eq '0d07d92af208720d4fe3636d18bd4d9fb6688362'
+      expect(session_data.metadata.checkpoint.latest.created_at).to eq 1_779_133_220_819
+      expect(session_data.metadata.checkpoint.latest.run_count).to eq 1
+      expect(session_data.metadata.checkpoint.latest.kind).to eq 'stash'
+      expect(session_data.metadata.checkpoint.history).to be_an(Array)
+      expect(session_data.metadata.checkpoint.history.size).to eq 1
+      expect(session_data.metadata.checkpoint.history[0].ref).to eq '0d07d92af208720d4fe3636d18bd4d9fb6688362'
+      expect(session_data.metadata.checkpoint.history[0].created_at).to eq 1_779_133_220_819
+      expect(session_data.metadata.checkpoint.history[0].run_count).to eq 1
+      expect(session_data.metadata.checkpoint.history[0].kind).to eq 'stash'
+      expect(session_data.metadata.total_cost).to eq 0.0001391152
+      expect(session_data.metadata.aggregated_agents_cost).to eq 0.0001391152
+      expect(session_data.metadata.usage).not_to be_nil
+      expect(session_data.metadata.usage.input_tokens).to eq 10_238
+      expect(session_data.metadata.usage.output_tokens).to eq 270
+      expect(session_data.metadata.usage.cache_read_tokens).to eq 9_984
+      expect(session_data.metadata.usage.cache_write_tokens).to eq 0
+      expect(session_data.metadata.usage.total_cost).to eq 0.0001391152
+      expect(session_data.metadata.aggregate_usage).not_to be_nil
+      expect(session_data.metadata.aggregate_usage.input_tokens).to eq 10_238
+      expect(session_data.metadata.aggregate_usage.output_tokens).to eq 270
+      expect(session_data.metadata.aggregate_usage.cache_read_tokens).to eq 9_984
+      expect(session_data.metadata.aggregate_usage.cache_write_tokens).to eq 0
+      expect(session_data.metadata.aggregate_usage.total_cost).to eq 0.0001391152
     end
   end
 
