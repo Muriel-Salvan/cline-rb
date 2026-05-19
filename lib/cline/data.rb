@@ -25,6 +25,15 @@ module Cline
       @tasks ||= Tasks.open(subpath('tasks'), cline_models:, create:)
     end
 
+    # Get sessions from this data directory
+    #
+    # @param cline_models [Models] The Cline models used to interpret the sessions' messages
+    # @param create [Boolean] Should the data be created if it does not exist?
+    # @return [Sessions] Set of sessions associated to this data directory
+    def sessions(cline_models: self.cline_models, create: self.create)
+      @sessions ||= Tasks.open(subpath('sessions'), cline_models:, create:)
+    end
+
     # Get global settings stored in this data directory
     #
     # @param create [Boolean] Should the data be created if it does not exist?
