@@ -41,9 +41,11 @@ module Cline
     # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     # @return [Object] Corresponding instance
     def self.from_cline_json(json, cline_models:)
-      hash = JSON.parse(json)
-      hash['messages'].map! { |json_message| SessionMessage.of_hash(json_message, cline_models:) }
-      SessionMessages.new(hash)
+      instance = SessionMessages.of_hash(JSON.parse(json))
+      # Shale doesn't pass extra kwargs to nested collection items,
+      # so we set cline_models on each message after deserialization
+      instance.messages&.each { |message| message.cline_models = cline_models }
+      instance
     end
   end
 end

@@ -131,12 +131,12 @@ module Cline
     #
     # @param hash [Hash] Data
     # @param args [Array] Remaining arguments to be transferred to Shale
-    # @param cline_models [Models] The Clines models used to interpret the message
+    # @param cline_models [Models, nil] The Clines models used to interpret the message, or nil if none
     # @param kwargs [Hash] Remaining kwargs to be transferred to Shale
     # @return [Schema] Corresponding instance
-    def self.of_hash(hash, *args, cline_models:, **kwargs)
+    def self.of_hash(hash, *args, cline_models: nil, **kwargs)
       instance = super(hash, *args, **kwargs)
-      instance.cline_models = cline_models
+      instance.cline_models = cline_models if cline_models
       instance
     end
 
