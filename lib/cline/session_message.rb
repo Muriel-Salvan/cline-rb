@@ -121,9 +121,35 @@ module Cline
     # @param limit [Integer] Number of characters the message should be limited to
     # @return [String] The human translation
     def to_human(limit: 128)
-      # TODO
-      to_s.ellipsized(limit)
+      (
+        case role
+        when 'user'
+          "User: #{first_text}"
+        when 'assistant'
+          tool_use = content.find { |c| c.type == 'tool_use' }
+          if tool_use
+            "Assistant uses #{tool_use.name}"
+          else
+            "Assistant: #{first_text}"
+          end
+        when 'tool'
+          "Tool result: #{content.find { |c| c.type == 'tool_result' }&.content}"
+        else
+          to_s
+        end
+      ).ellipsized(limit)
     end
+
+    private
+
+    # Get the text from the first text content block.
+    #
+    # @return [String] The first text content, or an empty string if none
+    def first_text
+      content.find { |c| c.type == 'text' }&.text.to_s.gsub("\n", ' ')
+    end
+
+    public
 
     # @!group Internal
 
