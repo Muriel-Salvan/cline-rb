@@ -26,31 +26,33 @@ describe Cline::Session, '#messages' do
   it 'reads all attributes of the messages' do
     with_session(
       # TODO: Add attributes other than the messages Array
-      messages: [
-        {
-          id: 'msg-1',
-          role: 'assistant',
-          content: [
-            {
-              type: 'text',
-              text: 'Hello world'
+      messages: {
+        messages: [
+          {
+            id: 'msg-1',
+            role: 'assistant',
+            content: [
+              {
+                type: 'text',
+                text: 'Hello world'
+              }
+            ],
+            ts: 123_456_789,
+            modelInfo: {
+              id: 'deepseek/deepseek-v4-flash',
+              provider: 'deepseek',
+              family: 'deepseek-v4'
+            },
+            metrics: {
+              inputTokens: 1000,
+              outputTokens: 500,
+              cacheReadTokens: 200,
+              cacheWriteTokens: 150,
+              cost: 0.0025
             }
-          ],
-          ts: 123_456_789,
-          modelInfo: {
-            id: 'deepseek/deepseek-v4-flash',
-            provider: 'deepseek',
-            family: 'deepseek-v4'
-          },
-          metrics: {
-            inputTokens: 1000,
-            outputTokens: 500,
-            cacheReadTokens: 200,
-            cacheWriteTokens: 150,
-            cost: 0.0025
           }
-        }
-      ]
+        ]
+      }
     ) do |session|
       messages = session.messages
       expect(messages.size).to eq 1
@@ -75,18 +77,20 @@ describe Cline::Session, '#messages' do
 
   it 'reads message content blocks' do
     with_session(
-      messages: [
-        {
-          id: 'msg-1',
-          role: 'user',
-          content: [
-            { type: 'text', text: 'Hello' },
-            { type: 'tool_use', id: 'tool-1', name: 'read_file', input: { question: 'Which file?', options: %w[file1 file2] } },
-            { type: 'tool_result', tool_use_id: 'tool-1', content: 'File content here' }
-          ],
-          ts: 100
-        }
-      ]
+      messages: {
+        messages: [
+          {
+            id: 'msg-1',
+            role: 'user',
+            content: [
+              { type: 'text', text: 'Hello' },
+              { type: 'tool_use', id: 'tool-1', name: 'read_file', input: { question: 'Which file?', options: %w[file1 file2] } },
+              { type: 'tool_result', tool_use_id: 'tool-1', content: 'File content here' }
+            ],
+            ts: 100
+          }
+        ]
+      }
     ) do |session|
       messages = session.messages
       expect(messages.size).to(eq(1))
@@ -109,10 +113,12 @@ describe Cline::Session, '#messages' do
   it 'ignores extra unknown parameters from messages.json file' do
     with_session(
       # TODO: Add also unknown parameter in the root attributes of this file
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 123, this_is_an_unknown_parameter: 'should be ignored' },
-        { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Hi there' }], ts: 124, another_extra_field: 12_345 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 123, this_is_an_unknown_parameter: 'should be ignored' },
+          { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Hi there' }], ts: 124, another_extra_field: 12_345 }
+        ]
+      }
     ) do |session|
       messages = session.messages
       # Verify valid attributes are still correctly loaded
@@ -129,12 +135,14 @@ describe Cline::Session, '#messages' do
 
   it 'loads all messages' do
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-        { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response 1' }], ts: 101 },
-        { id: 'msg-3', role: 'user', content: [{ type: 'text', text: 'Second question' }], ts: 102 },
-        { id: 'msg-4', role: 'assistant', content: [{ type: 'text', text: 'Response 2' }], ts: 103 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+          { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response 1' }], ts: 101 },
+          { id: 'msg-3', role: 'user', content: [{ type: 'text', text: 'Second question' }], ts: 102 },
+          { id: 'msg-4', role: 'assistant', content: [{ type: 'text', text: 'Response 2' }], ts: 103 }
+        ]
+      }
     ) do |session|
       messages = session.messages
       expect(messages.size).to eq 4
@@ -148,10 +156,12 @@ describe Cline::Session, '#messages' do
   describe '#save' do
     it 'persists modified messages to the messages.json file' do
       with_session(
-        messages: [
-          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 100, unknownAttribute: 'Unknown value' },
-          { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Hi there' }], ts: 101 }
-        ]
+        messages: {
+          messages: [
+            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 100, unknownAttribute: 'Unknown value' },
+            { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Hi there' }], ts: 101 }
+          ]
+        }
       ) do |session|
         messages = session.messages
         messages[0].content << Cline::SessionMessage::MessageContent.new(type: 'text', text: 'Updated content')
@@ -228,9 +238,11 @@ describe Cline::Session, '#messages' do
 
   it 'raises Errno::EACCES after retrying 3 times when the file cannot be read' do
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
+        ]
+      }
     ) do |session|
       read_call_count = 0
       allow(File).to(receive(:read).with(File.join(session.dir, 'test-session.messages.json'))) do |*_args|
@@ -244,9 +256,11 @@ describe Cline::Session, '#messages' do
 
   it 'recovers from a temporary read error and reads the file successfully on retry' do
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
+        ]
+      }
     ) do |session|
       read_call_count = 0
       original_read = File.method(:read)

@@ -15,12 +15,12 @@ describe Cline::SessionMessage, '#==' do
     }
     with_session(
       name: 'session-1',
-      messages: [message_data],
+      messages: { messages: [message_data] },
       cline_models: { 'test/model' => { 'name' => 'Test Model 1', 'contextWindow' => 128_000 } }
     ) do |session1|
       with_session(
         name: 'session-2',
-        messages: [message_data],
+        messages: { messages: [message_data] },
         cline_models: { 'test/model' => { 'name' => 'Test Model 2', 'contextWindow' => 256_000 } }
       ) do |session2|
         message1 = session1.messages.first
@@ -33,15 +33,19 @@ describe Cline::SessionMessage, '#==' do
 
   it 'returns true for messages with same content blocks' do
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 100 }
-      ]
-    ) do |session1|
-      with_session(
-        name: 'session-2',
+      messages: {
         messages: [
           { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 100 }
         ]
+      }
+    ) do |session1|
+      with_session(
+        name: 'session-2',
+        messages: {
+          messages: [
+            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 100 }
+          ]
+        }
       ) do |session2|
         expect(session1.messages.first).to eq session2.messages.first
       end
@@ -50,15 +54,19 @@ describe Cline::SessionMessage, '#==' do
 
   it 'returns false for messages with different content blocks' do
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 100 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 100 }
+        ]
+      }
     ) do |session1|
       with_session(
         name: 'session-2',
-        messages: [
-          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Different' }], ts: 100 }
-        ]
+        messages: {
+          messages: [
+            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Different' }], ts: 100 }
+          ]
+        }
       ) do |session2|
         expect(session1.messages.first).not_to eq session2.messages.first
       end

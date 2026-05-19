@@ -16,7 +16,7 @@ module ClineTest
       # @param sessions [Hash{String => Hash{Symbol => Object}}, nil] The sessions to create (key: name, value: data), or nil if none
       #   Sessions data is itself a hash that can describe the session with the following keys:
       #   * data [Hash, nil] The session data attributes to create, or nil if none
-      #   * messages [Array<Hash>, nil] The messages to create, or nil if none
+      #   * messages [Hash, nil] The full messages JSON file content, or nil if none
       # @param tasks [Hash{String => Hash{Symbol => Object}}, nil] The tasks to create (key: name, value: data), or nil if none
       #   Tasks data is itself a hash that can describe the task with the following keys:
       #   * messages [Array<Hash>, nil] The messages to create, or nil if none
@@ -42,7 +42,7 @@ module ClineTest
       # @param sessions [Hash{String => Hash{Symbol => Object}}, nil] The sessions to create (key: name, value: data), or nil if none
       #   Sessions data is itself a hash that can describe the session with the following keys:
       #   * data [Hash, nil] The session data attributes to create, or nil if none
-      #   * messages [Array<Hash>, nil] The messages to create, or nil if none
+      #   * messages [Hash, nil] The full messages JSON file content, or nil if none
       # @param tasks [Hash{String => Hash{Symbol => Object}}, nil] The tasks to create (key: name, value: data), or nil if none
       #   Tasks data is itself a hash that can describe the task with the following keys:
       #   * messages [Array<Hash>, nil] The messages to create, or nil if none
@@ -89,10 +89,7 @@ module ClineTest
             session_dir = File.join(sessions_dir, session_name)
             FileUtils.mkdir_p(session_dir)
             File.write(File.join(session_dir, "#{session_name}.json"), session_data[:data].to_json) if session_data[:data]
-            if session_data[:messages]
-              # SessionMessages expects a top-level JSON object with a "messages" key containing the array
-              File.write(File.join(session_dir, "#{session_name}.messages.json"), { messages: session_data[:messages] }.to_json)
-            end
+            File.write(File.join(session_dir, "#{session_name}.messages.json"), session_data[:messages].to_json) if session_data[:messages]
           end
         end
         if tasks

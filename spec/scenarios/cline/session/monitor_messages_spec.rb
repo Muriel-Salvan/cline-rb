@@ -4,13 +4,11 @@ describe Cline::Session, '#monitor_messages' do
   # Helper to write messages to session directory
   #
   # @param session [Cline::Session] Session to write messages for
-  # @param messages [Array<Hash>, nil] Messages to write
+  # @param messages [Hash, nil] The full messages JSON file content, or nil if none
   def write_messages(session, messages)
-    # TODO: Messages should contain the whole JSON, not just the messages property
     json_file = File.join(session.dir, 'test-session.messages.json')
     if messages
-      # Wrap messages inside the top-level JSON object expected by SessionMessages
-      File.write(json_file, { messages: }.to_json)
+      File.write(json_file, messages.to_json)
     else
       FileUtils.rm_f(json_file)
     end
@@ -48,10 +46,12 @@ describe Cline::Session, '#monitor_messages' do
 
   it 'calls on_message for each message even without modifications' do
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-        { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+          { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 }
+        ]
+      }
     ) do |session|
       capture_on_message(session)
       expect(calls.size).to eq 2
@@ -70,9 +70,11 @@ describe Cline::Session, '#monitor_messages' do
         # Now create the messages file
         write_messages(
           session,
-          [
-            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Message after create' }], ts: 100 }
-          ]
+          {
+            messages: [
+              { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Message after create' }], ts: 100 }
+            ]
+          }
         )
       end
       expect(calls.size).to eq 1
@@ -86,22 +88,26 @@ describe Cline::Session, '#monitor_messages' do
 
   it 'calls on_message only for new messages when adding new messages' do
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-        { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+          { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 }
+        ]
+      }
     ) do |session|
       capture_on_message(session) do
         calls.clear
         # Add new messages
         write_messages(
           session,
-          [
-            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-            { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 },
-            { id: 'msg-3', role: 'user', content: [{ type: 'text', text: 'Second question' }], ts: 102 },
-            { id: 'msg-4', role: 'assistant', content: [{ type: 'text', text: 'Second response' }], ts: 103 }
-          ]
+          {
+            messages: [
+              { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+              { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 },
+              { id: 'msg-3', role: 'user', content: [{ type: 'text', text: 'Second question' }], ts: 102 },
+              { id: 'msg-4', role: 'assistant', content: [{ type: 'text', text: 'Second response' }], ts: 103 }
+            ]
+          }
         )
       end
       # Only new messages should be called
@@ -117,11 +123,13 @@ describe Cline::Session, '#monitor_messages' do
 
   it 'calls on_message only for updated messages when modifying existing messages in the middle' do
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-        { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Original response' }], ts: 101 },
-        { id: 'msg-3', role: 'user', content: [{ type: 'text', text: 'Second message' }], ts: 102 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+          { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Original response' }], ts: 101 },
+          { id: 'msg-3', role: 'user', content: [{ type: 'text', text: 'Second message' }], ts: 102 }
+        ]
+      }
     ) do |session|
       original_message = nil
       capture_on_message(session) do
@@ -130,11 +138,14 @@ describe Cline::Session, '#monitor_messages' do
         calls.clear
         # Modify only the middle message
         write_messages(
-          session, [
-            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-            { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Updated response' }], ts: 101 },
-            { id: 'msg-3', role: 'user', content: [{ type: 'text', text: 'Second message' }], ts: 102 }
-          ]
+          session,
+          {
+            messages: [
+              { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+              { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Updated response' }], ts: 101 },
+              { id: 'msg-3', role: 'user', content: [{ type: 'text', text: 'Second message' }], ts: 102 }
+            ]
+          }
         )
       end
       expect(calls.size).to eq 1
@@ -148,17 +159,22 @@ describe Cline::Session, '#monitor_messages' do
   it 'updates session.messages accessor with new content when messages are monitored' do
     # TODO: Add a new test case like this one, but when modifying root attribnutes of the message file
     with_session(
-      messages: [
-        { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
-      ]
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
+        ]
+      }
     ) do |session|
       expect(session.messages.size).to eq 1
       capture_on_message(session) do
         write_messages(
-          session, [
-            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-            { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'New message' }], ts: 101 }
-          ]
+          session,
+          {
+            messages: [
+              { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+              { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'New message' }], ts: 101 }
+            ]
+          }
         )
       end
       expect(session.messages.size).to eq 2
@@ -183,7 +199,7 @@ describe Cline::Session, '#monitor_messages' do
       # Wait for monitoring thread to start
       sleep 0.05
       # First write should trigger on_message call
-      write_messages(session, [{ id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }])
+      write_messages(session, { messages: [{ id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }] })
       sleep 0.05
       expect(calls.size).to eq 1
       calls.clear
@@ -192,10 +208,12 @@ describe Cline::Session, '#monitor_messages' do
       # Second write should NOT trigger on_message call after stop
       write_messages(
         session,
-        [
-          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-          { id: 'msg-2', role: 'user', content: [{ type: 'text', text: 'Second message' }], ts: 101 }
-        ]
+        {
+          messages: [
+            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+            { id: 'msg-2', role: 'user', content: [{ type: 'text', text: 'Second message' }], ts: 101 }
+          ]
+        }
       )
       sleep 0.05
       expect(calls).to be_empty

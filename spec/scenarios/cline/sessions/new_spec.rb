@@ -17,9 +17,11 @@ describe Cline::Sessions, '#new' do
             source: 'cli',
             status: 'completed'
           },
-          messages: [
-            { ts: 123_456, role: 'user', content: [{ type: 'text', text: 'Hello' }] }
-          ]
+          messages: {
+            messages: [
+              { ts: 123_456, role: 'user', content: [{ type: 'text', text: 'Hello' }] }
+            ]
+          }
         }
       },
       create: true
