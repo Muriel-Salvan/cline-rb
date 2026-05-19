@@ -1,6 +1,6 @@
 require 'json'
 
-describe Cline::Message, '#to_human' do
+describe Cline::TaskMessage, '#to_human' do
   # Create a task with a JSON message, and provide the corresponding human message for expectations.
   #
   # @param ts [Integer] The JSON message ts field
@@ -111,11 +111,11 @@ describe Cline::Message, '#to_human' do
         say: 'tool',
         text: JSON.generate(
           tool: 'readFile',
-          path: 'lib/cline/message.rb',
+          path: 'lib/cline/task_message.rb',
           content: 'File content here'
         )
       )
-    ).to include('[readFile] - lib/cline/message.rb')
+    ).to include('[readFile] - lib/cline/task_message.rb')
   end
 
   it 'converts searchFiles tool messages to human format' do

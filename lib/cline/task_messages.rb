@@ -26,7 +26,7 @@ module Cline
 
     # Constructor
     #
-    # @param messages [Array<Message>] List of messages
+    # @param messages [Array<TaskMessage>] List of messages
     def initialize(messages)
       @messages = messages
     end
@@ -40,19 +40,19 @@ module Cline
     # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     # @return [Object] Corresponding instance
     def self.from_cline_json(json, cline_models:)
-      TaskMessages.new(JSON.parse(json).map { |json_message| Message.of_hash(json_message, cline_models:) })
+      TaskMessages.new(JSON.parse(json).map { |json_message| TaskMessage.of_hash(json_message, cline_models:) })
     end
 
     # Output this object as Cline JSON.
     #
     # @return [String] Cline JSON
     def to_cline_json
-      map { |message| Message.as_hash(message) }.to_json
+      map { |message| TaskMessage.as_hash(message) }.to_json
     end
 
     protected
 
-    # @return [Array<Message>] List of messages
+    # @return [Array<TaskMessage>] List of messages
     attr_reader :messages
   end
 end

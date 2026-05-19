@@ -110,7 +110,7 @@ describe Cline::Task, '#messages' do
       ) do |task|
         messages = task.messages
         messages.first.text = 'Updated hello'
-        messages << Cline::Message.new(
+        messages << Cline::TaskMessage.new(
           ts: 102,
           type: 'say',
           say: 'text',
@@ -136,7 +136,7 @@ describe Cline::Task, '#messages' do
     it 'persists a newly instantiated ui_messages file' do
       with_task(messages: nil) do |task|
         messages = task.messages(create: true)
-        messages << Cline::Message.new(
+        messages << Cline::TaskMessage.new(
           ts: 100,
           type: 'say',
           say: 'text',

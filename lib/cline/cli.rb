@@ -92,7 +92,7 @@ module Cline
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds
     # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
     # @return [Hash{Symbol => Object}] A set of return properties (see #run_cli). Additionnally the following ones:
-    #   * message [Message, nil] The last message of the task, or nil if none
+    #   * message [TaskMessage, nil] The last message of the task, or nil if none
     def task(prompt, on_message: nil, monitoring_interval_secs: 1, **kwargs)
       task_monitor_thread = nil
       @current_task = nil

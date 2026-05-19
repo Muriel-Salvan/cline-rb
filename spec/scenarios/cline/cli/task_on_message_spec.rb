@@ -5,9 +5,9 @@ describe Cline::Cli, '#task' do
     # @param mock_config [Hash{Symbol => Object}] The Cline mock configuration (see #ClineTest::Helpers::Cli#mock_commands)
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds.
     # @return [Array<Hash{Symbol => Object}>] The list of messages received by the on_message callback:
-    #   * message [Message] The message that was received.
+    #   * message [TaskMessage] The message that was received.
     #   * last [Boolean] Is this message the last one of the discussion?
-    #   * previous_version [Message, nil] Previous version of this message, or nil if it is a new one.
+    #   * previous_version [TaskMessage, nil] Previous version of this message, or nil if it is a new one.
     def capture_messages(mock_config = {}, monitoring_interval_secs: 0.1)
       messages_received = []
       with_config do |config|

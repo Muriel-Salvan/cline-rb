@@ -1,4 +1,4 @@
-describe Cline::Message, '#==' do
+describe Cline::TaskMessage, '#==' do
   it 'returns true for messages with same content even with different cline_models instances' do
     message_hash = {
       ts: 123_456,

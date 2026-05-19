@@ -1,4 +1,3 @@
-* Rename messages into task messages.
 * Add support to Sessions and session messages.
 * Adapt ClI to monitor session messagess instead of a tasks messages.
 * Adapt CLI end messages.

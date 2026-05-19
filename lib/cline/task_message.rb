@@ -3,7 +3,7 @@ require 'time'
 
 module Cline
   # Task's message
-  class Message < Schema
+  class TaskMessage < Schema
     # @!group Public API
 
     # Model info in messages

@@ -28,9 +28,9 @@ module Cline
     # Monitor messages with a callback called when new or updated messages arrive
     #
     # @param on_message [#call] Block called each time there is a new or updated message.
-    #   * Param message [Message] Message that has happened
+    #   * Param message [TaskMessage] Message that has happened
     #   * Param last [Boolean] Is this the last message fetched from the list of messages?
-    #   * Param previous_version [Message or nil] Previous version of this message if it got updated, or nil if it is a new one
+    #   * Param previous_version [TaskMessage or nil] Previous version of this message if it got updated, or nil if it is a new one
     # @param ignore_partials [Boolean] Should we ignore partial messages?
     #   If true, then on_message will only be called for messages that have been fully received.
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds
