@@ -25,8 +25,12 @@ describe Cline::Session, '#messages' do
 
   it 'reads all attributes of the messages' do
     with_session(
-      # TODO: Add attributes other than the messages Array
       messages: {
+        version: 1,
+        updated_at: '2026-05-18T19:40:57.409Z',
+        agent: 'lead',
+        sessionId: '1779133219671_7ykye',
+        system_prompt: 'You are Cline, an AI coding agent.',
         messages: [
           {
             id: 'msg-1',
@@ -71,7 +75,11 @@ describe Cline::Session, '#messages' do
       expect(message.metrics.cache_read_tokens).to eq 200
       expect(message.metrics.cache_write_tokens).to eq 150
       expect(message.metrics.cost).to eq 0.0025
-      # TODO: Add expectations on all missing attributes
+      expect(messages.version).to eq 1
+      expect(messages.updated_at).to eq '2026-05-18T19:40:57.409Z'
+      expect(messages.agent).to eq 'lead'
+      expect(messages.session_id).to eq '1779133219671_7ykye'
+      expect(messages.system_prompt).to eq 'You are Cline, an AI coding agent.'
     end
   end
 
@@ -112,8 +120,8 @@ describe Cline::Session, '#messages' do
 
   it 'ignores extra unknown parameters from messages.json file' do
     with_session(
-      # TODO: Add also unknown parameter in the root attributes of this file
       messages: {
+        unknown_root_param: 'should be ignored too',
         messages: [
           { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 123, this_is_an_unknown_parameter: 'should be ignored' },
           { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Hi there' }], ts: 124, another_extra_field: 12_345 }
@@ -125,7 +133,10 @@ describe Cline::Session, '#messages' do
       expect(messages.size).to eq 2
       expect(messages.first.id).to eq 'msg-1'
       expect(messages.first.role).to eq 'user'
-      # Verify unknown parameters are not present on the object
+      # Verify unknown root-level parameters are not present on the object
+      expect(messages).not_to respond_to(:unknown_root_param)
+      expect(messages).not_to respond_to(:unknownRootParam)
+      # Verify unknown message-level parameters are not present on the object
       expect(messages.first).not_to respond_to(:this_is_an_unknown_parameter)
       expect(messages.first).not_to respond_to(:thisIsAnUnknownParameter)
       expect(messages[1]).not_to respond_to(:another_extra_field)
@@ -211,6 +222,7 @@ describe Cline::Session, '#messages' do
     it 'persists a newly instantiated messages file' do
       with_session(messages: nil) do |session|
         messages = session.messages(create: true)
+        messages.agent = 'test-agent'
         messages << Cline::SessionMessage.new(
           id: 'msg-1',
           role: 'user',
@@ -220,6 +232,7 @@ describe Cline::Session, '#messages' do
         messages.save
         expect(JSON.parse(File.read(File.join(session.dir, 'test-session.messages.json')))).to eq(
           {
+            'agent' => 'test-agent',
             'messages' => [
               {
                 'id' => 'msg-1',
