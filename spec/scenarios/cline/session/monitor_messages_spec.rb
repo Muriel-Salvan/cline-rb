@@ -84,7 +84,39 @@ describe Cline::Session, '#monitor_messages' do
     end
   end
 
-  # TODO: Add test case validating that it does not call on_message when root attributes of the messages JSON file are updated
+  it 'does not call on_message when only root attributes of the messages JSON file are updated' do
+    with_session(
+      messages: {
+        version: 1,
+        updatedAt: '2023-01-01T00:00:00Z',
+        session_id: 'session',
+        system_prompt: 'System prompt',
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+          { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 }
+        ]
+      }
+    ) do |session|
+      capture_on_message(session) do
+        calls.clear
+        # Update only root attributes (version, updatedAt, session_id, etc.) but keep messages unchanged
+        write_messages(
+          session,
+          {
+            version: 2,
+            updatedAt: '2024-01-01T00:00:00Z',
+            session_id: 'updated-session',
+            system_prompt: 'Updated system prompt',
+            messages: [
+              { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
+              { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 }
+            ]
+          }
+        )
+      end
+      expect(calls).to be_empty
+    end
+  end
 
   it 'calls on_message only for new messages when adding new messages' do
     with_session(
@@ -157,7 +189,6 @@ describe Cline::Session, '#monitor_messages' do
   end
 
   it 'updates session.messages accessor with new content when messages are monitored' do
-    # TODO: Add a new test case like this one, but when modifying root attribnutes of the message file
     with_session(
       messages: {
         messages: [
@@ -180,6 +211,35 @@ describe Cline::Session, '#monitor_messages' do
       expect(session.messages.size).to eq 2
       expect(session.messages[1].ts).to eq 101
       expect(session.messages[1].content.first.text).to eq 'New message'
+    end
+  end
+
+  it 'updates session.messages accessor when root attributes of the messages file are modified' do
+    with_session(
+      messages: {
+        version: 1,
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
+        ]
+      }
+    ) do |session|
+      expect(session.messages.size).to eq 1
+      expect(session.messages.version).to eq 1
+      capture_on_message(session) do
+        # Modify root attributes but keep messages the same
+        write_messages(
+          session,
+          {
+            version: 2,
+            messages: [
+              { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
+            ]
+          }
+        )
+      end
+      # Messages should still be accessible and reflect updated root attributes
+      expect(session.messages.size).to eq 1
+      expect(session.messages.version).to eq 2
     end
   end
 
