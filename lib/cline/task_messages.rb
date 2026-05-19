@@ -2,7 +2,7 @@ require 'json'
 
 module Cline
   # Access all messages associated to a Cline task
-  class Messages
+  class TaskMessages
     extend Forwardable
 
     # @!group Public API
@@ -18,7 +18,7 @@ module Cline
     # @param other [Object] The other to check equality with
     # @return [Boolean] True if objects are equal
     def ==(other)
-      other.is_a?(Messages) &&
+      other.is_a?(TaskMessages) &&
         other.messages == messages
     end
 
@@ -40,7 +40,7 @@ module Cline
     # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     # @return [Object] Corresponding instance
     def self.from_cline_json(json, cline_models:)
-      Messages.new(JSON.parse(json).map { |json_message| Message.of_hash(json_message, cline_models:) })
+      TaskMessages.new(JSON.parse(json).map { |json_message| Message.of_hash(json_message, cline_models:) })
     end
 
     # Output this object as Cline JSON.
