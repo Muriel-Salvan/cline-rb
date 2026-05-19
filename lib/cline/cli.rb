@@ -35,34 +35,44 @@ module Cline
         baseurl: '--baseurl STRING'
       },
       task: {
-        # Run in act mode
-        act: '--act',
         # Run in plan mode
         plan: '--plan',
-        # Enable yolo mode (auto-approve actions)
-        yolo: '--yolo',
-        # Enable auto-approve all actions while keeping interactive mode
-        auto_approve_all: '--auto-approve-all',
-        # Optional timeout in seconds (applies only when provided)
-        timeout: '--timeout INTEGER',
-        # Model to use for the task
-        model: '--model STRING',
-        # Enable extended thinking (1024 tokens when enabled without value)
-        thinking: '--thinking INTEGER',
-        # Reasoning effort: none|low|medium|high|xhigh
-        reasoning_effort: '--reasoning-effort STRING',
-        # Maximum consecutive mistakes before halting in yolo mode
-        max_consecutive_mistakes: '--max-consecutive-mistakes INTEGER',
         # Output messages as JSON instead of styled text
         json: '--json',
-        # Reject first completion attempt to force re-verification
-        double_check_completion: '--double-check-completion',
-        # Enable AI-powered context compaction instead of mechanical truncation
-        auto_condense: '--auto-condense',
+        # Enable auto-approve all actions
+        auto_approve: '--auto-approve',
+        # Reasoning effort level between none|low|medium|high|xhigh
+        thinking: '--thinking STRING',
+        # Context compaction mode: agentic|basic|off
+        compaction: '--compaction STRIG',
+        # Open the terminal user interface (TUI) for interactive sessions
+        tui: '--tui',
+        # Session ID to resume, or nil for a new session
+        id: '--id STRING',
+        # Provider to use for the session
+        provider: '--provider STRING',
+        # API key to use for the session
+        key: '--key STRING',
+        # Model to use for the task
+        model: '--model STRING',
+        # Override the default system prompt
+        system: '--system STRING',
+        # Start a session that runs in the background hub
+        zen: '--zen',
+        # Number of maximum consecutive mistakes (retries) before exiting
+        retries: '--retries INTEGER',
+        # Optional timeout in seconds (applies only when provided)
+        timeout: '--timeout INTEGER',
+        # Run in Agent Client Protocol (ACP) mode for editor integration
+        acp: '--acp',
+        # Use isolated local state at this directory path
+        data_dir: '--data-dir STRING',
         # Path to additional hooks directory for runtime hook injection
         hooks_dir: '--hooks-dir STRING',
-        # Task ID to resume, or nil for a new task
-        task_id: '--taskId STRING'
+        # Auto-create a detached git worktree under ~/.cline/worktrees/ and run the task there
+        worktree: '--worktree',
+        # Run the kanban app
+        kanban: '--kanban'
       }
     }
 
