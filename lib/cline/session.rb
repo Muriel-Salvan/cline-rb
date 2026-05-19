@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module Cline
   # A session defined in a directory
   class Session

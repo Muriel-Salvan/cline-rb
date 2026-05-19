@@ -64,7 +64,7 @@ module Cline
           # @return [Array(String, Object)] Return 2 values:
           #   0. [String] The object name
           #   1. [Object] The object itself
-          define_method :object_from do |dir, create:|
+          define_method(:object_from) do |dir, create:|
             [File.basename(dir), object_class.open(dir, create:)]
           end
         end

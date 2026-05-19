@@ -252,7 +252,7 @@ module Cline
             Thread.new do
               stdout.each_line do |line|
                 stdout_lines << line
-                $stdout.write line if @stdout_echo
+                $stdout.write(line) if @stdout_echo
                 on_stdout&.call(line)
               end
             end,
@@ -260,7 +260,7 @@ module Cline
             Thread.new do
               stderr.each_line do |line|
                 stderr_lines << line
-                $stderr.write line
+                $stderr.write(line)
               end
             end
           ].each(&:join)
