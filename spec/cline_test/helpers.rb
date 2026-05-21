@@ -4,6 +4,7 @@ module ClineTest
     include Config
     include Data
     include Debug
+    include GlobalSettings
     include Logs
     include Os
     include Session
