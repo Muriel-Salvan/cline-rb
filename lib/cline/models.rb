@@ -20,7 +20,7 @@ module Cline
     # @return [Boolean] True if objects are equal
     def ==(other)
       other.is_a?(Models) &&
-        other.models == @models
+        other.models == models
     end
 
     # @!group Internal

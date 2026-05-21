@@ -63,7 +63,7 @@ module Cline
         # @return [Utils::FileMonitor, nil] If no block has been given, return the monitor that needs to be
         #   stopped by the caller when monitoring should end.
         def monitor_cline_data_changes(base_dir, *args, on_change:, monitoring_interval_secs: 1, **kwargs, &)
-          monitor_file_changes(
+          monitor_updates(
             ::File.join(base_dir, cline_json_file(base_dir)),
             *args,
             on_change: proc do |instance|
@@ -84,7 +84,7 @@ module Cline
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor.
         # @return [Object] A new instance.
         def new_instance(file, *args, **kwargs)
-          from_cline_json(safe_read(file), *args, **kwargs)
+          from_cline_json(Utils::File.safe_read(file), *args, **kwargs)
         end
 
         private
@@ -95,30 +95,6 @@ module Cline
         # @return [String] The relative JSON file path
         def cline_json_file(base_dir)
           cline_json_file_def.is_a?(Proc) ? cline_json_file_def.call(base_dir) : cline_json_file_def
-        end
-
-        # Try to read a file with retries in case other processes are using it.
-        #
-        # Parameters::
-        # * *file* (String): Path to read
-        # * *max_retries* (Integer): Number of retries in case of concurrent access [default: 3]
-        # Result::
-        # * String: The file content
-        def safe_read(file, max_retries: 3)
-          retries = 0
-          file_content = nil
-          begin
-            file_content = ::File.read(file)
-          rescue Errno::EACCES, Errno::EAGAIN
-            # Could be that the file is being written at the same time.
-            # Just try again.
-            retries += 1
-            raise if retries > max_retries
-
-            sleep(0.05 * retries)
-            retry
-          end
-          file_content
         end
       end
 

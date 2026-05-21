@@ -8,21 +8,43 @@ module Cline
 
     include Serializable::Dir
 
-    # Get workspaces from this data directory
+    # Get the cached Cline models
     #
     # @param create [Boolean] Should the data be created if it does not exist?
-    # @return [Workspaces] Set of workspaces associated to this data directory
-    def workspaces(create: self.create)
-      @workspaces ||= Workspaces.open(subpath('workspaces'), create:)
+    # @return [Models] Cached Cline models
+    def cline_models(create: self.create)
+      @cline_models ||= Models.from_cline_data(dir, create:)
     end
 
-    # Get tasks from this data directory
+    # Get global settings stored in this data directory
     #
-    # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     # @param create [Boolean] Should the data be created if it does not exist?
-    # @return [Tasks] Set of tasks associated to this data directory
-    def tasks(cline_models: self.cline_models, create: self.create)
-      @tasks ||= Tasks.open(subpath('tasks'), cline_models:, create:)
+    # @return [GlobalSettings, nil] Global settings stored in this data directory, or nil if none
+    def global_settings(create: self.create)
+      @global_settings ||= GlobalSettings.from_cline_data(dir, create:)
+    end
+
+    # Get the Cline logs
+    #
+    # @return [Logs] The Cline logs
+    def logs(create: self.create)
+      @logs ||= Logs.open(subpath('logs/cline.log'), default: create ? '' : nil)
+    end
+
+    # Get MCP settings stored in this data directory
+    #
+    # @param create [Boolean] Should the data be created if it does not exist?
+    # @return [McpSettings, nil] MCP settings stored in this data directory, or nil if none
+    def mcp_settings(create: self.create)
+      @mcp_settings ||= McpSettings.from_cline_data(dir, create:)
+    end
+
+    # Get secrets stored in this data directory
+    #
+    # @param create [Boolean] Should the data be created if it does not exist?
+    # @return [Secrets, nil] Secrets stored in this data directory, or nil if none
+    def secrets(create: self.create)
+      @secrets ||= Secrets.from_cline_data(dir, create:)
     end
 
     # Get sessions from this data directory
@@ -34,36 +56,21 @@ module Cline
       @sessions ||= Sessions.open(subpath('sessions'), cline_models:, create:)
     end
 
-    # Get global settings stored in this data directory
+    # Get tasks from this data directory
     #
+    # @param cline_models [Models] The Cline models used to interpret the tasks' messages
     # @param create [Boolean] Should the data be created if it does not exist?
-    # @return [GlobalSettings, nil] Global settings stored in this data directory, or nil if none
-    def global_settings(create: self.create)
-      @global_settings ||= GlobalSettings.from_cline_data(dir, create:)
+    # @return [Tasks] Set of tasks associated to this data directory
+    def tasks(cline_models: self.cline_models, create: self.create)
+      @tasks ||= Tasks.open(subpath('tasks'), cline_models:, create:)
     end
 
-    # Get secrets stored in this data directory
+    # Get workspaces from this data directory
     #
     # @param create [Boolean] Should the data be created if it does not exist?
-    # @return [Secrets, nil] Secrets stored in this data directory, or nil if none
-    def secrets(create: self.create)
-      @secrets ||= Secrets.from_cline_data(dir, create:)
-    end
-
-    # Get MCP settings stored in this data directory
-    #
-    # @param create [Boolean] Should the data be created if it does not exist?
-    # @return [McpSettings, nil] MCP settings stored in this data directory, or nil if none
-    def mcp_settings(create: self.create)
-      @mcp_settings ||= McpSettings.from_cline_data(dir, create:)
-    end
-
-    # Get the cached Cline models
-    #
-    # @param create [Boolean] Should the data be created if it does not exist?
-    # @return [Models] Cached Cline models
-    def cline_models(create: self.create)
-      @cline_models ||= Models.from_cline_data(dir, create:)
+    # @return [Workspaces] Set of workspaces associated to this data directory
+    def workspaces(create: self.create)
+      @workspaces ||= Workspaces.open(subpath('workspaces'), create:)
     end
 
     # Equality check
@@ -72,12 +79,12 @@ module Cline
     # @return [Boolean] True if objects are equal
     def ==(other)
       other.is_a?(Data) &&
-        other.workspaces == workspaces &&
         other.tasks == tasks &&
+        other.workspaces == workspaces &&
+        other.cline_models == cline_models &&
         other.global_settings == global_settings &&
         other.mcp_settings == mcp_settings &&
-        other.secrets == secrets &&
-        other.cline_models == cline_models
+        other.secrets == secrets
     end
   end
 end

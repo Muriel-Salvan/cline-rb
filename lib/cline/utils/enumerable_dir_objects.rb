@@ -32,7 +32,7 @@ module Cline
       # @param name [String] The object name to create (also serves as sub-directory name)
       # @return [Object] The corresponding instance that has been setup from this new sub-directory
       def new(name)
-        _name, instance = object_from(File.join(dir, name), create: true)
+        _name, instance = object_from(::File.join(dir, name), create: true)
         objects_set[name] = instance
         instance
       end
@@ -65,7 +65,7 @@ module Cline
           #   0. [String] The object name
           #   1. [Object] The object itself
           define_method(:object_from) do |dir, create:|
-            [File.basename(dir), object_class.open(dir, create:)]
+            [::File.basename(dir), object_class.open(dir, create:)]
           end
         end
       end
@@ -83,8 +83,8 @@ module Cline
       # @return [Hash{String => Object}] The objects, per object name
       def objects_set
         @objects_set ||= Dir
-          .glob(File.join(dir, '*'))
-          .select { |path| File.directory?(path) }
+          .glob(::File.join(dir, '*'))
+          .select { |path| ::File.directory?(path) }
           .to_h { |subdir| object_from(subdir, create: create) }
       end
 

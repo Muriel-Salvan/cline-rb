@@ -6,6 +6,12 @@ describe Cline::Config do
       end
     end
 
+    it 'delegates logs' do
+      with_config(create: true) do |config|
+        expect(config.logs).to be config.data.logs
+      end
+    end
+
     it 'delegates mcp_settings' do
       with_config(
         mcp_settings: {

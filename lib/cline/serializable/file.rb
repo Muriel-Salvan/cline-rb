@@ -7,6 +7,7 @@ module Cline
     # Provides:
     # - `.open(file) -> [Object, nil]` Provides a new instance initialized from the file, or nil if no file.
     # - `.monitor_file_changes(file, on_change)` Provides a monitor to be notified on file changes.
+    # - `.monitor_updates(file, on_change)` Provides a monitor to be notified on new instances upon updates.
     # - `#file -> [String]` The file from which this object was initialized.
     module File
       # @!group Internal
@@ -36,6 +37,22 @@ module Cline
         # Monitor changes done on the file and call a callback for each update.
         #
         # @param file [String] File path to be monitored
+        # @param on_change [#call] Block called each time there is an update.
+        #   * Param mtime [Time, nil] New file modification time, or nil if no file
+        # @param monitoring_interval_secs [Float] The monitoring interval in seconds
+        # @yield Optional code called while monitoring is in place.
+        #   If used then monitoring is stopped at the end of the block's execution.
+        # @return [Utils::FileMonitor, nil] If no block has been given, return the monitor that needs to be
+        #   stopped by the caller when monitoring should end.
+        def monitor_file_changes(file, on_change:, monitoring_interval_secs: 1, &)
+          monitor = Utils::FileMonitor.new(file, on_change:, monitoring_interval_secs:)
+          monitor.start(&)
+          monitor unless block_given?
+        end
+
+        # Monitor changes and call a callback for each update on the updated instance.
+        #
+        # @param file [String] File path to be monitored
         # @param args [Array] Extra parameters to give to the instance's constructor
         # @param on_change [#call] Block called each time there is an update.
         #   * Param instance [Object, nil] New instance with updates, or nil if no instance
@@ -45,16 +62,15 @@ module Cline
         #   If used then monitoring is stopped at the end of the block's execution.
         # @return [Utils::FileMonitor, nil] If no block has been given, return the monitor that needs to be
         #   stopped by the caller when monitoring should end.
-        def monitor_file_changes(file, *args, on_change:, monitoring_interval_secs: 1, **kwargs, &)
-          monitor = Utils::FileMonitor.new(
+        def monitor_updates(file, *args, on_change:, monitoring_interval_secs: 1, **kwargs, &)
+          monitor_file_changes(
             file,
             on_change: proc do |_mtime|
               on_change.call(self.open(file, *args, default: nil, **kwargs))
             end,
-            monitoring_interval_secs:
+            monitoring_interval_secs:,
+            &
           )
-          monitor.start(&)
-          monitor unless block_given?
         end
 
         # Default factory for instances.
