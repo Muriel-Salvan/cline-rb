@@ -7,66 +7,46 @@ module ClineTest
       # Provide a temporary Cline data instance over a temporary directory.
       # Will clean up the directory after code execution.
       #
-      # @param global_settings [Hash, nil] The global settings file content, or nil if none
-      # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none
-      # @param secrets [Hash, nil] The secrets file content, or nil if none
-      # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none
-      #   Workspace data is itself a hash that can describe the workspace with the following keys:
-      #   * settings [Hash, nil] The settings to create, or nil if none
-      # @param sessions [Hash{String => Hash{Symbol => Object}}, nil] The sessions to create (key: name, value: data), or nil if none
-      #   Sessions data is itself a hash that can describe the session with the following keys:
-      #   * data [Hash, nil] The session data attributes to create, or nil if none
-      #   * messages [Hash, nil] The full messages JSON file content, or nil if none
-      # @param tasks [Hash{String => Hash{Symbol => Object}}, nil] The tasks to create (key: name, value: data), or nil if none
-      #   Tasks data is itself a hash that can describe the task with the following keys:
-      #   * messages [Array<Hash>, nil] The messages to create, or nil if none
-      # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
       # @param create [Boolean] Flag to be given to the data object
+      # @param data_kwargs [Hash{Symbol => Object}] The data initialization kwargs (see #setup_data_dir)
       # @yield [data_dir] Block called with the data directory ready
       # @yieldparam [String] The data directory
-      def with_data(global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, sessions: nil, tasks: nil, cline_models: nil, create: false)
-        with_data_dir(global_settings:, mcp_settings:, secrets:, workspaces:, sessions:, tasks:, cline_models:) do |data_dir|
-          yield Cline::Data.open(data_dir, create:)
-        end
-      end
-
-      # Provide a temporary Cline data directory.
-      # Will clean up the directory after code execution.
-      #
-      # @param global_settings [Hash, nil] The global settings file content, or nil if none
-      # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none
-      # @param secrets [Hash, nil] The secrets file content, or nil if none
-      # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none
-      #   Workspace data is itself a hash that can describe the workspace with the following keys:
-      #   * settings [Hash, nil] The settings to create, or nil if none
-      # @param sessions [Hash{String => Hash{Symbol => Object}}, nil] The sessions to create (key: name, value: data), or nil if none
-      #   Sessions data is itself a hash that can describe the session with the following keys:
-      #   * data [Hash, nil] The session data attributes to create, or nil if none
-      #   * messages [Hash, nil] The full messages JSON file content, or nil if none
-      # @param tasks [Hash{String => Hash{Symbol => Object}}, nil] The tasks to create (key: name, value: data), or nil if none
-      #   Tasks data is itself a hash that can describe the task with the following keys:
-      #   * messages [Array<Hash>, nil] The messages to create, or nil if none
-      # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
-      # @yield [data_dir] Block called with the data directory ready
-      # @yieldparam [String] The data directory
-      def with_data_dir(global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, sessions: nil, tasks: nil, cline_models: nil)
+      def with_data(create: false, **data_kwargs)
         with_temp_dir do |data_dir|
-          setup_data_dir(data_dir, global_settings:, mcp_settings:, secrets:, workspaces:, sessions:, tasks:, cline_models:)
-          yield data_dir
+          setup_data_dir(data_dir, **data_kwargs)
+          yield Cline::Data.open(data_dir, create:)
         end
       end
 
       # Setup an existing directory for some Cline data
       #
       # @param data_dir [String] The directory to setup
-      # @param global_settings [Hash, nil] The global settings file content, or nil if none (see #with_data_dir)
-      # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none (see #with_data_dir)
-      # @param secrets [Hash, nil] The secrets file content, or nil if none (see #with_data_dir)
-      # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none (see #with_data_dir)
-      # @param sessions [Hash{String => Hash{Symbol => Object}}, nil] The sessions to create (key: name, value: data), or nil if none (see #with_data_dir)
-      # @param tasks [Hash{String => Hash{Symbol => Object}}, nil] The tasks to create (key: name, value: data), or nil if none (see #with_data_dir)
-      # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none (see #with_data_dir)
-      def setup_data_dir(data_dir, global_settings: nil, mcp_settings: nil, secrets: nil, workspaces: nil, sessions: nil, tasks: nil, cline_models: nil)
+      # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
+      # @param global_settings [Hash, nil] The global settings file content, or nil if none
+      # @param logs [Array<Hash>, nil] Log lines to create in data/logs/cline.log, or nil if none
+      # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none
+      # @param secrets [Hash, nil] The secrets file content, or nil if none
+      # @param sessions [Hash{String => Hash{Symbol => Object}}, nil] The sessions to create (key: name, value: data), or nil if none
+      #   Sessions data is itself a hash that can describe the session with the following keys:
+      #   * data [Hash, nil] The session data attributes to create, or nil if none
+      #   * messages [Hash, nil] The full messages JSON file content, or nil if none
+      # @param tasks [Hash{String => Hash{Symbol => Object}}, nil] The tasks to create (key: name, value: data), or nil if none
+      #   Tasks data is itself a hash that can describe the task with the following keys:
+      #   * messages [Array<Hash>, nil] The messages to create, or nil if none
+      # @param workspaces [Hash{String => Hash{Symbol => Object}}, nil] The workspaces to create (key: name, value: data), or nil if none
+      #   Workspace data is itself a hash that can describe the workspace with the following keys:
+      #   * settings [Hash, nil] The settings to create, or nil if none
+      def setup_data_dir(
+        data_dir,
+        cline_models: nil,
+        global_settings: nil,
+        logs: nil,
+        mcp_settings: nil,
+        secrets: nil,
+        sessions: nil,
+        tasks: nil,
+        workspaces: nil
+      )
         File.write(File.join(data_dir, 'globalState.json'), global_settings.to_json) if global_settings
         File.write(File.join(data_dir, 'secrets.json'), secrets.to_json) if secrets
         if mcp_settings
@@ -100,6 +80,11 @@ module ClineTest
             FileUtils.mkdir_p(task_dir)
             File.write(File.join(task_dir, 'ui_messages.json'), task_data[:messages].to_json) if task_data[:messages]
           end
+        end
+        if logs
+          logs_dir = File.join(data_dir, 'logs')
+          FileUtils.mkdir_p(logs_dir)
+          File.write(File.join(logs_dir, 'cline.log'), logs.map(&:to_json).join("\n"))
         end
         return unless cline_models
 
