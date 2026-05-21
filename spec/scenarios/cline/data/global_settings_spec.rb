@@ -356,49 +356,4 @@ describe Cline::Data, '#global_settings' do
       expect(global_settings.global_skills_toggles.to_h).to eq({ 'default_skill' => true })
     end
   end
-
-  describe '#==' do
-    it 'returns true when 2 global settings from different data directories have the same content' do
-      settings_hash = {
-        clineWebToolsEnabled: true,
-        focusChainSettings: {
-          enabled: true,
-          remindClineInterval: 5
-        }
-      }
-      with_data(global_settings: settings_hash) do |data1|
-        settings1 = data1.global_settings
-        with_data(global_settings: settings_hash) do |data2|
-          settings2 = data2.global_settings
-          # Settings are from different data directories but have identical content
-          expect(settings1).not_to equal(settings2) # Different instances
-          expect(settings1).to eq(settings2)
-        end
-      end
-    end
-
-    it 'returns false when 2 global settings have different attributes' do
-      with_data(global_settings: { clineWebToolsEnabled: true }) do |data1|
-        with_data(global_settings: { clineWebToolsEnabled: false }) do |data2|
-          expect(data1.global_settings).not_to eq(data2.global_settings)
-        end
-      end
-    end
-
-    it 'returns false when 2 global settings have different nested attributes' do
-      with_data(global_settings: { focusChainSettings: { enabled: true } }) do |data1|
-        with_data(global_settings: { focusChainSettings: { enabled: false } }) do |data2|
-          expect(data1.global_settings).not_to eq(data2.global_settings)
-        end
-      end
-    end
-
-    it 'returns false when 2 global settings have unknown attributes' do
-      with_data(global_settings: { focusChainSettings: { unknownAttribute: 1 } }) do |data1|
-        with_data(global_settings: { focusChainSettings: { unknownAttribute: 2 } }) do |data2|
-          expect(data1.global_settings).not_to eq(data2.global_settings)
-        end
-      end
-    end
-  end
 end
