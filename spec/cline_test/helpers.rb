@@ -13,5 +13,6 @@ module ClineTest
     include Skill
     include Task
     include TempDir
+    include Workspace
   end
 end
