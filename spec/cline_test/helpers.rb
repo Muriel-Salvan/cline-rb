@@ -6,6 +6,7 @@ module ClineTest
     include Debug
     include GlobalSettings
     include Logs
+    include McpSettings
     include Os
     include Session
     include Skill
