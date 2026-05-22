@@ -44,5 +44,63 @@ describe Cline::Log, '#==' do
     end
   end
 
-  # TODO: Add 1 test case for logs with 1 different nested property attribute
+  it 'returns false for logs with 1 different unknown attribute' do
+    shared_base = {
+      level: 30,
+      time: '2026-01-01T00:00:00.000Z',
+      pid: 123,
+      hostname: 'host',
+      name: 'test',
+      component: 'main',
+      msg: 'Hello world'
+    }
+    with_logs(
+      lines: [
+        shared_base.merge(unknown_attribute: 'abc123'),
+        shared_base.merge(unknown_attribute: 'def456')
+      ]
+    ) do |logs|
+      expect(logs[0]).not_to eq logs[1]
+    end
+  end
+
+  it 'returns false for logs with 1 different nested property attribute' do
+    shared_base = {
+      level: 30,
+      time: '2026-01-01T00:00:00.000Z',
+      pid: 123,
+      hostname: 'host',
+      name: 'test',
+      component: 'main',
+      msg: 'Hello world'
+    }
+    with_logs(
+      lines: [
+        shared_base.merge(properties: { ulid: 'abc123' }),
+        shared_base.merge(properties: { ulid: 'def456' })
+      ]
+    ) do |logs|
+      expect(logs[0]).not_to eq logs[1]
+    end
+  end
+
+  it 'returns false for logs with 1 different unknown nested property attribute' do
+    shared_base = {
+      level: 30,
+      time: '2026-01-01T00:00:00.000Z',
+      pid: 123,
+      hostname: 'host',
+      name: 'test',
+      component: 'main',
+      msg: 'Hello world'
+    }
+    with_logs(
+      lines: [
+        shared_base.merge(properties: { ulid: 'abc123', unknown_attribute: 'value1' }),
+        shared_base.merge(properties: { ulid: 'abc123', unknown_attribute: 'value2' })
+      ]
+    ) do |logs|
+      expect(logs[0]).not_to eq logs[1]
+    end
+  end
 end

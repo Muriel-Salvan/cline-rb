@@ -84,7 +84,7 @@ module ClineTest
         if logs
           logs_dir = File.join(data_dir, 'logs')
           FileUtils.mkdir_p(logs_dir)
-          File.write(File.join(logs_dir, 'cline.log'), logs.map(&:to_json).join("\n"))
+          File.write(File.join(logs_dir, 'cline.log'), logs.map { |log| log.is_a?(String) ? log : log.to_json }.join("\n"))
         end
         return unless cline_models
 

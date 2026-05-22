@@ -113,24 +113,51 @@ describe Cline::Logs, '#logs' do
     end
   end
 
-  # TODO: Add 1 test case validating returning all logs with non-JSON lines
-  # TODO: Add 1 test case validating returning filtered logs using a String with non-JSON lines among the logs
-  # TODO: Add 1 test case validating returning filtered logs using a Time with non-JSON lines among the logs
-
-  it 'delegates enumerating methods to the internal logs' do
-    # TODO: Move this test to another file
+  it 'returns all logs with non-JSON lines inside' do
     with_logs(
       lines: [
         { time: '2026-01-01T00:00:00.000Z', msg: 'First' },
-        { time: '2026-01-01T00:00:01.000Z', msg: 'Second' },
-        { time: '2026-01-01T00:00:02.000Z', msg: 'Third' }
+        'This is a non-JSON line',
+        { time: '2026-01-01T00:00:01.000Z', msg: 'Second' }
       ]
     ) do |logs|
-      expect(logs.size).to eq 3
-      expect(logs.first.msg).to eq 'First'
-      expect(logs.last.msg).to eq 'Third'
-      expect(logs[1].msg).to eq 'Second'
-      expect(logs.empty?).to be false
+      result = logs.logs
+      expect(result.size).to eq 3
+      expect(result[0].msg).to eq 'First'
+      expect(result[1]).to eq 'This is a non-JSON line'
+      expect(result[2].msg).to eq 'Second'
+    end
+  end
+
+  it 'filters logs from a given String with non-JSON lines among the logs' do
+    with_logs(
+      lines: [
+        { time: '2026-01-01T00:00:00.000Z', msg: 'First' },
+        'Non-JSON line 1',
+        { time: '2026-01-01T00:00:01.000Z', msg: 'Second' }
+      ]
+    ) do |logs|
+      result = logs.logs(from: '{"time":"2026-01-01T00:00:00.000Z","msg":"First"}')
+      expect(result.size).to eq 2
+      expect(result[0]).to eq 'Non-JSON line 1'
+      expect(result[1].msg).to eq 'Second'
+    end
+  end
+
+  it 'filters logs from a given Time with non-JSON lines among the logs' do
+    with_logs(
+      lines: [
+        { time: '2026-01-01T00:00:00.000Z', msg: 'First' },
+        'Non-JSON line between',
+        { time: '2026-01-01T00:00:10.000Z', msg: 'Second' }
+      ]
+    ) do |logs|
+      # Time horizon after the first JSON line but before the second -> will skip the first JSON
+      # and return the non-JSON line and the second JSON log
+      result = logs.logs(from: Time.utc(2026, 1, 1, 0, 0, 5))
+      expect(result.size).to eq 2
+      expect(result[0]).to eq 'Non-JSON line between'
+      expect(result[1].msg).to eq 'Second'
     end
   end
 end
