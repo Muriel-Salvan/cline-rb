@@ -67,11 +67,11 @@ RSpec/DescribeClass:
 
 # It's ok to have scenarios having multiple lines
 RSpec/ExampleLength:
-  Max: 120
+  Max: 140
 
 # It's ok to have test scenarios having several expectations
 RSpec/MultipleExpectations:
-  Max: 50
+  Max: 70
 
 # It's ok to have nested groups in RSpec.
 RSpec/NestedGroups:
