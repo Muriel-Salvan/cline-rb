@@ -19,6 +19,11 @@ module Cline
           # TODO: Use Process.kill here when Process.kill will be fixed on Windows systems.
           system("taskkill /f /pid #{pid}")
         end
+
+        # @return [String] The Cline executable
+        def cline_exe
+          'cline.cmd'
+        end
       end
     end
   end

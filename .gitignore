@@ -3,3 +3,9 @@ Gemfile.lock
 
 # Don't commit the temporary directory used by tests in debug mode
 .cline_test
+
+# On Windows, node-pty is used to execute the CLI.
+# Don't commit node package files and modules.
+node_modules
+package.json
+package-lock.json

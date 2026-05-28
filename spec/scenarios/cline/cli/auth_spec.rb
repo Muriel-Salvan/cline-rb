@@ -10,7 +10,7 @@ describe Cline::Cli, '#auth' do
       modelid: 'gpt-4o',
       baseurl: 'https://my-server.com/api'
     },
-    expected_cli: 'cline auth',
+    expected_cli_command: 'auth',
     expected_cli_options: '--provider openai-native --apikey test-key-123 --modelid gpt-4o --baseurl https://my-server.com/api'
   )
 end

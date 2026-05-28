@@ -21,8 +21,10 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'human_number', '~> 0.2'
   spec.add_dependency 'json', '~> 2.18'
   spec.add_dependency 'os', '~> 1.1'
+  spec.add_dependency 'pty_compat', '~> 0.1'
   spec.add_dependency 'secret_string', '~> 1.1'
   spec.add_dependency 'shale', '~> 1.2'
+  spec.add_dependency 'strings-ansi', '~> 0.2'
   spec.add_dependency 'sys-proctable', '~> 1.3'
   spec.add_dependency 'win32ole', '~> 1.9' if Gem.win_platform?
   spec.add_dependency 'zeitwerk', '~> 2.7'

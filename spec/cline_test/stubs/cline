@@ -15,9 +15,44 @@
 require 'fileutils'
 require 'json'
 
+# @return [String] The config directory
+def config_dir
+  @config_dir ||= begin
+    config_match = ARGV.join(' ').match(/--config ([^\s]+)/)[1]
+    raise 'The Cline stub can only handle this instruction if used with the --config flag' unless config_match
+
+    config_match
+  end
+end
+
+# Return a session messages file content, for a given list of messages
+#
+# @param session_id [String] The session id
+# @param messages [Array<Hash{Symbol => Object}>] List of messages
+# @return [Hash] The JSON messages file content
+def session_messages(session_id, messages)
+  {
+    version: 1,
+    updated_at: Time.now.utc.strftime('%FT%T.%LZ'),
+    agent: 'lead',
+    sessionId: session_id,
+    messages: messages,
+    system_prompt: 'You are Cline, an AI coding agent.'
+  }
+end
+
+# Log debug a message
+#
+# @param message [String] Message to log debug
+def log_debug(message)
+  puts "[CLINE STUB DEBUG] - #{message}" if @debug
+end
+
 # Make sure output is sent directly to the calling process
 $stdout.sync = true
 $stderr.sync = true
+
+@debug = false
 
 # Record the call
 calls_file = '.cline_test/tmp/cli_calls.json'
@@ -28,7 +63,7 @@ File.write(
     calls + [
       {
         pid: Process.pid,
-        command: "cline #{ARGV.join(' ')}".strip,
+        command: ARGV.join(' ').to_s.strip,
         stdin:
           if $stdin.tty?
             nil
@@ -41,37 +76,86 @@ File.write(
   ).to_json
 )
 
-# Read the config driven by mock_commands
-config = JSON.parse(File.read('.cline_test/tmp/cli_stub.json'), symbolize_names: true)
-
-# Produce the mocked behaviour
-$stdout.write config[:stdout]
-$stderr.write config[:stderr]
-eval config[:eval]
-if config[:task]
-  config_dir = ARGV.join(' ').match(/--config ([^\s]+)/)[1]
-  raise 'The Cline stub can only handle a task if used with the --config flag' unless config_dir
-
-  # Simulate a task being created
-  $stdout.write "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n"
-  task_dir = File.join(config_dir, 'data', 'tasks', '12345')
-  FileUtils.mkdir_p(task_dir)
-  if config[:task][:messages]
-    # Normalize messages to be sent with some default values
-    default_message = { ts: 100, type: 'say', say: 'text', text: 'Message content' }
-    messages = config[:task][:messages].map do |messages_group|
-      (messages_group.is_a?(Array) ? messages_group : [messages_group]).map { |message| default_message.merge(message) }
-    end
-    messages_file = File.join(task_dir, 'ui_messages.json')
-    # First create empty file
-    File.write(messages_file, '[]')
-    sleep 0.2
-    # Then add test messages 1 by 1 with 0.2 seconds delay
-    messages.size.times do |idx|
-      File.write(messages_file, messages[0..idx].flatten(1).to_json)
-      sleep 0.2
+# Read the config driven by mock_commands and execute all instructions in sequence
+JSON.parse(File.read('.cline_test/tmp/cli_stub.json'), symbolize_names: true).each do |instructions|
+  instructions.each do |name, desc|
+    log_debug "Execute instruction #{name}..."
+    case name
+    when :debug
+      @debug = desc
+    when :eval
+      eval desc
+    when :exit
+      exit desc
+    when :log
+      log_file = File.join(config_dir, 'data', 'logs', 'cline.log')
+      FileUtils.mkdir_p(File.dirname(log_file))
+      File.write(
+        log_file,
+        "#{
+          if desc.is_a?(String)
+            desc
+          else
+            # Prepare default values that are process dependent
+            {
+              time: Time.now.utc.strftime('%FT%T.%LZ'),
+              pid: Process.pid
+            }.merge(desc).to_json
+          end
+        }\n",
+        mode: 'a+'
+      )
+    when :session
+      session_messages = desc.delete(:messages)
+      session_dir = File.join(config_dir, 'data', 'sessions', desc[:session_id])
+      messages_file = File.join(session_dir, "#{desc[:session_id]}.messages.json")
+      FileUtils.mkdir_p(session_dir)
+      File.write(
+        File.join(session_dir, "#{desc[:session_id]}.json"),
+        JSON.pretty_generate(
+          {
+            # Prepare default values that are process dependent
+            pid: Process.pid,
+            started_at: Time.now.utc.strftime('%FT%T.%LZ'),
+            messages_path: messages_file
+          }.merge(desc)
+        )
+      )
+      if session_messages
+        # First create empty file
+        log_debug "[Session #{desc[:session_id]}] - Initialize messages"
+        File.write(messages_file, JSON.pretty_generate(session_messages(desc[:session_id], [])))
+        sleep 0.2
+        # Then add test messages 1 by 1 with 0.2 seconds delay
+        session_messages.size.times do |idx|
+          total_messages = session_messages[0..idx].flatten(1)
+          log_debug "[Session #{desc[:session_id]}] - Set #{total_messages.size} messages"
+          File.write(messages_file, JSON.pretty_generate(session_messages(desc[:session_id], total_messages)))
+          sleep 0.2
+        end
+      end
+    when :sleep
+      sleep desc
+    when :stderr
+      $stderr.write desc
+    when :stdout
+      $stdout.write desc
+    when :task
+      # Simulate a task being created
+      $stdout.write "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n"
+      task_dir = File.join(config_dir, 'data', 'tasks', '12345')
+      FileUtils.mkdir_p(task_dir)
+      if desc[:messages]
+        messages_file = File.join(task_dir, 'ui_messages.json')
+        # First create empty file
+        File.write(messages_file, '[]')
+        sleep 0.2
+        # Then add test messages 1 by 1 with 0.2 seconds delay
+        desc[:messages].size.times do |idx|
+          File.write(messages_file, desc[:messages][0..idx].flatten(1).to_json)
+          sleep 0.2
+        end
+      end
     end
   end
 end
-sleep config[:running_time_secs]
-exit config[:exit_status]

@@ -43,7 +43,7 @@ module Cline
     # Monitor logs with a callback called when new or updated logs arrive
     #
     # @param on_log [#call] Block called each time there is a new log.
-    #   * Param message [Log, String] Log that has happened, either as a Log object or as a String if it is not JSON.
+    #   * Param log [Log, String] Log that has happened, either as a Log object or as a String if it is not JSON.
     #   * Param last [Boolean] Is this the last log fetched from the logs?
     # @param from [Time, String, nil] The horizon (exclusive) from which we select lines (see #logs)
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds

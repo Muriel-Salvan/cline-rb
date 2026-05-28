@@ -44,12 +44,12 @@ describe Cline::Session, '#monitor_messages' do
     end
   end
 
-  it 'calls on_message for each message even without modifications' do
+  it 'calls on_message for each message from the start' do
     with_session(
       messages: {
         messages: [
-          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 },
-          { id: 'msg-2', role: 'assistant', content: [{ type: 'text', text: 'Response' }], ts: 101 }
+          { ts: 100 },
+          { ts: 101 }
         ]
       }
     ) do |session|
@@ -61,6 +61,46 @@ describe Cline::Session, '#monitor_messages' do
       expect(calls[1][:message].ts).to eq 101
       expect(calls[1][:last]).to be true
       expect(calls[1][:previous_version]).to be_nil
+    end
+  end
+
+  it 'calls on_message for each message that is added after the first batch' do
+    with_session(
+      messages: {
+        messages: [
+          { ts: 100 },
+          { ts: 101 }
+        ]
+      }
+    ) do |session|
+      capture_on_message(session) do
+        # Wait for the first batch to be processed
+        sleep 0.2
+        write_messages(
+          session,
+          {
+            messages: [
+              { ts: 100 },
+              { ts: 101 },
+              { ts: 102 },
+              { ts: 103 }
+            ]
+          }
+        )
+      end
+      expect(calls.size).to eq 4
+      expect(calls[0][:message].ts).to eq 100
+      expect(calls[0][:last]).to be false
+      expect(calls[0][:previous_version]).to be_nil
+      expect(calls[1][:message].ts).to eq 101
+      expect(calls[1][:last]).to be true
+      expect(calls[1][:previous_version]).to be_nil
+      expect(calls[2][:message].ts).to eq 102
+      expect(calls[2][:last]).to be false
+      expect(calls[2][:previous_version]).to be_nil
+      expect(calls[3][:message].ts).to eq 103
+      expect(calls[3][:last]).to be true
+      expect(calls[3][:previous_version]).to be_nil
     end
   end
 

@@ -20,6 +20,11 @@ module Cline
           # Could be that the process naturally died before we interrupted it
           log_debug "Process #{pid} was already killed"
         end
+
+        # @return [String] The Cline executable
+        def cline_exe
+          'cline'
+        end
       end
     end
   end

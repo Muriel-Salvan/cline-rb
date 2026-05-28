@@ -1,7 +1,11 @@
 require 'human_number'
-require 'open3'
+require 'pty_compat'
 require 'sys/proctable'
 require 'tmpdir'
+
+# Load the HumanNumber locale files, as it does not do it automatically.
+# TODO: Remove this when human_number will be fixed.
+I18n.load_path += Dir[File.join(File.join(Gem::Specification.find_by_name('human_number').gem_dir, 'lib'), 'locales', '*.yml')]
 
 module Cline
   # Provide a wrapper over the Cline CLI tool
@@ -85,6 +89,11 @@ module Cline
       @stdout_echo = stdout_echo
       @config_dir = kwargs[:config]
       @cline_pid = nil
+      # [Session] Session associated to this CLI run.
+      # The session is discovered using:
+      # 1. Cline logs appearing after executing CLI that contain a session ID.
+      # 2. The session corresponding to this ID.
+      @session = nil
     end
 
     # Authenticate the CLI
@@ -95,93 +104,111 @@ module Cline
       run_cli(command: 'auth', args: parse_auth_options(**kwargs))
     end
 
-    # Run a task with a prompt
+    # Start a task by sending a prompt
     #
-    # @param prompt [String] The prompt to give to the task
-    # @param on_message [#call, nil] Callback called for each new or updated message for this task, or nil if none (see Task#monitor_message)
+    # @param prompt [String] The prompt
+    # @param on_message [#call, nil] Callback called for each new or updated message for the session of this prompt,
+    #   or nil if none (see Session#monitor_message)
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds
     # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
     # @return [Hash{Symbol => Object}] A set of return properties (see #run_cli). Additionnally the following ones:
-    #   * message [TaskMessage, nil] The last message of the task, or nil if none
+    #   * message [SessionMessage, nil] The last message of the session, or nil if none
     def task(prompt, on_message: nil, monitoring_interval_secs: 1, **kwargs)
-      task_monitor_thread = nil
-      @current_task = nil
-      cli_running = true
-      begin
-        result = run_cli(
-          args: parse_task_options(**kwargs),
-          stdin_data: prompt,
-          on_stdout: proc do |line|
-            if line.strip =~ /^\{"type":"task_started","taskId":"([^"]+)"\}$/
-              task_id = Regexp.last_match[1]
-              log_debug "Started task ID #{task_id}"
-              # Create the thread that will find out the task handled by the CLI
-              task_monitor_thread = Thread.new do
-                # It can be that the task has not been created yet.
-                # Just wait for it.
-                while cli_running
-                  if config.tasks
-                    break if config.tasks[task_id]
-
-                    config.tasks.refresh!
-                  else
-                    config.refresh!
-                  end
-                  sleep 0.1
-                end
-                # The CLI could be already finished, but we still need to monitor the eventual messages.
-                @current_task = config&.tasks && config.tasks[task_id]
-                log_debug 'Found task correctly' if @current_task
-                # [Hash{Integer => Usage}] All usages, per timestamp, for logging purposes
-                usages = {}
-                @current_task&.monitor_messages(
-                  on_message: proc do |message, last, previous_version|
-                    log_debug do
-                      usages[message.ts] = message.usage if message.usage
-                      last_usage = usages.values.last
-                      prefix = "[#{message.timestamp.strftime('%H:%M:%S')}]#{
-                        unless last_usage.nil?
-                          " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')}" \
-                            " #{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
-                            "/#{HumanNumber.human_number(last_usage.context_tokens_limit, max_digits: 2)})"
-                        end
-                      } - "
-                      "#{prefix}#{message.to_human(limit: 128 - prefix.size)}"
-                    end
-                    # Call the user callback if any
-                    on_message&.call(message, last, previous_version)
-                    # Interrupt the CLI if we just got a last message that is blocking (like a user ask or plan_mode_respond).
-                    if last && (
-                      (message.type == 'ask' && %w[followup new_task plan_mode_respond].include?(message.ask)) ||
-                      (message.type == 'say' && %w[completion_result].include?(message.say))
-                    )
-                      # The CLI should end.
-                      # Maybe it did it already, but maybe not. Make sure it does.
-                      interrupt
-                    end
-                  end,
-                  ignore_partials: true,
-                  monitoring_interval_secs:
-                ) do
-                  sleep 0.1 while cli_running
-                end
+      result = {}
+      # Use a temporary file if the prompt is multi-line only.
+      # This is because some platforms don't support multiline command line arguments (Windows) and Cline CLI can't accept
+      #   prompts from stdin while still staying in interactive mode.
+      stripped_prompt = prompt.strip
+      (
+        if stripped_prompt.empty?
+          proc { |&run_block| run_block.call(nil) }
+        else
+          prompt_lines = stripped_prompt.split("\n")
+          if prompt_lines.size == 1
+            proc { |&run_block| run_block.call(prompt_lines.first) }
+          else
+            proc do |&run_block|
+              Dir.mktmpdir do |tmp_dir|
+                prompt_file = "#{tmp_dir}/prompt.txt"
+                File.write(prompt_file, stripped_prompt)
+                run_block.call(prompt_file)
               end
             end
           end
-        )
-      ensure
-        cli_running = false
-        task_monitor_thread&.join
+        end
+      ).call do |extra_prompt_arg|
+        session_monitor_thread = nil
+        start_time = Time.now
+        cli_running = true
+        begin
+          result = run_cli(
+            args: parse_task_options(**kwargs) + (extra_prompt_arg.nil? ? [] : [extra_prompt_arg]),
+            on_start: proc do |_reader, _writer, _pid|
+              session_monitor_thread = Thread.new do
+                # Start monitoring logs to get the session ID.
+                # Wait for logs to exist.
+                sleep 0.1 while cli_running && !config.logs
+                # Monitor logs to get the session ID
+                session_id = nil
+                config.logs&.monitor(
+                  on_log: proc do |log, _last|
+                    session_id = log.properties.ulid if !session_id && log.is_a?(Log) && log.properties&.ulid
+                  end,
+                  from: start_time
+                ) do
+                  sleep 0.1 while cli_running && !session_id
+                end
+                # If CLI has finished, session_id should be already discovered, unless the session could not be created.
+                # If CLI has not finished yet, the we have the session ID discovered already.
+                # So it means that if session_id is nil, there has been a problem (like core dump).
+                if session_id
+                  log_debug "Found Cline session ID #{session_id}"
+                  # Wait for the CLI to create the session for real
+                  sleep 0.1 while cli_running && (!config.sessions || !config.sessions[session_id])
+                  # If CLI has finished, then the session should exist, unless there has been a problem (like file system issue).
+                  @session = config.sessions && config.sessions[session_id]
+                  # Now monitor the session messages for reporting and possible user callback
+                  # [Hash{Integer => Usage}] All usages, per timestamp, for logging purposes
+                  usages = {}
+                  @session&.monitor_messages(
+                    on_message: proc do |message, last, previous_version|
+                      log_debug do
+                        usages[message.ts] = message.usage if message.usage
+                        last_usage = usages.values.last
+                        prefix = "[#{message.timestamp.strftime('%H:%M:%S')}]#{
+                          unless last_usage.nil?
+                            " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')}" \
+                              " #{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
+                              "/#{HumanNumber.human_number(last_usage.context_tokens_limit || 0, max_digits: 2)})"
+                          end
+                        } - "
+                        "#{prefix}#{message.to_human(limit: 128 - prefix.size)}"
+                      end
+                      # Call the user callback if any
+                      on_message&.call(message, last, previous_version)
+                    end,
+                    monitoring_interval_secs:
+                  ) do
+                    sleep 0.1 while cli_running
+                  end
+                end
+              end
+            end
+          )
+        ensure
+          cli_running = false
+          session_monitor_thread&.join
+        end
       end
-      result[:message] = @current_task&.messages&.last
+      result[:message] = @session&.messages&.last
       result
     end
 
     # @return [Integer, nil] The PID of the running Cline process, if any
     attr_reader :cline_pid
 
-    # @return [Task, nil] The current or last task handled by the Cline process, if any
-    attr_reader :current_task
+    # @return [Session, nil] The current or last session handled by the Cline process, if any
+    attr_reader :session
 
     # Interrupt the running Cline command
     def interrupt
@@ -226,14 +253,17 @@ module Cline
     # @param args [Array<String>] Command arguments
     # @param stdin_data [String, nil] Data to send to the standard input of the CLI, or nil if none
     # @param expected_exit_status [Integer, nil] Expected exit status, or nil for no expectation
+    # @param on_start [#call, nil] Optional callback that is called when the process is started
+    #   - Param reader [IO] The process reader descriptor (stdout and stderr).
+    #   - Param writer [IO] The process writer descriptor (stdin).
+    #   - Param pid [Integer] The process PID.
     # @param on_stdout [#call, nil] Optional callback that is called for every line output on stdout
-    #   * Param line [String] The stdout line (including potential \n)
+    #   - Param line [String] The stdout line (including potential \n)
     # @return [Hash{Symbol => Object}] A set of return properties:
-    #   * stdout [String] Full stdout
-    #   * stderr [String] Full stderr
-    #   * exit_status [Integer] Exit status
-    def run_cli(command: nil, args: [], stdin_data: nil, expected_exit_status: 0, on_stdout: nil)
-      cmd = "cline#{" #{command}" if command} #{(@global_options + args).join(' ')}".strip
+    #   - stdout [String] Full stdout
+    #   - exit_status [Integer] Exit status
+    def run_cli(command: nil, args: [], stdin_data: nil, expected_exit_status: 0, on_start: nil, on_stdout: nil)
+      cmd = "#{Utils::Os.cline_exe}#{" #{command}" if command} #{(@global_options + args).join(' ')}".strip
       (
         proc do |&run_block|
           if stdin_data
@@ -251,39 +281,32 @@ module Cline
         log_debug "Launch CLI `#{cmd}`..."
         @interrupted_on_purpose = false
         stdout_lines = []
-        stderr_lines = []
         exit_status = nil
-        Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-          @cline_pid = wait_thr.pid
-          log_debug "Cline process started with PID #{@cline_pid}"
-          stdin.close
-          [
-            # Parse stdout
-            Thread.new do
-              stdout.each_line do |line|
-                stdout_lines << line
-                $stdout.write(line) if @stdout_echo
-                on_stdout&.call(line)
-              end
-            end,
-            # Parse stderr
-            Thread.new do
-              stderr.each_line do |line|
-                stderr_lines << line
-                $stderr.write(line)
-              end
+        PTY.spawn(cmd) do |reader, writer, pid|
+          @cline_pid = pid
+          on_start&.call(reader, writer, pid)
+          log_debug "Cline master process started with PID #{cline_pid}"
+          begin
+            reader.each_line do |line|
+              stdout_lines << line
+              $stdout.write(line) if @stdout_echo
+              on_stdout&.call(line)
             end
-          ].each(&:join)
-          exit_status = wait_thr.value.exitstatus
-          log_debug "Cline process `#{cmd}` with PID #{@cline_pid} exited with status: #{exit_status}#{' (interrupted on purpose)' if @interrupted_on_purpose}"
+          rescue Errno::EIO => e
+            # Child process finished
+            log_debug "Cline master process #{cline_pid} got terminated: #{e.message}"
+          end
+          exit_status = PTY.last_status.exitstatus
+          log_debug do
+            "Cline master process `#{cmd}` with PID #{cline_pid} exited with status: #{exit_status}#{' (interrupted on purpose)' if @interrupted_on_purpose}"
+          end
           @cline_pid = nil
           if !@interrupted_on_purpose && !expected_exit_status.nil? && exit_status != expected_exit_status
-            raise UnexpectedExitStatusError, "CLI `#{cmd}` exited with status #{exit_status} (expected #{expected_exit_status})"
+            raise UnexpectedExitStatusError, "Cline master process `#{cmd}` exited with status #{exit_status} (expected #{expected_exit_status})"
           end
         end
         {
-          stdout: stdout_lines.join,
-          stderr: stderr_lines.join,
+          stdout: Utils::Logger.sanitize_pty_output(stdout_lines.join),
           exit_status:
         }
       end

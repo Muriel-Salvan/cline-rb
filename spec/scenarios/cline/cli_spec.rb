@@ -18,10 +18,10 @@ describe Cline::Cli do
     cli.task('Plan database migration', plan: true, thinking: 'high')
     cli.task('Generate documentation', json: true)
     expect_issued_commands [
-      { command: 'cline auth --verbose --cwd /test/path --provider openai-native --apikey test-api-key --modelid gpt-4o' },
-      { command: 'cline --verbose --cwd /test/path --auto-approve --timeout 300 --retries 3', stdin: 'Implement authentication system' },
-      { command: 'cline --verbose --cwd /test/path --plan --thinking high', stdin: 'Plan database migration' },
-      { command: 'cline --verbose --cwd /test/path --json', stdin: 'Generate documentation' }
+      { command: 'auth --verbose --cwd /test/path --provider openai-native --apikey test-api-key --modelid gpt-4o' },
+      { command: '--verbose --cwd /test/path --auto-approve --timeout 300 --retries 3 Implement authentication system' },
+      { command: '--verbose --cwd /test/path --plan --thinking high Plan database migration' },
+      { command: '--verbose --cwd /test/path --json Generate documentation' }
     ]
   end
 end

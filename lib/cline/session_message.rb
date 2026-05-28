@@ -103,14 +103,14 @@ module Cline
     def usage
       return unless metrics
 
-      Usage.new(
+      @usage ||= Usage.new(
         **{
           cost: metrics.cost,
           input_tokens: metrics.input_tokens,
           output_tokens: metrics.output_tokens,
           cache_read_tokens: metrics.cache_read_tokens,
           cache_write_tokens: metrics.cache_write_tokens,
-          cline_model: cline_models[model_info.id]
+          cline_model: cline_models && cline_models[model_info.id]
         }.compact
       )
     end

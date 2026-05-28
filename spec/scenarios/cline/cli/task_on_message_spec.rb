@@ -4,45 +4,34 @@ describe Cline::Cli, '#task' do
     #
     # @param mock_config [Hash{Symbol => Object}] The Cline mock configuration (see #ClineTest::Helpers::Cli#mock_commands)
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds.
+    # @param sleep [Float] Some time between logging the session ID and creating the session files,
+    #   so that monitoring thread can catch up (useful to validate last session messages).
     # @return [Array<Hash{Symbol => Object}>] The list of messages received by the on_message callback:
-    #   * message [TaskMessage] The message that was received.
+    #   * message [SessionMessage] The message that was received.
     #   * last [Boolean] Is this message the last one of the discussion?
-    #   * previous_version [TaskMessage, nil] Previous version of this message, or nil if it is a new one.
-    def capture_messages(mock_config = {}, monitoring_interval_secs: 0.1)
-      messages_received = []
-      with_config do |config|
-        mock_commands("cline --config #{config.dir}" => mock_config)
-        # Create CLI instance with our test config directory
-        described_class.new(config: config.dir).task(
-          'Test prompt',
-          on_message: proc { |message, last, previous|
-            messages_received << {
-              message: message,
-              last: last,
-              previous_version: previous
-            }
-          },
-          monitoring_interval_secs:
-        )
-      end
+    #   * previous_version [SessionMessage, nil] Previous version of this message, or nil if it is a new one.
+    def capture_messages(mock_config = {}, monitoring_interval_secs: 0.05, sleep: 0)
+      # Always create a log entry so that we find the session
+      cli_task(monitoring_interval_secs:, stub: [{ log: {}, sleep: }, mock_config])
       messages_received
     end
 
     it 'triggers on_message callback for messages added during task execution' do
       messages_received = capture_messages(
         {
-          task: {
+          session: {
             messages: [
-              { ts: 100, text: 'Test message 1' },
+              { ts: 100, content: [{ text: 'Test message 1' }] },
               [
                 # Those 2 messages will be sent at the same time
-                { ts: 101, text: 'Test response 1' },
-                { ts: 102, text: 'Test message 2' }
+                { ts: 101, content: [{ text: 'Test response 1' }] },
+                { ts: 102, content: [{ text: 'Test message 2' }] }
               ],
-              { ts: 103, text: 'Test message 3' }
+              { ts: 103, content: [{ text: 'Test message 3' }] }
             ]
           }
-        }
+        },
+        sleep: 1
       )
       expect(messages_received.size).to eq 4
       expect(messages_received[0][:message].ts).to eq 100
@@ -57,11 +46,7 @@ describe Cline::Cli, '#task' do
 
     it 'triggers on_message callback for messages added even when the CLI has finished' do
       messages_received = capture_messages(
-        {
-          task: {
-            messages: [{ ts: 100, text: 'Test message 1' }]
-          }
-        },
+        { session: { messages: [{ ts: 100, content: [{ text: 'Test message 1' }] }] } },
         monitoring_interval_secs: 2
       )
       # Verify callback was called correctly
@@ -70,8 +55,8 @@ describe Cline::Cli, '#task' do
       expect(messages_received[0][:last]).to be true
     end
 
-    it 'does not trigger on_message callback when the CLI ends before creating the task\'s files' do
-      expect(capture_messages({ stdout: "{\"type\":\"task_started\",\"taskId\":\"12345\"}\n" }).empty?).to be true
+    it 'does not trigger on_message callback when the CLI ends before creating the session\'s files' do
+      expect(capture_messages.empty?).to be true
     end
   end
 end

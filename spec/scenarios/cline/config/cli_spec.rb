@@ -5,7 +5,7 @@ describe Cline::Config, '#cli' do
       cli = config.cli
       cli.auth(provider: 'openai-native', apikey: 'test-api-key', modelid: 'gpt-4o')
       expect_issued_commands [
-        { command: "cline auth --config #{config.dir} --provider openai-native --apikey test-api-key --modelid gpt-4o" }
+        { command: "auth --config #{config.dir} --provider openai-native --apikey test-api-key --modelid gpt-4o" }
       ]
     end
   end
@@ -16,7 +16,7 @@ describe Cline::Config, '#cli' do
       cli = config.cli(verbose: true, cwd: '/test/path')
       cli.auth(provider: 'openai-native', apikey: 'test-api-key', modelid: 'gpt-4o')
       expect_issued_commands [
-        { command: "cline auth --config #{config.dir} --verbose --cwd /test/path --provider openai-native --apikey test-api-key --modelid gpt-4o" }
+        { command: "auth --config #{config.dir} --verbose --cwd /test/path --provider openai-native --apikey test-api-key --modelid gpt-4o" }
       ]
     end
   end

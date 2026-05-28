@@ -1,3 +1,5 @@
+require 'strings/ansi'
+
 module Cline
   module Utils
     # Mixin adding some debug logging capabilities
@@ -5,6 +7,17 @@ module Cline
       class << self
         # Global debug switch.
         attr_accessor :debug
+
+        # Sanitize some PTY output:
+        # - Remove ANSI escape codes.
+        # - Remove CSI escape codes.
+        # - Remove OSC escape codes.
+        #
+        # @param pty_output [String] PTY output string
+        # @return [String] Resulting sanitized string
+        def sanitize_pty_output(pty_output)
+          Strings::ANSI.sanitize(pty_output).gsub(/\e\][^\a]*\a/, '')
+        end
       end
       # Set default value
       Logger.debug = ENV['CLINE_DEBUG'] == '1'

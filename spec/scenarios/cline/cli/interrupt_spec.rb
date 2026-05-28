@@ -10,7 +10,7 @@ describe Cline::Cli, '#interrupt' do
       end
 
       it 'kills the direct cline_pid process' do
-        mock_commands('cline auth' => { running_time_secs: 60 })
+        mock_commands('auth' => { sleep: 60 })
         spy_killing_pids
         # Create another thread to interrupt the running command
         cline_pid = nil
@@ -64,7 +64,7 @@ describe Cline::Cli, '#interrupt' do
           end
           begin
             mock_commands(
-              'cline auth' => {
+              'auth' => {
                 eval: "system 'ruby #{spawn_file} 4 2>&1'"
               }
             )
@@ -99,7 +99,7 @@ describe Cline::Cli, '#interrupt' do
       end
 
       it 'gracefully handles errors when processes disappear while enumerating' do
-        mock_commands('cline auth' => { running_time_secs: 60 })
+        mock_commands('auth' => { sleep: 60 })
         # Simulate an error while fetching process children
         allow(Sys::ProcTable).to receive(:ps).and_raise(StandardError.new('Process table error'))
         spy_killing_pids
@@ -121,7 +121,7 @@ describe Cline::Cli, '#interrupt' do
       end
 
       it 'gracefully handles errors when process disappears just before killing it' do
-        mock_commands('cline auth' => { running_time_secs: 0.5 })
+        mock_commands('auth' => { sleep: 0.5 })
         cline_pid = nil
         spy_killing_pids(
           on_kill: proc do

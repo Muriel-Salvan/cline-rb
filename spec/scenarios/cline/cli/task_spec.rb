@@ -26,12 +26,13 @@ describe Cline::Cli, '#task' do
       worktree: true,
       kanban: true
     },
-    expected_cli: 'cline',
     expected_cli_options: '--plan --json --auto-approve --thinking high ' \
       '--compaction agentic --tui --id session-12345 --provider openai-native ' \
       '--key sk-test-key --model gpt-4o --system You are a helpful assistant ' \
       '--zen --retries 3 --timeout 300 --acp --data-dir /tmp/cline-data ' \
       '--hooks-dir /path/to/hooks --worktree --kanban',
-    expected_stdin: 'Test prompt: Create a simple Ruby class'
+    expected_cli_args: 'Test prompt: Create a simple Ruby class'
   )
+
+  # TODO: Add test cases validating calls with an empty prompt, and also multilines prompt.
 end
