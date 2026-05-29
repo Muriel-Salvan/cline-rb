@@ -34,5 +34,29 @@ describe Cline::Cli, '#task' do
     expected_cli_args: 'Test prompt: Create a simple Ruby class'
   )
 
-  # TODO: Add test cases validating calls with an empty prompt, and also multilines prompt.
+  context 'with an empty prompt' do
+    it 'calls the command without any prompt argument' do
+      cli_task(prompt: '')
+      issued_command = issued_commands.first
+      expect(issued_command[:command]).to match(/--config [^\s]+$/)
+      expect(issued_command[:stdin]).to be_nil
+    end
+  end
+
+  context 'with a multiline prompt' do
+    it 'uses a file to store the prompt content' do
+      result = cli_task(
+        prompt: "Line 1\nLine 2",
+        stub: {
+          eval: <<~EO_RUBY
+            puts "Received prompt: \#{File.read(ARGV.last).inspect}"
+          EO_RUBY
+        }
+      )
+      issued_command = issued_commands.first
+      expect(issued_command[:command]).to match(/--config [^\s]+ [^\s]+$/)
+      expect(issued_command[:stdin]).to be_nil
+      expect(result[:stdout]).to include 'Received prompt: "Line 1\nLine 2"'
+    end
+  end
 end

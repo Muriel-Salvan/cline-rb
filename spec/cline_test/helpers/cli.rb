@@ -15,8 +15,9 @@ module ClineTest
       # This helper hides the underlying ways of running commands from Cline::Cli.
       # It uses a Cline CLI stub that executes mocked commands in place of the real Cline CLI.
       #
-      # @param commands [Hash{String => Hash{Symbol => Object}, Array<Hash{Symbol => Object}>}] For each command to mock,
+      # @param commands [Hash{String, Regexp => Hash{Symbol => Object}, Array<Hash{Symbol => Object}>}] For each command to mock,
       #   a list of (or a single) mocked instructions.
+      #   The command to be mocked can be an exact String or a Regexp that apply to all matching commands.
       #   Each mocked instruction is a Hash that describes the mocked behaviour.
       #   They are executed in sequence of the list, and keys inside each Hash.
       #   Here is the possible instructions that are available:
@@ -46,7 +47,11 @@ module ClineTest
         allow(::PTY).to receive(:spawn) do |cmd, &block|
           # Find the mocked instructions for this Cline CLI run
           cline_args = cmd.match(/^cline(.cmd)? (.+)$/)[2]
-          mocked_instructions = commands[(cline_args =~ /^(.+) < [^\s]+$/ ? Regexp.last_match(1) : cline_args).strip] || []
+          command_search = (cline_args =~ /^(.+) < [^\s]+$/ ? Regexp.last_match(1) : cline_args).strip
+          _command, mocked_instructions = commands.find do |command, _mocked_instructions|
+            command.is_a?(Regexp) ? command_search =~ command : command_search == command
+          end
+          mocked_instructions ||= []
           # Create the JSON file that will give all instructions to execute to our Cline CLI stub.
           stub_conf_file = '.cline_test/tmp/cli_stub.json'
           FileUtils.mkdir_p File.dirname(stub_conf_file)
@@ -172,7 +177,7 @@ module ClineTest
         @messages_received = []
         result = nil
         with_config do |config|
-          mock_commands("--config #{config.dir} #{prompt}" => stub)
+          mock_commands(/^--config #{Regexp.escape(config.dir)}/ => stub)
           # Create CLI instance with our test config directory
           cli = described_class.new(config: config.dir)
           result = cli.task(
