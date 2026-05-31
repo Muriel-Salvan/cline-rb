@@ -51,6 +51,45 @@ describe Cline::Data, '#logs' do
           forceLocalBackend: true,
           telemetrySink: 'TelemetryLoggerSink',
           event: 'test.event',
+          severity: 'error',
+          providerId: 'cline',
+          err: {
+            type: '_Q',
+            message: 'Failed after 3 attempts. Last error: Cannot connect to API',
+            stack: 'AI_RetryError: Failed after 3 attempts',
+            name: 'AI_RetryError',
+            reason: 'maxRetriesExceeded',
+            errors: [
+              {
+                name: 'AI_APICallError',
+                url: 'https://api.example.com/v1/chat/completions',
+                isRetryable: true,
+                cause: {
+                  code: 'ConnectionRefused',
+                  path: 'https://api.example.com/v1/chat/completions',
+                  errno: 0
+                }
+              }
+            ],
+            aggregateErrors: [
+              {
+                type: 'Ph',
+                message: 'Cannot connect to API: Unable to connect',
+                stack: 'AI_APICallError: Cannot connect to API',
+                name: 'AI_APICallError',
+                url: 'https://api.example.com/v1/chat/completions',
+                isRetryable: true
+              }
+            ],
+            lastError: {
+              type: 'Ph',
+              message: 'Cannot connect to API: Unable to connect',
+              stack: 'AI_APICallError: Cannot connect to API',
+              name: 'AI_APICallError',
+              url: 'https://api.example.com/v1/chat/completions',
+              isRetryable: true
+            }
+          },
           properties: {
             ulid: '01J7XYZ8K9ABCDEFGHIJKLMNOP',
             api_provider: 'cline',
@@ -120,6 +159,38 @@ describe Cline::Data, '#logs' do
       expect(log.force_local_backend).to be true
       expect(log.telemetry_sink).to eq 'TelemetryLoggerSink'
       expect(log.event).to eq 'test.event'
+      expect(log.severity).to eq 'error'
+      expect(log.provider_id).to eq 'cline'
+      # Error top-level attributes
+      expect(log.err.type).to eq '_Q'
+      expect(log.err.message).to eq 'Failed after 3 attempts. Last error: Cannot connect to API'
+      expect(log.err.stack).to eq 'AI_RetryError: Failed after 3 attempts'
+      expect(log.err.name).to eq 'AI_RetryError'
+      expect(log.err.reason).to eq 'maxRetriesExceeded'
+      # Error.errors array
+      expect(log.err.errors.size).to eq 1
+      expect(log.err.errors[0].name).to eq 'AI_APICallError'
+      expect(log.err.errors[0].url).to eq 'https://api.example.com/v1/chat/completions'
+      expect(log.err.errors[0].is_retryable).to be true
+      expect(log.err.errors[0].cause.code).to eq 'ConnectionRefused'
+      expect(log.err.errors[0].cause.path).to eq 'https://api.example.com/v1/chat/completions'
+      expect(log.err.errors[0].cause.errno).to eq 0
+      # Error.aggregateErrors array
+      expect(log.err.aggregate_errors.size).to eq 1
+      expect(log.err.aggregate_errors[0].type).to eq 'Ph'
+      expect(log.err.aggregate_errors[0].message).to eq 'Cannot connect to API: Unable to connect'
+      expect(log.err.aggregate_errors[0].stack).to eq 'AI_APICallError: Cannot connect to API'
+      expect(log.err.aggregate_errors[0].name).to eq 'AI_APICallError'
+      expect(log.err.aggregate_errors[0].url).to eq 'https://api.example.com/v1/chat/completions'
+      expect(log.err.aggregate_errors[0].is_retryable).to be true
+      # Error.lastError
+      expect(log.err.last_error.type).to eq 'Ph'
+      expect(log.err.last_error.message).to eq 'Cannot connect to API: Unable to connect'
+      expect(log.err.last_error.stack).to eq 'AI_APICallError: Cannot connect to API'
+      expect(log.err.last_error.name).to eq 'AI_APICallError'
+      expect(log.err.last_error.url).to eq 'https://api.example.com/v1/chat/completions'
+      expect(log.err.last_error.is_retryable).to be true
+      # Properties attributes
       expect(log.properties.ulid).to eq '01J7XYZ8K9ABCDEFGHIJKLMNOP'
       expect(log.properties.api_provider).to eq 'cline'
       expect(log.properties.agent_id).to eq 'agent-1'

@@ -3,6 +3,69 @@ module Cline
   class Log < Schema
     # @!group Public API
 
+    # Cause of an API call error
+    class ErrorCause < Schema
+      # @return [String, nil] Error code (e.g. "ConnectionRefused")
+      attribute :code, :string
+
+      # @return [String, nil] URL path that caused the error
+      attribute :path, :string
+
+      # @return [Integer, nil] Error number
+      attribute :errno, :integer
+    end
+
+    # Individual API call error (used in errors[], aggregateErrors[], and lastError)
+    class ApiError < Schema
+      # @return [String, nil] Error type identifier
+      attribute :type, :string
+
+      # @return [String, nil] Human-readable error message
+      attribute :message, :string
+
+      # @return [String, nil] Error stack trace
+      attribute :stack, :string
+
+      # @return [String, nil] Error class name (e.g. "AI_APICallError")
+      attribute :name, :string
+
+      # @return [String, nil] API endpoint URL
+      attribute :url, :string
+
+      # @return [Boolean, nil] Whether the request is retryable
+      attribute :is_retryable, :boolean
+
+      # @return [ErrorCause, nil] Underlying cause of the error
+      attribute :cause, ErrorCause
+    end
+
+    # Top-level error wrapper (the err field in error logs)
+    class Error < Schema
+      # @return [String, nil] Error type identifier
+      attribute :type, :string
+
+      # @return [String, nil] Human-readable error message
+      attribute :message, :string
+
+      # @return [String, nil] Error stack trace
+      attribute :stack, :string
+
+      # @return [String, nil] Error class name (e.g. "AI_RetryError")
+      attribute :name, :string
+
+      # @return [String, nil] Reason for the error (e.g. "maxRetriesExceeded")
+      attribute :reason, :string
+
+      # @return [Array<ApiError>, nil] Individual errors in a retry chain
+      attribute :errors, ApiError, collection: true
+
+      # @return [Array<ApiError>, nil] Aggregate errors from retry attempts
+      attribute :aggregate_errors, ApiError, collection: true
+
+      # @return [ApiError, nil] Last error in a retry chain
+      attribute :last_error, ApiError
+    end
+
     # Event-specific properties for telemetry entries
     class Properties < Schema
       # @return [String, nil] Unique identifier for tasks and sessions
@@ -202,5 +265,14 @@ module Cline
 
     # @return [Properties, nil] Event-specific properties for telemetry entries
     attribute :properties, Properties
+
+    # @return [String, nil] Severity level for error/warn logs (e.g. "error", "warn")
+    attribute :severity, :string
+
+    # @return [String, nil] Provider identifier (e.g. "cline")
+    attribute :provider_id, :string
+
+    # @return [Error, nil] Error details for error logs
+    attribute :err, Error
   end
 end
