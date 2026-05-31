@@ -112,9 +112,12 @@ module Cline
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds
     # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
     # @return [Hash{Symbol => Object}] A set of return properties (see #run_cli). Additionnally the following ones:
-    #   * message [SessionMessage, nil] The last message of the session, or nil if none
+    #   - message [SessionMessage, nil] The last message of the session, or nil if none
+    #   - status [String] The task status
+    #   - error [Log, nil] In case of status "failed", get the last error log entry, or nil if no error.
     def task(prompt, on_message: nil, monitoring_interval_secs: 1, **kwargs)
       result = {}
+      start_time = Time.now
       # Use a temporary file if the prompt is multi-line only.
       # This is because some platforms don't support multiline command line arguments (Windows) and Cline CLI can't accept
       #   prompts from stdin while still staying in interactive mode.
@@ -138,7 +141,6 @@ module Cline
         end
       ).call do |extra_prompt_arg|
         session_monitor_thread = nil
-        start_time = Time.now
         cli_running = true
         begin
           result = run_cli(
@@ -200,7 +202,11 @@ module Cline
           session_monitor_thread&.join
         end
       end
-      result[:message] = @session&.messages&.last
+      if @session
+        result[:message] = @session.messages&.last
+        result[:status] = @session.status
+        result[:error] = config.logs.logs(from: start_time).reverse_each.find { |log| log.severity == 'error' } if @session.status == 'failed'
+      end
       result
     end
 

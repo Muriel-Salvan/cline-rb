@@ -33,5 +33,42 @@ describe Cline::Cli, '#task' do
     it 'does not include message in the result when the session has empty messages' do
       expect(cli_task(stub: { log: {}, session: { messages: [] } })[:message]).to be_nil
     end
+
+    it 'returns the session status in the result hash' do
+      result = cli_task(
+        stub: {
+          log: {},
+          session: {
+            status: 'completed'
+          }
+        }
+      )
+      expect(result[:status]).to eq 'completed'
+    end
+
+    it 'returns the last error log in the result hash in case of a failed run' do
+      result = cli_task(
+        stub: {
+          log: { severity: 'error', msg: 'There is an error' },
+          session: {
+            status: 'failed'
+          }
+        }
+      )
+      expect(result[:error].severity).to eq 'error'
+      expect(result[:error].msg).to eq 'There is an error'
+    end
+
+    it 'does not return any error in the result hash in case of a completed run' do
+      result = cli_task(
+        stub: {
+          log: {},
+          session: {
+            status: 'completed'
+          }
+        }
+      )
+      expect(result[:error]).to be_nil
+    end
   end
 end
