@@ -168,12 +168,13 @@ module ClineTest
       # @param stub [Object] The Cline CLI stub instructions (see ClineTest::Helpers::Cli#mock_commands)
       # @param prompt [String] The prompt to send
       # @param on_message [#call, nil] Optional on_message callback to provide (see Cline::Cli#task)
+      # @param on_question [#call, nil] Optional on_question callback to provide (see Cline::Cli#task)
       # @param monitoring_interval_secs [Float] The monitoring interval in seconds
       # @yield Optional code called after the task command has finished
       # @yieldparam cli [Cline::Cli] The Cline CLI instance
       # @yieldparam result [Hash{Symbol => Object}] The return value of the command
       # @return [Hash{Symbol => Object}] The return value of the command
-      def cli_task(prompt: 'Test prompt', on_message: nil, monitoring_interval_secs: 0.05, stub: {})
+      def cli_task(prompt: 'Test prompt', on_message: nil, on_question: nil, monitoring_interval_secs: 0.05, stub: {})
         @messages_received = []
         result = nil
         with_config do |config|
@@ -190,6 +191,7 @@ module ClineTest
               }
               on_message&.call(message, last, previous)
             end,
+            on_question:,
             monitoring_interval_secs:
           )
           yield cli, result if block_given?

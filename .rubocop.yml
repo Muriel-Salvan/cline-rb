@@ -6,6 +6,10 @@ AllCops:
   NewCops: enable
 
 # Keep indentation consistent
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+# Keep indentation consistent
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
 
@@ -23,7 +27,7 @@ Lint/UnusedMethodArgument:
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/AbcSize:
-  Max: 110
+  Max: 120
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/BlockLength:

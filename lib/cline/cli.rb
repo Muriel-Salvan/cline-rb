@@ -20,6 +20,10 @@ module Cline
     class UnknownOptionError < RuntimeError
     end
 
+    # Unexpected interactive session
+    class UnexpectedInteractiveSessionError < RuntimeError
+    end
+
     # Define all commands and their options
     COMMANDS = {
       # Global options
@@ -109,13 +113,19 @@ module Cline
     # @param prompt [String] The prompt
     # @param on_message [#call, nil] Callback called for each new or updated message for the session of this prompt,
     #   or nil if none (see Session#monitor_message)
+    # @param on_question [#call, nil] Callback called for each question that is asked by the assistant, or nil if none.
+    #   This should be set if an interactive session is expected.
+    #   If a question is asked without a callback to handle it, an UnexpectedInteractiveSessionError exceptioon will be raised.
+    #   - Param question [SessionMessage::MessageContent::ToolUseInput] Question input with possible options
+    #     (see SessionMessage::MessageContent::ToolUseInput).
+    #   - Return [String] The answer that the user should provide to this assistant's question.
     # @param monitoring_interval_secs [Float] The monitoring interval in seconds
     # @param kwargs [Hash{Symbol => Object}] Command options (see COMMANDS)
     # @return [Hash{Symbol => Object}] A set of return properties (see #run_cli). Additionnally the following ones:
     #   - message [SessionMessage, nil] The last message of the session, or nil if none
     #   - status [String] The task status
     #   - error [Log, nil] In case of status "failed", get the last error log entry, or nil if no error.
-    def task(prompt, on_message: nil, monitoring_interval_secs: 1, **kwargs)
+    def task(prompt, on_message: nil, on_question: nil, monitoring_interval_secs: 1, **kwargs)
       result = {}
       start_time = Time.now
       # Use a temporary file if the prompt is multi-line only.
@@ -145,7 +155,7 @@ module Cline
         begin
           result = run_cli(
             args: parse_task_options(**kwargs) + (extra_prompt_arg.nil? ? [] : [extra_prompt_arg]),
-            on_start: proc do |_reader, _writer, _pid|
+            on_start: proc do |_reader, writer, _pid|
               session_monitor_thread = Thread.new do
                 # Start monitoring logs to get the session ID.
                 # Wait for logs to exist.
@@ -188,6 +198,18 @@ module Cline
                       end
                       # Call the user callback if any
                       on_message&.call(message, last, previous_version)
+                      # If the message is the last one and the agent has asked a question, call the corresponding callback
+                      if last
+                        last_content = message.content&.last
+                        if last_content&.type == 'tool_use' && last_content.name == 'ask_question'
+                          unless on_question
+                            raise UnexpectedInteractiveSessionError,
+                              "Unexpected interactive session with assistant asking question #{last_content.input&.question}"
+                          end
+
+                          writer.puts(on_question.call(last_content.input))
+                        end
+                      end
                     end,
                     monitoring_interval_secs:
                   ) do
