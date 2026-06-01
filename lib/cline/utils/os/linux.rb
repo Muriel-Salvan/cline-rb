@@ -7,7 +7,7 @@ module Cline
         #
         # @return [String] Normalized absolute path to user home directory
         def user_home_dir
-          `eval echo ~$USER`.strip
+          @user_home_dir ||= `eval echo ~$USER`.strip
         end
 
         # Kill a process
@@ -24,6 +24,11 @@ module Cline
         # @return [String] The Cline executable
         def cline_exe
           'cline'
+        end
+
+        # @return [String] The user applications data directory
+        def user_app_data_dir
+          "#{user_home_dir}/.config"
         end
       end
     end

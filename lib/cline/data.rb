@@ -8,6 +8,17 @@ module Cline
 
     include Serializable::Dir
 
+    # Get the VSCode plugin Cline data dir
+    #
+    # @return [Data] The data for the installed VSCode plugin
+    def self.vscode
+      @vscode ||= Data.open(
+        "#{
+          ENV['VSCODE_PORTABLE'] ? "#{ENV['VSCODE_PORTABLE']}/user-data" : "#{Utils::Os.user_app_data_dir}/Code"
+        }/User/globalStorage/saoudrizwan.claude-dev"
+      )
+    end
+
     # Get the cached Cline models
     #
     # @param create [Boolean] Should the data be created if it does not exist?

@@ -24,6 +24,11 @@ module Cline
         def cline_exe
           'cline.cmd'
         end
+
+        # @return [String] The user applications data directory
+        def user_app_data_dir
+          ENV['APPDATA'] || raise('APPDATA environment variable should be set to know the applications data dir')
+        end
       end
     end
   end
