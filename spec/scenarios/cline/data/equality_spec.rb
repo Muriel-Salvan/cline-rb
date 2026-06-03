@@ -7,6 +7,20 @@ describe Cline::Data, '#==' do
       global_state: { clineWebToolsEnabled: true, focusChainSettings: { enabled: true, remindClineInterval: 5 } },
       mcp_settings: { mcpServers: { 'server-1' => { url: 'http://localhost:9090' } } },
       secrets: { apiKey: 'my-secret-key' },
+      providers: {
+        version: 1,
+        lastUsedProvider: 'openrouter',
+        providers: {
+          cline: {
+            settings: {
+              provider: 'cline',
+              model: 'deepseek/deepseek-v4-flash'
+            },
+            updatedAt: '2026-06-03T14:08:53.973Z',
+            tokenSource: 'manual'
+          }
+        }
+      },
       logs: [{ timestamp: '2024-01-01T00:00:00Z', message: 'test log' }]
     }
   end
@@ -63,6 +77,14 @@ describe Cline::Data, '#==' do
   it 'returns false for different secrets' do
     with_data(**common_data) do |data1|
       with_data(**common_data, secrets: { apiKey: 'different-secret' }) do |data2|
+        expect(data1).not_to eq(data2)
+      end
+    end
+  end
+
+  it 'returns false for different providers' do
+    with_data(**common_data) do |data1|
+      with_data(**common_data, providers: { version: 2 }) do |data2|
         expect(data1).not_to eq(data2)
       end
     end

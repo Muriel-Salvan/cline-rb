@@ -8,6 +8,7 @@ module ClineTest
     include Logs
     include McpSettings
     include Os
+    include Providers
     include Secrets
     include Session
     include Skill

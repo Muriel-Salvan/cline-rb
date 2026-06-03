@@ -25,6 +25,7 @@ module ClineTest
       # @param global_state [Hash, nil] The global state file content, or nil if none
       # @param logs [Array<Hash>, nil] Log lines to create in data/logs/cline.log, or nil if none
       # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none
+      # @param providers [Hash, nil] The providers file content, or nil if none
       # @param secrets [Hash, nil] The secrets file content, or nil if none
       # @param sessions [Hash{String => Hash{Symbol => Object}}, nil] The sessions to create (key: name, value: data), or nil if none
       #   Sessions data is itself a hash that can describe the session with the following keys:
@@ -42,6 +43,7 @@ module ClineTest
         global_state: nil,
         logs: nil,
         mcp_settings: nil,
+        providers: nil,
         secrets: nil,
         sessions: nil,
         tasks: nil,
@@ -52,6 +54,10 @@ module ClineTest
         if mcp_settings
           FileUtils.mkdir_p(File.join(data_dir, 'settings'))
           File.write(File.join(data_dir, 'settings', 'cline_mcp_settings.json'), mcp_settings.to_json)
+        end
+        if providers
+          FileUtils.mkdir_p(File.join(data_dir, 'settings'))
+          File.write(File.join(data_dir, 'settings', 'providers.json'), providers.to_json)
         end
         if workspaces
           workspaces_dir = File.join(data_dir, 'workspaces')

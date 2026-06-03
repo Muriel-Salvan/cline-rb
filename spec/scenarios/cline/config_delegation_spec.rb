@@ -46,6 +46,17 @@ describe Cline::Config do
       end
     end
 
+    it 'delegates providers' do
+      with_config(
+        providers: {
+          version: 1,
+          lastUsedProvider: 'openrouter'
+        }
+      ) do |config|
+        expect(config.providers).to be config.data.providers
+      end
+    end
+
     it 'delegates workspaces' do
       with_config(
         workspaces: {

@@ -50,6 +50,14 @@ module Cline
       @mcp_settings ||= McpSettings.from_cline_data(dir, create:)
     end
 
+    # Get providers stored in this data directory
+    #
+    # @param create [Boolean] Should the data be created if it does not exist?
+    # @return [Providers, nil] Providers stored in this data directory, or nil if none
+    def providers(create: self.create)
+      @providers ||= Providers.from_cline_data(dir, create:)
+    end
+
     # Get secrets stored in this data directory
     #
     # @param create [Boolean] Should the data be created if it does not exist?
@@ -95,6 +103,7 @@ module Cline
         other.cline_models == cline_models &&
         other.global_state == global_state &&
         other.mcp_settings == mcp_settings &&
+        other.providers == providers &&
         other.secrets == secrets
     end
   end
