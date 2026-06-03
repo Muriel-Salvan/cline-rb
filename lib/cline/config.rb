@@ -2,7 +2,10 @@ require 'forwardable'
 
 module Cline
   # Accesses all configuration of a Cline directory.
-  # Wraps for example the content of ~/.cline
+  # Wraps for example the content of ~/.cline.
+  # The following properties can be used while opening a Config directory:
+  # - include_project_config [Boolean] Do we include the project-specific objects as well in this
+  #     configuration? Defaults to `true`.
   class Config
     extend Forwardable
 
@@ -30,9 +33,12 @@ module Cline
     # Get skills from this config
     #
     # @param create [Boolean] Should the data be created if it does not exist?
-    # @return [Skills] Set of skills
+    # @return [OverlayHash, nil] Set of skills, including global ones and project ones if needed, or nil if non existent (see Skills).
     def skills(create: self.create)
-      @skills ||= Skills.open(subpath('skills'), create:)
+      @skills ||= begin
+        skills_layers = ([Skills.open(subpath('skills'), create:)] + [project_config&.skills]).compact
+        skills_layers.empty? ? nil : OverlayHash.new(*skills_layers)
+      end
     end
 
     # Get the data directory from this config
@@ -63,10 +69,24 @@ module Cline
 
     # @!group Internal
 
+    # Constructor
+    #
+    # @param include_project_config [Boolean] Do we include the project configuration in the objects read?
+    def initialize(include_project_config: true)
+      @include_project_config = include_project_config
+    end
+
     # Remove caches.
     def refresh!
       @skills = nil
       @data = nil
+    end
+
+    private
+
+    # @return [Config, nil] The additional project config if needed, or nil if none.
+    def project_config
+      @include_project_config && dir != Config.project&.dir ? Config.project : nil
     end
   end
 end

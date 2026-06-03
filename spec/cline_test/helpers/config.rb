@@ -7,6 +7,7 @@ module ClineTest
       # Will clean up the directory after code execution.
       #
       # @param create [Boolean] Should the data be instantiated with the create option?
+      # @param include_project_config [Boolean] Should we include the project config option?
       # @param skills [Hash{String => Hash{Symbol => Object}}, nil] Skills definitions (key: name, value: content)
       #   Skills data is itself a hash that can describe the skill with the following keys:
       #   * content [String, nil] The skills markdown content, or nil if none
@@ -14,10 +15,10 @@ module ClineTest
       # @param data_kwargs [Hash{Symbol => Object}] The data initialization kwargs (see #setup_data_dir)
       # @yield [config] Block called with the test config ready
       # @yieldparam [Cline::Config] The test config
-      def with_config(create: false, skills: nil, **data_kwargs)
+      def with_config(create: false, include_project_config: false, skills: nil, **data_kwargs)
         with_temp_dir do |config_dir|
           setup_config_dir(config_dir, skills:, **data_kwargs)
-          yield Cline::Config.open(config_dir, create:)
+          yield Cline::Config.open(config_dir, create:, include_project_config:)
         end
       end
 
