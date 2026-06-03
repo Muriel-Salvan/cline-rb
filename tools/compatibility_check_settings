@@ -13,15 +13,15 @@ require 'tmpdir'
 original_config = Cline::Config.open(config_dir)
 # Replicate the settings into a temporary directory using cline-rb readers and writers
 Dir.mktmpdir do |temp_dir|
-  original_config.global_settings.to_cline_data(temp_dir)
+  original_config.global_state.to_cline_data(temp_dir)
   original_config.mcp_settings.to_cline_data(temp_dir)
   # Load the temporary directory
   new_data = Cline::Data.open(temp_dir)
   # Compare both
-  if original_config.global_settings == new_data.global_settings
-    puts 'Global settings compatibility check - Success'
+  if original_config.global_state == new_data.global_state
+    puts 'Global state compatibility check - Success'
   else
-    puts 'Global settings compatibility check - Failure'
+    puts 'Global state compatibility check - Failure'
   end
   if original_config.mcp_settings == new_data.mcp_settings
     puts 'MCP settings compatibility check - Success'

@@ -1,5 +1,5 @@
 module Cline
-  class GlobalSettings
+  class GlobalState
     # General UI, telemetry and user preferences
     module General
       # Dismissed banner entry

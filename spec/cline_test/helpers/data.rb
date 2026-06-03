@@ -22,7 +22,7 @@ module ClineTest
       #
       # @param data_dir [String] The directory to setup
       # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
-      # @param global_settings [Hash, nil] The global settings file content, or nil if none
+      # @param global_state [Hash, nil] The global state file content, or nil if none
       # @param logs [Array<Hash>, nil] Log lines to create in data/logs/cline.log, or nil if none
       # @param mcp_settings [Hash, nil] The MCP settings file content, or nil if none
       # @param secrets [Hash, nil] The secrets file content, or nil if none
@@ -39,7 +39,7 @@ module ClineTest
       def setup_data_dir(
         data_dir,
         cline_models: nil,
-        global_settings: nil,
+        global_state: nil,
         logs: nil,
         mcp_settings: nil,
         secrets: nil,
@@ -47,7 +47,7 @@ module ClineTest
         tasks: nil,
         workspaces: nil
       )
-        File.write(File.join(data_dir, 'globalState.json'), global_settings.to_json) if global_settings
+        File.write(File.join(data_dir, 'globalState.json'), global_state.to_json) if global_state
         File.write(File.join(data_dir, 'secrets.json'), secrets.to_json) if secrets
         if mcp_settings
           FileUtils.mkdir_p(File.join(data_dir, 'settings'))

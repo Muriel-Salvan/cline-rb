@@ -1,5 +1,5 @@
 module Cline
-  class GlobalSettings
+  class GlobalState
     # Feature flags and experimental features
     module Features
       # Focus chain feature settings

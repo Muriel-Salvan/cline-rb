@@ -1,5 +1,5 @@
 module Cline
-  class GlobalSettings
+  class GlobalState
     # Model and AI configuration settings
     module Models
       # Thinking configuration for models

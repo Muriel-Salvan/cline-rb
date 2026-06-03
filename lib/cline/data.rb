@@ -27,12 +27,12 @@ module Cline
       @cline_models ||= Models.from_cline_data(dir, create:)
     end
 
-    # Get global settings stored in this data directory
+    # Get global state stored in this data directory
     #
     # @param create [Boolean] Should the data be created if it does not exist?
-    # @return [GlobalSettings, nil] Global settings stored in this data directory, or nil if none
-    def global_settings(create: self.create)
-      @global_settings ||= GlobalSettings.from_cline_data(dir, create:)
+    # @return [GlobalState, nil] Global state stored in this data directory, or nil if none
+    def global_state(create: self.create)
+      @global_state ||= GlobalState.from_cline_data(dir, create:)
     end
 
     # Get the Cline logs
@@ -93,7 +93,7 @@ module Cline
         other.tasks == tasks &&
         other.workspaces == workspaces &&
         other.cline_models == cline_models &&
-        other.global_settings == global_settings &&
+        other.global_state == global_state &&
         other.mcp_settings == mcp_settings &&
         other.secrets == secrets
     end

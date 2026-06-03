@@ -1,5 +1,5 @@
 module Cline
-  class GlobalSettings
+  class GlobalState
     # Toggles configuration of rules, workflows and skills
     module Toggles
       # Define all the attributes of the included class

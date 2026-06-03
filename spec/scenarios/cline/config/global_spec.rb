@@ -10,7 +10,7 @@ describe Cline::Config, '.global' do
         # Create .cline directory structure
         cline_dir = File.join(tmp_dir, '.cline')
         FileUtils.mkdir_p(cline_dir)
-        setup_config_dir(cline_dir, global_settings: { defaultTerminalProfile: 'test-profile' })
+        setup_config_dir(cline_dir, global_state: { defaultTerminalProfile: 'test-profile' })
         example.run
       end
     ensure
@@ -34,7 +34,7 @@ describe Cline::Config, '.global' do
     end
 
     it 'loads global config from USERPROFILE/.cline' do
-      expect(described_class.global.global_settings.default_terminal_profile).to eq 'test-profile'
+      expect(described_class.global.global_state.default_terminal_profile).to eq 'test-profile'
     end
   end
 
@@ -50,7 +50,7 @@ describe Cline::Config, '.global' do
     end
 
     it 'loads global config from HOME/.cline' do
-      expect(described_class.global.global_settings.default_terminal_profile).to eq 'test-profile'
+      expect(described_class.global.global_state.default_terminal_profile).to eq 'test-profile'
     end
   end
 end

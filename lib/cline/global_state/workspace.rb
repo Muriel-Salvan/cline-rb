@@ -1,5 +1,5 @@
 module Cline
-  class GlobalSettings
+  class GlobalState
     # Workspace directories and multi-root configuration
     module Workspace
       # Workspace root directory entry

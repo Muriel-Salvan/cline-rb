@@ -10,7 +10,7 @@ describe Cline::Config, '.project' do
         # Create .cline directory structure
         cline_dir = File.join(tmp_dir, '.cline')
         FileUtils.mkdir_p(cline_dir)
-        setup_config_dir(cline_dir, global_settings: { clineWebToolsEnabled: true })
+        setup_config_dir(cline_dir, global_state: { clineWebToolsEnabled: true })
 
         # Change to temporary directory for the test
         Dir.chdir(tmp_dir) do
@@ -23,6 +23,6 @@ describe Cline::Config, '.project' do
   end
 
   it 'loads project config from current working directory .cline' do
-    expect(described_class.project.global_settings.cline_web_tools_enabled).to be true
+    expect(described_class.project.global_state.cline_web_tools_enabled).to be true
   end
 end

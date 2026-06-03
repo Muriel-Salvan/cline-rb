@@ -1,5 +1,5 @@
 module Cline
-  class GlobalSettings
+  class GlobalState
     # API provider endpoints and authentication settings
     module ApiProviders
       # Define all the attributes of the included class

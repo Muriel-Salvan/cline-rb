@@ -1,6 +1,6 @@
 module Cline
-  # Global Cline settings
-  class GlobalSettings < Schema
+  # Global Cline state
+  class GlobalState < Schema
     Serializable::ClineData.include_for(self, 'globalState.json')
     include Models
     include AutoApproval

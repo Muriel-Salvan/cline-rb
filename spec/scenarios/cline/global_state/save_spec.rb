@@ -1,6 +1,6 @@
-describe Cline::GlobalSettings, '#save' do
+describe Cline::GlobalState, '#save' do
   it 'persists modified attributes to the globalState.json file' do
-    with_global_settings(
+    with_global_state(
       attributes: {
         clineWebToolsEnabled: true,
         focusChainSettings: { enabled: true, remindClineInterval: 5 }
@@ -20,7 +20,7 @@ describe Cline::GlobalSettings, '#save' do
   end
 
   it 'persists unknown attributes to the globalState.json file' do
-    with_global_settings(
+    with_global_state(
       attributes: {
         clineWebToolsEnabled: true,
         focusChainSettings: {
@@ -50,8 +50,8 @@ describe Cline::GlobalSettings, '#save' do
     end
   end
 
-  it 'persists a newly instantiated global settings file' do
-    with_global_settings(attributes: nil, create: true) do |settings|
+  it 'persists a newly instantiated global state file' do
+    with_global_state(attributes: nil, create: true) do |settings|
       settings.cline_web_tools_enabled = true
       settings.save
       expect(JSON.parse(File.read(File.join(settings.dir, 'globalState.json')), symbolize_names: true)).to eq(

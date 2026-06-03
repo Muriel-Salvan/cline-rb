@@ -1,5 +1,5 @@
 module Cline
-  class GlobalSettings
+  class GlobalState
     # Browser integration and viewport settings
     module Browser
       # Browser viewport settings

@@ -1,5 +1,5 @@
 module Cline
-  class GlobalSettings
+  class GlobalState
     # Auto approval and command execution permissions
     module AutoApproval
       # Auto approval action toggles
