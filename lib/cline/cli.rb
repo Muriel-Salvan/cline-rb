@@ -329,6 +329,13 @@ module Cline
             "Cline master process `#{cmd}` with PID #{cline_pid} exited with status: #{exit_status}#{' (interrupted on purpose)' if @interrupted_on_purpose}"
           end
           @cline_pid = nil
+          log_debug do
+            <<~EO_DEBUG
+              ===== Cline CLI output BEGIN...
+              #{Utils::Logger.sanitize_pty_output(stdout_lines.join)}
+              ===== Cline CLI output ...END
+            EO_DEBUG
+          end
           if !@interrupted_on_purpose && !expected_exit_status.nil? && exit_status != expected_exit_status
             raise UnexpectedExitStatusError, "Cline master process `#{cmd}` exited with status #{exit_status} (expected #{expected_exit_status})"
           end
