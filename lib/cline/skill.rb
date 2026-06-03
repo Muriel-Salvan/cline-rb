@@ -59,10 +59,14 @@ module Cline
       end
     end
 
+    # @return [Boolean] Is the skill enabled?
+    def enabled?
+      !yaml_front_matter || yaml_front_matter['disabled'] != true
+    end
+
     # Enable the skill
     def enable
-      return unless yaml_front_matter
-      return unless yaml_front_matter['disabled']
+      return if enabled?
 
       modify_skill_front_matter do |front_matter|
         front_matter.except('disabled')
@@ -71,8 +75,7 @@ module Cline
 
     # Disable the skill
     def disable
-      return unless yaml_front_matter
-      return if yaml_front_matter['disabled']
+      return unless enabled?
 
       modify_skill_front_matter do |front_matter|
         front_matter.merge('disabled' => true)
@@ -126,7 +129,12 @@ module Cline
     # @yieldparam front_matter [Hash] The parsed front matter hash
     # @yieldreturn [Hash] The modified front matter hash
     def modify_skill_front_matter
-      content = skill_file_content('SKILL.md').content
+      content = skill_file_content('SKILL.md')&.content
+      unless content
+        # Initialize it
+        files['SKILL.md'] = FileContent.new("---\n\n\n---\n")
+        content = skill_file_content('SKILL.md').content
+      end
       new_front_matter = yield(YAML.safe_load(content.match(/^---\n(.+?)\n---/m)[1]) || {})
       content.replace(
         content.gsub(

@@ -1,8 +1,12 @@
 describe Cline::Skill, '#disable' do
-  it 'does nothing when SKILL.md does not exist' do
+  it 'creates a disabled SKILL.md if it does not exist' do
     with_skill(content: nil) do |skill|
       expect { skill.disable }.not_to raise_error
-      expect(skill.yaml_front_matter).to be_nil
+      expect(skill.yaml_front_matter).to eq(
+        {
+          'disabled' => true
+        }
+      )
     end
   end
 
