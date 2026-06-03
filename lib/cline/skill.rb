@@ -1,4 +1,5 @@
 require 'front_matter_parser'
+require 'yaml'
 
 module Cline
   # A skill defined in a directory
@@ -58,6 +59,26 @@ module Cline
       end
     end
 
+    # Enable the skill
+    def enable
+      return unless yaml_front_matter
+      return unless yaml_front_matter['disabled']
+
+      modify_skill_front_matter do |front_matter|
+        front_matter.except('disabled')
+      end
+    end
+
+    # Disable the skill
+    def disable
+      return unless yaml_front_matter
+      return if yaml_front_matter['disabled']
+
+      modify_skill_front_matter do |front_matter|
+        front_matter.merge('disabled' => true)
+      end
+    end
+
     # @!group Internal
 
     # Constructor
@@ -97,6 +118,22 @@ module Cline
     def skill_file_content(file_path)
       @files[file_path] = FileContent.open(subpath(file_path)) unless @files.key?(file_path)
       @files[file_path]
+    end
+
+    # Modify the content of a skill file's front matter
+    #
+    # @yield [front_matter] The block to execute to modify the front matter
+    # @yieldparam front_matter [Hash] The parsed front matter hash
+    # @yieldreturn [Hash] The modified front matter hash
+    def modify_skill_front_matter
+      content = skill_file_content('SKILL.md').content
+      new_front_matter = yield(YAML.safe_load(content.match(/^---\n(.+?)\n---/m)[1]) || {})
+      content.replace(
+        content.gsub(
+          /^---\n(.+?)\n---/m,
+          "---\n#{YAML.dump(new_front_matter).gsub(/\A---\n/, '') unless new_front_matter.empty?}---"
+        )
+      )
     end
   end
 end

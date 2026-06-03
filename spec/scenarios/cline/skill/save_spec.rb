@@ -61,4 +61,54 @@ describe Cline::Skill, '#save' do
       expect(File).not_to exist(file_path)
     end
   end
+
+  it 'persists disabling a skill to disk' do
+    with_skill(
+      content: <<~EO_SKILL
+        ---
+        title: My Skill
+        description: A test skill
+        ---
+
+        # My Skill
+      EO_SKILL
+    ) do |skill|
+      skill.disable
+      skill.save
+      expect(File.read(File.join(skill.dir, 'SKILL.md'))).to eq <<~EO_SKILL
+        ---
+        title: My Skill
+        description: A test skill
+        disabled: true
+        ---
+
+        # My Skill
+      EO_SKILL
+    end
+  end
+
+  it 'persists enabling a skill to disk (removes the disabled key)' do
+    with_skill(
+      content: <<~EO_SKILL
+        ---
+        title: My Skill
+        description: A test skill
+        disabled: true
+        ---
+
+        # My Skill
+      EO_SKILL
+    ) do |skill|
+      skill.enable
+      skill.save
+      expect(File.read(File.join(skill.dir, 'SKILL.md'))).to eq <<~EO_SKILL
+        ---
+        title: My Skill
+        description: A test skill
+        ---
+
+        # My Skill
+      EO_SKILL
+    end
+  end
 end
