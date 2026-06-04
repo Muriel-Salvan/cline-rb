@@ -11,7 +11,7 @@ module ClineTest
       end
 
       # Provide a temporary directory.
-      # Will clean up the directory after code execution.
+      # Will clean up the directory after code execution unless debug mode is on.
       #
       # @yield [temp_dir] Block called with the temp directory ready
       # @yieldparam [String] The temp directory

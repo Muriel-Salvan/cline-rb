@@ -84,6 +84,8 @@ module Cline
       }
     }
 
+    # @!group Public API
+
     # Constructor
     #
     # @param stdout_echo [Boolean] Do we echo stdout of Cline CLI?
@@ -253,6 +255,8 @@ module Cline
         log_debug 'No Cline command started, so no need to interrupt anything'
       end
     end
+
+    # @!group Internal
 
     private
 
