@@ -1,5 +1,3 @@
-require 'fileutils'
-
 describe Cline::Logs, '#monitor' do
   it 'calls on_log for each log line even without modifications' do
     with_logs(

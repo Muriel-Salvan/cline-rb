@@ -7,7 +7,6 @@ config_dir = ARGV[0]
 raise 'Usage: compatibility_check_settings <config_dir>' if config_dir.nil?
 
 require 'cline'
-require 'fileutils'
 require 'tmpdir'
 
 original_config = Cline::Config.open(config_dir)

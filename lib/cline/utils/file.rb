@@ -1,3 +1,6 @@
+require 'fileutils'
+require 'tmpdir'
+
 module Cline
   module Utils
     # Some file helpers
@@ -24,6 +27,21 @@ module Cline
           retry
         end
         file_content
+      end
+
+      # Provide a temporary directory.
+      # Will clean up the directory after code execution unless debug mode is on.
+      #
+      # @yield [temp_dir] Block called with the temp directory ready
+      # @yieldparam temp_dir [String] The temp directory
+      def self.with_temp_dir(&)
+        if Cline.config.debug
+          temp_dir = "#{Cline.config.temp_dir_root}/#{Time.now.utc.strftime('%Y-%m-%d-%H-%M-%S-%N')}"
+          FileUtils.mkdir_p temp_dir
+          yield temp_dir
+        else
+          Dir.mktmpdir(&)
+        end
       end
     end
   end

@@ -1,7 +1,6 @@
 require 'human_number'
 require 'pty_compat'
 require 'sys/proctable'
-require 'tmpdir'
 
 # Load the HumanNumber locale files, as it does not do it automatically.
 # TODO: Remove this when human_number will be fixed.
@@ -143,7 +142,7 @@ module Cline
             proc { |&run_block| run_block.call(prompt_lines.first) }
           else
             proc do |&run_block|
-              Dir.mktmpdir do |tmp_dir|
+              Utils::File.with_temp_dir do |tmp_dir|
                 prompt_file = "#{tmp_dir}/prompt.txt"
                 File.write(prompt_file, stripped_prompt)
                 run_block.call(prompt_file)
@@ -299,7 +298,7 @@ module Cline
       (
         proc do |&run_block|
           if stdin_data
-            Dir.mktmpdir do |tmp_dir|
+            Utils::File.with_temp_dir do |tmp_dir|
               stdin_file = "#{tmp_dir}/stdin"
               File.write(stdin_file, stdin_data)
               cmd << " < #{stdin_file}"
