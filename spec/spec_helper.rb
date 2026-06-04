@@ -30,7 +30,7 @@ RSpec.configure do |config|
   # Around hook for all test cases
   # Don't use a before hook for that purpose, as before hooks are always run after around hooks.
   config.around do |example|
-    Cline::Utils::Logger.debug = ClineTest::Helpers::Debug.debug?
+    Cline.config.debug = ClineTest::Helpers::Debug.debug?
     clean_temp_dir
     example.run
   end

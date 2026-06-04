@@ -5,9 +5,6 @@ module Cline
     # Mixin adding some debug logging capabilities
     module Logger
       class << self
-        # Global debug switch.
-        attr_accessor :debug
-
         # Sanitize some PTY output:
         # - Remove ANSI escape codes.
         # - Remove CSI escape codes.
@@ -19,8 +16,6 @@ module Cline
           Strings::ANSI.sanitize(pty_output).gsub(/\e\][^\a]*\a/, '')
         end
       end
-      # Set default value
-      Logger.debug = ENV['CLINE_DEBUG'] == '1'
 
       # Log a message if debug was activated
       #
@@ -29,7 +24,7 @@ module Cline
       # @yield Code returning a String for lazy evaluation
       #   * Return [String] Debug message
       def log_debug(msg = nil)
-        return unless Logger.debug
+        return unless Cline.config.debug
 
         msg = yield if block_given?
         puts "[CLINE DEBUG] - #{msg}"
