@@ -117,6 +117,12 @@ module ClineTest
           # Run PTY.spawn with our stub instead of the real Cline CLI.
           stubbed_cmd = ["ruby#{'.exe' if OS.windows?}", 'spec/cline_test/stubs/cline'] + cline_args
           log_debug { "Execute `#{stubbed_cmd}` with stub conf:\n#{JSON.pretty_generate(JSON.parse(File.read(stub_conf_file)))}" }
+          # In Windows' Ruby implementation (ruby.exe) there is actually a bug that splits multiline arguments into separate arguments.
+          # This bug does not exist on Linux implementations.
+          # Because of that, we manually replace the new lines with '\\n' so that the behaviour stays consistent with the real arguments\
+          #   that would have been sent to Cline CLI.
+          # Our stub is then doing the opposite conversion on Windows only.
+          stubbed_cmd.map! { |arg| arg.gsub("\n", '\\n') } if OS.windows?
           Cli.original_pty_spawn.call(*stubbed_cmd) do |reader, writer, pid|
             if Debug.debug?
               allow(reader).to receive(:each_line).and_wrap_original do |original_each_line, &each_line_block|
