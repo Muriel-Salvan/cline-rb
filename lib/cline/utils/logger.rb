@@ -11,9 +11,11 @@ module Cline
         # - Remove OSC escape codes.
         #
         # @param pty_output [String] PTY output string
+        # @param colored [Boolean] Do we keep colored output?
         # @return [String] Resulting sanitized string
-        def sanitize_pty_output(pty_output)
-          Strings::ANSI.sanitize(pty_output).gsub(/\e\][^\a]*\a/, '')
+        def sanitize_pty_output(pty_output, colored: false)
+          pty_output = Strings::ANSI.sanitize(pty_output) unless colored
+          pty_output.gsub(/\e\][^\a]*\a/, '')
         end
       end
 

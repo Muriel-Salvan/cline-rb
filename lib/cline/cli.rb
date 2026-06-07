@@ -291,7 +291,7 @@ module Cline
         begin
           reader.each_line do |line|
             stdout_lines << line
-            $stdout.write(line) if @stdout_echo
+            $stdout.write(Utils::Logger.sanitize_pty_output(line, colored: true)) if @stdout_echo
             on_stdout&.call(line)
           end
         rescue Errno::EIO => e
