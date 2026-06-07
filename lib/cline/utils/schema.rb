@@ -30,7 +30,7 @@ module Cline
 
             include Enumerable
 
-            def_delegators :elements_hash, *%i[[] []= each empty? first key? keys size to_hash values]
+            def_delegators :elements_hash, *%i[[] []= each empty? key? keys size to_hash values]
 
             # Constructor
             #

@@ -11,7 +11,7 @@ module Cline
     include Enumerable
 
     # Delegates enumerating methods to the internal messages
-    def_delegators :messages, *%i[[] << each empty? first last size]
+    def_delegators :messages, *%i[[] << each empty? last size]
 
     # Equality check
     #

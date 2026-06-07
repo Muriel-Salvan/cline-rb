@@ -28,7 +28,9 @@ module Cline
     cline_snake_attributes(*%i[updated_at system_prompt])
 
     # Delegates enumerating methods to the internal messages
-    def_delegators :messages, *%i[[] << each empty? first last size]
+    def_delegators :messages, *%i[[] << each empty? last size]
+
+    include Enumerable
 
     # @!group Internal
 
