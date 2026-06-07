@@ -63,7 +63,7 @@ File.write(
     calls + [
       {
         pid: Process.pid,
-        command: ARGV.join(' ').to_s.strip,
+        command: ARGV,
         stdin:
           if $stdin.tty?
             nil

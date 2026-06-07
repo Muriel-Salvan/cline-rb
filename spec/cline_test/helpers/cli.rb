@@ -1,3 +1,4 @@
+require 'json'
 require 'os'
 require 'pty_compat'
 require 'stringio'
@@ -15,9 +16,9 @@ module ClineTest
       # This helper hides the underlying ways of running commands from Cline::Cli.
       # It uses a Cline CLI stub that executes mocked commands in place of the real Cline CLI.
       #
-      # @param commands [Hash{String, Regexp => Hash{Symbol => Object}, Array<Hash{Symbol => Object}>}] For each command to mock,
+      # @param commands [Hash{Array<String> => Hash{Symbol => Object}, Array<Hash{Symbol => Object}>}] For each command to mock,
       #   a list of (or a single) mocked instructions.
-      #   The command to be mocked can be an exact String or a Regexp that apply to all matching commands.
+      #   The command to be mocked is the array of Cline arguments (after the cline executable).
       #   Each mocked instruction is a Hash that describes the mocked behaviour.
       #   They are executed in sequence of the list, and keys inside each Hash.
       #   Here is the possible instructions that are available:
@@ -43,14 +44,11 @@ module ClineTest
       #       or nil if none.
       #       Each message (or group) from the list will be created with 0.2 seconds interval.
       def mock_commands(commands = {})
-        # Mock `PTY.spawn(cmd) do |reader, writer, pid|` with spies pattern
-        allow(::PTY).to receive(:spawn) do |cmd, &block|
+        # Mock `PTY.spawn(*args) do |reader, writer, pid|` with spies pattern
+        allow(::PTY).to receive(:spawn) do |*args, &block|
           # Find the mocked instructions for this Cline CLI run
-          cline_args = cmd.match(/^cline(.cmd)? (.+)$/)[2]
-          command_search = (cline_args =~ /^(.+) < [^\s]+$/ ? Regexp.last_match(1) : cline_args).strip
-          _command, mocked_instructions = commands.find do |command, _mocked_instructions|
-            command.is_a?(Regexp) ? command_search =~ command : command_search == command
-          end
+          cline_args = args[(args.find_index { |arg| arg.end_with?('cline') } + 1)..]
+          mocked_instructions = commands[cline_args]
           mocked_instructions ||= []
           # Create the JSON file that will give all instructions to execute to our Cline CLI stub.
           stub_conf_file = '.cline_test/tmp/cli_stub.json'
@@ -117,9 +115,9 @@ module ClineTest
             end.to_json
           )
           # Run PTY.spawn with our stub instead of the real Cline CLI.
-          stubbed_cmd = "ruby#{'.exe' if OS.windows?} spec/cline_test/stubs/cline #{cline_args}"
+          stubbed_cmd = ["ruby#{'.exe' if OS.windows?}", 'spec/cline_test/stubs/cline'] + cline_args
           log_debug { "Execute `#{stubbed_cmd}` with stub conf:\n#{JSON.pretty_generate(JSON.parse(File.read(stub_conf_file)))}" }
-          Cli.original_pty_spawn.call(stubbed_cmd) do |reader, writer, pid|
+          Cli.original_pty_spawn.call(*stubbed_cmd) do |reader, writer, pid|
             if Debug.debug?
               allow(reader).to receive(:each_line).and_wrap_original do |original_each_line, &each_line_block|
                 original_each_line.call do |line|
@@ -137,7 +135,7 @@ module ClineTest
       #
       # @return [Array<Hash{Symbol => Object}>] List of commands that have been issued:
       #   * pid [Integer] The PID of the Cline process
-      #   * command [String] The command itself
+      #   * command [Array<String>] The command itself
       #   * stdin [String, nil] The stdin that was redirected to this command, or nil if none
       def issued_commands
         calls_file = '.cline_test/tmp/cli_calls.json'
@@ -146,19 +144,33 @@ module ClineTest
 
       # Expect issued commands to match a list of commands
       #
-      # @param expected_commands [Array<String, Hash>] The expected commands or their description:
-      #   * command [String] The expected command itself (serves as the default value when used as a String instead of a Hash).
+      # @param expected_commands [Array<Array<String, Regexp>, Hash>] The expected commands or their description:
+      #   * command [Array<String, Regexp>] The expected command itself (serves as the default value when used as an Array instead of a Hash).
+      #       Each expected argument of the command can be either a String for exact match, or a Regexp for pattern matching.
       #   * stdin [String, nil] Expected stdin content with this command, or nil if none. Defaults to nil.
       def expect_issued_commands(expected_commands)
-        expect(issued_commands.map { |command| command.slice(*%i[command stdin]) }).to eq(
-          expected_commands.map do |expected_command|
-            # Normalize and set default values
-            {
-              stdin: nil
-            }.merge(expected_command.is_a?(Hash) ? expected_command : { command: expected_command })
-              .merge(command: expected_command[:command].strip)
+        # Normalize and set default values
+        expected_commands = expected_commands.map do |expected_command|
+          expected_command = { command: expected_command } unless expected_command.is_a?(Hash)
+          {
+            stdin: nil
+          }.merge(expected_command)
+        end
+        received_commands = issued_commands.map { |command| command.slice(*%i[command stdin]) }
+        log_debug "Received commands:#{JSON.pretty_generate(received_commands)}"
+        log_debug "Expected commands:#{JSON.pretty_generate(expected_commands)}"
+        expect(received_commands.size).to eq expected_commands.size
+        received_commands.zip(expected_commands).each do |received_command, expected_command|
+          expect(received_command[:command].size).to eq expected_command[:command].size
+          received_command[:command].zip(expected_command[:command]).each do |received_arg, expected_arg|
+            if expected_arg.is_a?(Regexp)
+              expect(received_arg).to match expected_arg
+            else
+              expect(received_arg).to eq expected_arg
+            end
           end
-        )
+          expect(received_command[:stdin]).to eq expected_command[:stdin]
+        end
       end
 
       # Run the CLI for the task command.
@@ -166,7 +178,7 @@ module ClineTest
       # Always run it in a temporary config directory.
       #
       # @param stub [Object] The Cline CLI stub instructions (see ClineTest::Helpers::Cli#mock_commands)
-      # @param prompt [String] The prompt to send
+      # @param prompt [String, nil] The prompt to send, or nil if none
       # @param on_message [#call, nil] Optional on_message callback to provide (see Cline::Cli#task)
       # @param on_question [#call, nil] Optional on_question callback to provide (see Cline::Cli#task)
       # @param monitoring_interval_secs [Float] The monitoring interval in seconds
@@ -178,7 +190,7 @@ module ClineTest
         @messages_received = []
         result = nil
         with_config do |config|
-          mock_commands(/^--config #{Regexp.escape(config.dir)}/ => stub)
+          mock_commands(['--config', config.dir, prompt].compact => stub)
           # Create CLI instance with our test config directory
           cli = described_class.new(config: config.dir)
           result = cli.task(

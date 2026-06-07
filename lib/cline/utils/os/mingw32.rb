@@ -20,9 +20,15 @@ module Cline
           system("taskkill /f /pid #{pid}")
         end
 
-        # @return [String] The Cline executable
+        # @return [Array<String>] The Cline executable command line (can also have some arguments)
         def cline_exe
-          'cline.cmd'
+          # As this CLI will be used with PTY.spawn and we want multiline support,
+          # don't use cline.cmd npm wrapper as it treats "\n" as new command lines.
+          # Therefore we use the node.exe binary directly.
+          @cline_exe ||= [
+            'node.exe',
+            "#{::File.dirname(`where cline.cmd`.split("\n").first)}/node_modules/cline/bin/cline"
+          ]
         end
 
         # @return [String] The user applications data directory

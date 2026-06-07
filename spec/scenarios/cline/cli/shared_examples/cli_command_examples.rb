@@ -3,9 +3,9 @@ shared_examples 'a cli command' do |opts|
   # - name [Symbol] The command name
   # - args [Array] The args that can be sent to the command. Defaults to [].
   # - kwargs [Hash] The kwargs that can be sent to the command. Defaults to {}.
-  # - expected_cli_command [String] The expected CLI command.
-  # - expected_cli_options [String] The expected command line options. Defaults to ''.
-  # - expected_cli_args [String] The expected command line extra arguments. Defaults to ''.
+  # - expected_cli_command [String, nil] The expected CLI command, or nil if none. Defaults to nil.
+  # - expected_cli_options [Array<String>] The expected command line options. Defaults to [].
+  # - expected_cli_args [Array<String>] The expected command line extra arguments. Defaults to [].
   # - expected_stdin [String, nil] The expected stdin content, or nil if none. Defaults to nil.
   # Set default values
   opts.replace(
@@ -14,9 +14,9 @@ shared_examples 'a cli command' do |opts|
       kwargs: {},
       cli_options: '',
       stdin: nil,
-      expected_cli_command: '',
-      expected_cli_options: '',
-      expected_cli_args: ''
+      expected_cli_command: nil,
+      expected_cli_options: [],
+      expected_cli_args: []
     }.merge(opts)
   )
 
@@ -26,7 +26,7 @@ shared_examples 'a cli command' do |opts|
 
   it 'calls the correct command' do
     described_class.new.public_send(opts[:name], *opts[:args])
-    expect_issued_commands [{ command: "#{opts[:expected_cli_command]} #{opts[:expected_cli_args]}".strip, stdin: opts[:expected_stdin] }]
+    expect_issued_commands [{ command: ([opts[:expected_cli_command]] + opts[:expected_cli_args]).compact, stdin: opts[:expected_stdin] }]
   end
 
   it 'includes global constructor options in the command' do
@@ -38,7 +38,7 @@ shared_examples 'a cli command' do |opts|
       ).public_send(opts[:name], *opts[:args])
       expect_issued_commands [
         {
-          command: "#{opts[:expected_cli_command]} --verbose --cwd /test/path --config #{config.dir} #{opts[:expected_cli_args]}".strip,
+          command: ([opts[:expected_cli_command]] + %w[--verbose --cwd /test/path --config] + [config.dir] + opts[:expected_cli_args]).compact,
           stdin: opts[:expected_stdin]
         }
       ]
@@ -50,7 +50,7 @@ shared_examples 'a cli command' do |opts|
       described_class.new.public_send(opts[:name], *opts[:args], **opts[:kwargs])
       expect_issued_commands [
         {
-          command: "#{opts[:expected_cli_command]} #{opts[:expected_cli_options]} #{opts[:expected_cli_args]}".strip,
+          command: ([opts[:expected_cli_command]] + opts[:expected_cli_options] + opts[:expected_cli_args]).compact,
           stdin: opts[:expected_stdin]
         }
       ]
@@ -60,7 +60,7 @@ shared_examples 'a cli command' do |opts|
       described_class.new(verbose: true, cwd: '/working/dir').public_send(opts[:name], *opts[:args], **opts[:kwargs])
       expect_issued_commands [
         {
-          command: "#{opts[:expected_cli_command]} --verbose --cwd /working/dir #{opts[:expected_cli_options]} #{opts[:expected_cli_args]}".strip,
+          command: ([opts[:expected_cli_command]] + %w[--verbose --cwd /working/dir] + opts[:expected_cli_options] + opts[:expected_cli_args]).compact,
           stdin: opts[:expected_stdin]
         }
       ]
@@ -76,7 +76,7 @@ shared_examples 'a cli command' do |opts|
 
   it 'returns stdout, stderr and exit_status correctly' do
     mock_commands(
-      "#{opts[:expected_cli_command]} #{opts[:expected_cli_args]}".strip => {
+      ([opts[:expected_cli_command]] + opts[:expected_cli_args]).compact => {
         stdout: "Executing Cline CLI\nSuccess\n",
         stderr: "Warning: update available\n"
       }
@@ -88,7 +88,7 @@ shared_examples 'a cli command' do |opts|
 
   it 'echoes stdout content to $stdout when stdout_echo is true' do
     mock_commands(
-      "#{opts[:expected_cli_command]} #{opts[:expected_cli_args]}".strip => {
+      ([opts[:expected_cli_command]] + opts[:expected_cli_args]).compact => {
         stdout: "Executing Cline CLI\nSuccess output line 1\nSuccess output line 2\n"
       }
     )
@@ -106,7 +106,7 @@ shared_examples 'a cli command' do |opts|
   end
 
   it 'does not echo stdout content to $stdout when stdout_echo is false (default)' do
-    mock_commands("#{opts[:expected_cli_command]} #{opts[:expected_cli_args]}".strip => { stdout: "Executing Cline CLI\nSuccess\n" })
+    mock_commands(([opts[:expected_cli_command]] + opts[:expected_cli_args]).compact => { stdout: "Executing Cline CLI\nSuccess\n" })
     stdout_messages = []
     allow($stdout).to receive(:write) do |message|
       stdout_messages << message
@@ -122,7 +122,7 @@ shared_examples 'a cli command' do |opts|
   end
 
   it 'raises UnexpectedExitStatusError when exit status is not expected' do
-    mock_commands("#{opts[:expected_cli_command]} #{opts[:expected_cli_args]}".strip => { exit: 1 })
+    mock_commands(([opts[:expected_cli_command]] + opts[:expected_cli_args]).compact => { exit: 1 })
     cli = described_class.new
     expect do
       cli.public_send(opts[:name], *opts[:args])
@@ -130,7 +130,7 @@ shared_examples 'a cli command' do |opts|
   end
 
   it 'has correct cline_pid value while running command' do
-    mock_commands("#{opts[:expected_cli_command]} #{opts[:expected_cli_args]}".strip => { sleep: 1 })
+    mock_commands(([opts[:expected_cli_command]] + opts[:expected_cli_args]).compact => { sleep: 1 })
     cli = described_class.new
     # Create another thread to capture PID while the command is running
     captured_pids = nil

@@ -21,9 +21,9 @@ module Cline
           log_debug "Process #{pid} was already killed"
         end
 
-        # @return [String] The Cline executable
+        # @return [Array<String>] The Cline executable command line (can also have some arguments)
         def cline_exe
-          'cline'
+          ['cline']
         end
 
         # @return [String] The user applications data directory

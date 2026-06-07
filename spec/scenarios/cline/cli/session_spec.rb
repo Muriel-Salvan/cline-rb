@@ -21,7 +21,7 @@ describe Cline::Cli, '#session' do
   it 'is set correctly inside the on_message callback' do
     with_config do |config|
       mock_commands(
-        "--config #{config.dir} Test prompt" => {
+        ['--config', config.dir, 'Test prompt'] => {
           log: {},
           session: { messages: [{ ts: 100, content: [{ text: 'Test message' }] }] }
         }
