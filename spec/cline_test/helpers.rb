@@ -2,6 +2,7 @@ module ClineTest
   module Helpers
     include Cli
     include Config
+    include Configuration
     include Data
     include Debug
     include GlobalState

@@ -138,7 +138,7 @@ module Cline
             Utils::File.with_temp_dir do |tmp_dir|
               prompt_file = "#{tmp_dir}/prompt.txt"
               File.write(prompt_file, stripped_prompt)
-              run_block.call(prompt_file)
+              run_block.call(File.expand_path(prompt_file))
             end
           end
         else
@@ -308,7 +308,7 @@ module Cline
         begin
           reader.each_line do |line|
             stdout_lines << line
-            $stdout.write(Utils::Logger.sanitize_pty_output(line, colored: true)) if @stdout_echo
+            $stdout.write(Utils::Logger.sanitize_pty_output(line, colored: !Cline.config.debug)) if @stdout_echo
             on_stdout&.call(line)
           end
         rescue Errno::EIO => e

@@ -118,6 +118,36 @@ describe Cline::Cli, '#task' do
             { command: ['--config', /^.+$/, /^.+$/] }
           ]
           expect(result[:stdout]).to include "[PROMPT] #{'x' * 95}"
+          last_arg = issued_commands.last[:command].last
+          expect(File.expand_path(last_arg)).to eq last_arg
+        end
+      end
+
+      it 'writes a long prompt that exceeds the max command length to a temp file in a relative dir' do
+        allow(Cline::Utils::Os).to receive(:`).with('getconf ARG_MAX').and_return("100\n")
+        temp_config = Cline::Configuration.new
+        temp_config.debug = true
+        temp_config.temp_dir_root = '.cline-rb-tmp'
+        with_configuration(temp_config) do
+          allow($stdout).to receive(:write)
+          cli_task(
+            prompt: 'x' * 95,
+            stub: {
+              eval: <<~EO_RUBY
+                puts "[PROMPT] \#{File.read(ARGV.last)}"
+              EO_RUBY
+            },
+            stub_ignore_prompt: true
+          ) do |_cli, result|
+            expect_issued_commands [
+              { command: ['--config', /^.+$/, /^.+$/] }
+            ]
+            expect(result[:stdout]).to include "[PROMPT] #{'x' * 95}"
+            last_arg = issued_commands.last[:command].last
+            expect(File.expand_path(last_arg)).to eq last_arg
+          end
+        ensure
+          FileUtils.rm_rf temp_config.temp_dir_root
         end
       end
     end
@@ -151,6 +181,36 @@ describe Cline::Cli, '#task' do
           ]
           # Huge PTY output also inserts some new lines chars. Remove them to validate the output.
           expect(result[:stdout].gsub("\n", '')).to include "[PROMPT] #{'x' * 8200}"
+          last_arg = issued_commands.last[:command].last
+          expect(File.expand_path(last_arg)).to eq last_arg
+        end
+      end
+
+      it 'writes a long prompt that exceeds the max command length to a temp file in a relative dir' do
+        temp_config = Cline::Configuration.new
+        temp_config.debug = true
+        temp_config.temp_dir_root = '.cline-rb-tmp'
+        with_configuration(temp_config) do
+          allow($stdout).to receive(:write)
+          cli_task(
+            prompt: 'x' * 8200,
+            stub: {
+              eval: <<~EO_RUBY
+                puts "[PROMPT] \#{File.read(ARGV.last)}"
+              EO_RUBY
+            },
+            stub_ignore_prompt: true
+          ) do |_cli, result|
+            expect_issued_commands [
+              { command: ['--config', /^.+$/, /^.+$/] }
+            ]
+            # Huge PTY output also inserts some new lines chars. Remove them to validate the output.
+            expect(result[:stdout].gsub("\n", '')).to include "[PROMPT] #{'x' * 8200}"
+            last_arg = issued_commands.last[:command].last
+            expect(File.expand_path(last_arg)).to eq last_arg
+          end
+        ensure
+          FileUtils.rm_rf temp_config.temp_dir_root
         end
       end
     end
