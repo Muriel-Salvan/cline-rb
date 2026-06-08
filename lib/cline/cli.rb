@@ -129,82 +129,99 @@ module Cline
     def task(prompt, on_message: nil, on_question: nil, monitoring_interval_secs: 1, **kwargs)
       result = {}
       start_time = Time.now
-      session_monitor_thread = nil
-      cli_running = true
-      begin
-        result = run_cli(
-          args: parse_task_options(**kwargs) + (prompt ? [prompt.strip] : []),
-          on_start: proc do |_reader, writer, _pid|
-            session_monitor_thread = Thread.new do
-              # Start monitoring logs to get the session ID.
-              # Wait for logs to exist.
-              sleep 0.1 while cli_running && !config.logs
-              # Monitor logs to get the session ID
-              session_id = nil
-              config.logs&.monitor(
-                on_log: proc do |log, _last|
-                  session_id = log.properties.ulid if !session_id && log.is_a?(Log) && log.properties&.ulid
-                end,
-                from: start_time
-              ) do
-                sleep 0.1 while cli_running && !session_id
-              end
-              # If CLI has finished, session_id should be already discovered, unless the session could not be created.
-              # If CLI has not finished yet, the we have the session ID discovered already.
-              # So it means that if session_id is nil, there has been a problem (like core dump).
-              if session_id
-                log_debug "Found Cline session ID #{session_id}"
-                # Wait for the CLI to create the session for real
-                sleep 0.1 while cli_running && !config.sessions
-                while cli_running && !config.sessions[session_id]
-                  sleep 0.1
-                  config.sessions.refresh!
-                end
-                # If CLI has finished, then the session should exist, unless there has been a problem (like file system issue).
-                @session = config.sessions && config.sessions[session_id]
-                # Now monitor the session messages for reporting and possible user callback
-                # [Hash{Integer => Usage}] All usages, per timestamp, for logging purposes
-                usages = {}
-                @session&.monitor_messages(
-                  on_message: proc do |message, last, previous_version|
-                    log_debug do
-                      usages[message.ts] = message.usage if message.usage
-                      last_usage = usages.values.last
-                      prefix = "[#{message.timestamp.strftime('%H:%M:%S')}]#{
-                        unless last_usage.nil?
-                          " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')}" \
-                            " #{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
-                            "/#{HumanNumber.human_number(last_usage.context_tokens_limit || 0, max_digits: 2)})"
-                        end
-                      } - "
-                      "#{prefix}#{message.to_human(limit: 128 - prefix.size)}"
-                    end
-                    # Call the user callback if any
-                    on_message&.call(message, last, previous_version)
-                    # If the message is the last one and the agent has asked a question, call the corresponding callback
-                    if last
-                      last_content = message.content&.last
-                      if last_content&.type == 'tool_use' && last_content.name == 'ask_question'
-                        unless on_question
-                          raise UnexpectedInteractiveSessionError,
-                            "Unexpected interactive session with assistant asking question #{last_content.input&.question}"
-                        end
-
-                        writer.puts(on_question.call(last_content.input))
-                      end
-                    end
+      stripped_prompt = prompt&.strip
+      task_args = parse_task_options(**kwargs)
+      # Use a prompt temporary file if the prompt is too long to fit in the command line.
+      (
+        if stripped_prompt && stripped_prompt.size + 2 > Utils::Os.max_cmd_length - (Utils::Os.cline_exe + task_args).map { |arg| "\"#{arg}\"" }.join(' ').size
+          proc do |&run_block|
+            Utils::File.with_temp_dir do |tmp_dir|
+              prompt_file = "#{tmp_dir}/prompt.txt"
+              File.write(prompt_file, stripped_prompt)
+              run_block.call(prompt_file)
+            end
+          end
+        else
+          proc { |&run_block| run_block.call(stripped_prompt) }
+        end
+      ).call do |prompt_arg|
+        session_monitor_thread = nil
+        cli_running = true
+        begin
+          result = run_cli(
+            args: task_args + (prompt_arg ? [prompt_arg] : []),
+            on_start: proc do |_reader, writer, _pid|
+              session_monitor_thread = Thread.new do
+                # Start monitoring logs to get the session ID.
+                # Wait for logs to exist.
+                sleep 0.1 while cli_running && !config.logs
+                # Monitor logs to get the session ID
+                session_id = nil
+                config.logs&.monitor(
+                  on_log: proc do |log, _last|
+                    session_id = log.properties.ulid if !session_id && log.is_a?(Log) && log.properties&.ulid
                   end,
-                  monitoring_interval_secs:
+                  from: start_time
                 ) do
-                  sleep 0.1 while cli_running
+                  sleep 0.1 while cli_running && !session_id
+                end
+                # If CLI has finished, session_id should be already discovered, unless the session could not be created.
+                # If CLI has not finished yet, the we have the session ID discovered already.
+                # So it means that if session_id is nil, there has been a problem (like core dump).
+                if session_id
+                  log_debug "Found Cline session ID #{session_id}"
+                  # Wait for the CLI to create the session for real
+                  sleep 0.1 while cli_running && !config.sessions
+                  while cli_running && !config.sessions[session_id]
+                    sleep 0.1
+                    config.sessions.refresh!
+                  end
+                  # If CLI has finished, then the session should exist, unless there has been a problem (like file system issue).
+                  @session = config.sessions && config.sessions[session_id]
+                  # Now monitor the session messages for reporting and possible user callback
+                  # [Hash{Integer => Usage}] All usages, per timestamp, for logging purposes
+                  usages = {}
+                  @session&.monitor_messages(
+                    on_message: proc do |message, last, previous_version|
+                      log_debug do
+                        usages[message.ts] = message.usage if message.usage
+                        last_usage = usages.values.last
+                        prefix = "[#{message.timestamp.strftime('%H:%M:%S')}]#{
+                          unless last_usage.nil?
+                            " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')}" \
+                              " #{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
+                              "/#{HumanNumber.human_number(last_usage.context_tokens_limit || 0, max_digits: 2)})"
+                          end
+                        } - "
+                        "#{prefix}#{message.to_human(limit: 128 - prefix.size)}"
+                      end
+                      # Call the user callback if any
+                      on_message&.call(message, last, previous_version)
+                      # If the message is the last one and the agent has asked a question, call the corresponding callback
+                      if last
+                        last_content = message.content&.last
+                        if last_content&.type == 'tool_use' && last_content.name == 'ask_question'
+                          unless on_question
+                            raise UnexpectedInteractiveSessionError,
+                              "Unexpected interactive session with assistant asking question #{last_content.input&.question}"
+                          end
+
+                          writer.puts(on_question.call(last_content.input))
+                        end
+                      end
+                    end,
+                    monitoring_interval_secs:
+                  ) do
+                    sleep 0.1 while cli_running
+                  end
                 end
               end
             end
-          end
-        )
-      ensure
-        cli_running = false
-        session_monitor_thread&.join
+          )
+        ensure
+          cli_running = false
+          session_monitor_thread&.join
+        end
       end
       if @session
         result[:message] = @session.messages&.last

@@ -35,6 +35,11 @@ module Cline
         def user_app_data_dir
           ENV['APPDATA'] || raise('APPDATA environment variable should be set to know the applications data dir')
         end
+
+        # @return [Integer] Maximum length a command line can have
+        def max_cmd_length
+          8191
+        end
       end
     end
   end

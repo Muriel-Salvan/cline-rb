@@ -79,4 +79,80 @@ describe Cline::Cli, '#task' do
       ['--config', /^.+$/, "This\nis\na\nmultiline\nprompt"]
     ]
   end
+
+  describe 'prompt command line length handling' do
+    context 'when the host OS is Linux' do
+      around do |example|
+        with_host_os('linux') do
+          # Delete potential cache that could have been set before
+          original_max_cmd_length = Cline::Utils::Os.instance_variable_get(:@max_cmd_length)
+          Cline::Utils::Os.instance_variable_set(:@max_cmd_length, nil)
+          begin
+            example.run
+          ensure
+            Cline::Utils::Os.instance_variable_set(:@max_cmd_length, original_max_cmd_length)
+          end
+        end
+      end
+
+      it 'passes a short prompt directly as a CLI argument' do
+        allow(Cline::Utils::Os).to receive(:`).with('getconf ARG_MAX').and_return("200\n")
+        cli_task(prompt: 'Hello, please write a Ruby script')
+        expect_issued_commands [
+          { command: ['--config', /^.+$/, 'Hello, please write a Ruby script'] }
+        ]
+      end
+
+      it 'writes a long prompt that exceeds the max command length to a temp file' do
+        allow(Cline::Utils::Os).to receive(:`).with('getconf ARG_MAX').and_return("100\n")
+        cli_task(
+          prompt: 'x' * 95,
+          stub: {
+            eval: <<~EO_RUBY
+              puts "[PROMPT] \#{File.read(ARGV.last)}"
+            EO_RUBY
+          },
+          stub_ignore_prompt: true
+        ) do |_cli, result|
+          expect_issued_commands [
+            { command: ['--config', /^.+$/, /^.+$/] }
+          ]
+          expect(result[:stdout]).to include "[PROMPT] #{'x' * 95}"
+        end
+      end
+    end
+
+    context 'when the host OS is mingw32' do
+      around do |example|
+        with_host_os('mingw32') do
+          example.run
+        end
+      end
+
+      it 'passes a short prompt directly as a CLI argument' do
+        cli_task(prompt: 'Hello, please write a Ruby script')
+        expect_issued_commands [
+          { command: ['--config', /^.+$/, 'Hello, please write a Ruby script'] }
+        ]
+      end
+
+      it 'writes a long prompt that exceeds the max command length to a temp file' do
+        cli_task(
+          prompt: 'x' * 8200,
+          stub: {
+            eval: <<~EO_RUBY
+              puts "[PROMPT] \#{File.read(ARGV.last)}"
+            EO_RUBY
+          },
+          stub_ignore_prompt: true
+        ) do |_cli, result|
+          expect_issued_commands [
+            { command: ['--config', /^.+$/, /^.+$/] }
+          ]
+          # Huge PTY output also inserts some new lines chars. Remove them to validate the output.
+          expect(result[:stdout].gsub("\n", '')).to include "[PROMPT] #{'x' * 8200}"
+        end
+      end
+    end
+  end
 end

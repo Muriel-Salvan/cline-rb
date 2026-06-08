@@ -30,6 +30,11 @@ module Cline
         def user_app_data_dir
           "#{user_home_dir}/.config"
         end
+
+        # @return [Integer] Maximum length a command line can have
+        def max_cmd_length
+          @max_cmd_length ||= Integer(`getconf ARG_MAX`.strip)
+        end
       end
     end
   end

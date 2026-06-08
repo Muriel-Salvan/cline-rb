@@ -48,7 +48,10 @@ module ClineTest
         allow(::PTY).to receive(:spawn) do |*args, &block|
           # Find the mocked instructions for this Cline CLI run
           cline_args = args[(args.find_index { |arg| arg.end_with?('cline') } + 1)..]
-          mocked_instructions = commands[cline_args]
+          _mocked_command, mocked_instructions = commands.find do |search_command, _search_instructions|
+            search_command.size == cline_args.size &&
+              search_command.zip(cline_args).all? { |search_arg, arg| search_arg.is_a?(Regexp) ? arg =~ search_arg : arg == search_arg }
+          end
           mocked_instructions ||= []
           # Create the JSON file that will give all instructions to execute to our Cline CLI stub.
           stub_conf_file = '.cline_test/tmp/cli_stub.json'
@@ -183,20 +186,21 @@ module ClineTest
       # Captures all on_message calls.
       # Always run it in a temporary config directory.
       #
-      # @param stub [Object] The Cline CLI stub instructions (see ClineTest::Helpers::Cli#mock_commands)
       # @param prompt [String, nil] The prompt to send, or nil if none
       # @param on_message [#call, nil] Optional on_message callback to provide (see Cline::Cli#task)
       # @param on_question [#call, nil] Optional on_question callback to provide (see Cline::Cli#task)
       # @param monitoring_interval_secs [Float] The monitoring interval in seconds
+      # @param stub [Object] The Cline CLI stub instructions (see ClineTest::Helpers::Cli#mock_commands)
+      # @param stub_ignore_prompt [Boolean] Does the stub ignore the prompt?
       # @yield Optional code called after the task command has finished
       # @yieldparam cli [Cline::Cli] The Cline CLI instance
       # @yieldparam result [Hash{Symbol => Object}] The return value of the command
       # @return [Hash{Symbol => Object}] The return value of the command
-      def cli_task(prompt: 'Test prompt', on_message: nil, on_question: nil, monitoring_interval_secs: 0.05, stub: {})
+      def cli_task(prompt: 'Test prompt', on_message: nil, on_question: nil, monitoring_interval_secs: 0.05, stub: {}, stub_ignore_prompt: false)
         @messages_received = []
         result = nil
         with_config do |config|
-          mock_commands(['--config', config.dir, prompt].compact => stub)
+          mock_commands(['--config', config.dir, stub_ignore_prompt ? /^.*$/ : prompt].compact => stub)
           # Create CLI instance with our test config directory
           cli = described_class.new(config: config.dir)
           result = cli.task(
