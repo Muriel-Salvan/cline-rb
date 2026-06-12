@@ -92,7 +92,8 @@ RSpec/NestedGroups:
 # Some test files can output to stdout and stderr
 RSpec/Output:
   Exclude:
-    # This module handles test debug output
+    # These files handle test debug output
+    - spec/cline_test/cli_stub.rb
     - spec/cline_test/helpers/debug.rb
     # The Cline CLI stub should output for the tests
     - spec/cline_test/stubs/cline
