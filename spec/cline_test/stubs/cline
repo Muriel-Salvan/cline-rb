@@ -2,10 +2,10 @@
 
 # This is a stub of the cline command line.
 
-# It looks for its stub configuration in .cline_test/tmp/cli_stub.json.
+# It looks for its stub configuration in "#{ENV['CLINE_STUB_DIR']}/cli_stub.json".
 # The cli_stub.json file contains the attributes defined by the mock_commands method (see #ClineTest::Helpers::Cli#mock_commands).
 
-# It also records all its call arguments and stdin in the file named .cline_test/tmp/cli_calls.json.
+# It also records all its call arguments and stdin in the file named "#{ENV['CLINE_STUB_DIR']}/cli_calls.json".
 # Those records are appended to the file if it already exists.
 # This file contains an Array of calls information:
 # * pid [Integer] The PID of the process
@@ -15,6 +15,9 @@
 require 'fileutils'
 require 'json'
 require 'os'
+
+cline_stub_dir = ENV.fetch('CLINE_STUB_DIR', nil)
+raise 'CLINE_STUB_DIR environment variable should be set to the directory containing the Cline stub configuration' unless cline_stub_dir
 
 # Ruby's Windows implementation splits multilines arguments.
 # Therefore we manually replaced them with '\\n'.
@@ -61,7 +64,7 @@ $stderr.sync = true
 @debug = false
 
 # Record the call
-calls_file = '.cline_test/tmp/cli_calls.json'
+calls_file = "#{cline_stub_dir}/cli_calls.json"
 calls = File.exist?(calls_file) ? JSON.parse(File.read(calls_file)) : []
 File.write(
   calls_file,
@@ -83,7 +86,7 @@ File.write(
 )
 
 # Read the config driven by mock_commands and execute all instructions in sequence
-JSON.parse(File.read('.cline_test/tmp/cli_stub.json'), symbolize_names: true).each do |instructions|
+JSON.parse(File.read("#{cline_stub_dir}/cli_stub.json"), symbolize_names: true).each do |instructions|
   instructions.each do |name, desc|
     log_debug "Execute instruction #{name}..."
     case name

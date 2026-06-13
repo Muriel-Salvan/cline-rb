@@ -28,20 +28,30 @@ module ClineTest
     #
     # @param example [Object] The RSpec example for which the stub is executed
     # @param debug [Boolean] Are we in debug mode?
-    def initialize(example:, debug: false)
+    # @param temp_dir [String] Temporary directory used to communicate with the stub
+    def initialize(example:, debug: false, temp_dir: '.cline_test/tmp')
       @example = example
       CliStub.debug = debug
+      @temp_dir = temp_dir
     end
 
     # Mock a list of commands, with their corresponding stdout, stderr and exit status.
     # This helper hides the underlying ways of running commands from Cline::Cli.
     # It uses a Cline CLI stub that executes mocked commands in place of the real Cline CLI.
     #
-    # @param commands [Hash{Array<String> => Hash{Symbol => Object}, Array<Hash{Symbol => Object}>}] For each command to mock,
-    #   a list of (or a single) mocked instructions.
-    #   The command to be mocked is the array of Cline arguments (after the cline executable).
-    #   Each mocked instruction is a Hash that describes the mocked behaviour.
-    #   They are executed in sequence of the list, and keys inside each Hash.
+    # @param commands [Hash, Array] The description of the mocked behaviour the Cline CLI stub will have.
+    #   This parameter can be of 2 kinds:
+    #   - [Hash{Array<String, Regexp> => Hash{Symbol => Object}, Array<Hash{Symbol => Object}>}] Describe a list of (or a single) instructions,
+    #     for each command to mock.
+    #     The command to be mocked is the array of Cline arguments (after the cline executable).
+    #     Each argument from this command line array can be either a String for exact match or a Regexp for pattern matching.
+    #     Each mocked instruction is described below.
+    #   - [Array<Hash{Symbol => Object}, Array<Hash{Symbol => Object}>>] Describe a sequential list of groups (or single) instructions.
+    #     Each group of instruction will be executed for each new command that gets executed, regardless of its arguments.
+    #     Each mocked instruction is described below.
+    #
+    #   Each instruction is a [Hash{Symbol => Object}] that describes the behaviour to mock.
+    #   They are executed in sequence of the list they belong to, and in sequence of the keys inside each Hash.
     #   Here is the possible instructions that are available:
     #   - debug [Boolean] Set debug mode.
     #   - eval [String] Execute some code.
@@ -65,27 +75,37 @@ module ClineTest
     #       or nil if none.
     #       Each message (or group) from the list will be created with 0.2 seconds interval.
     def mock_commands(commands = {})
+      temp_dir = @temp_dir
+      run_idx = 0
       @example.instance_eval do
         # Mock `PTY.spawn(*args) do |reader, writer, pid|` with spies pattern
         allow(::PTY).to receive(:spawn) do |*args, &block|
-          # Find the mocked instructions for this Cline CLI run
           cline_args = args[(args.find_index { |arg| arg.end_with?('cline') } + 1)..]
-          _mocked_command, mocked_instructions = commands.find do |search_command, _search_instructions|
-            search_command.size == cline_args.size &&
-              search_command.zip(cline_args).all? { |search_arg, arg| search_arg.is_a?(Regexp) ? arg =~ search_arg : arg == search_arg }
-          end
-          mocked_instructions ||= []
+          # Find the instructions corresponding to this Cline CLI run we want to mock
+          instructions =
+            if commands.is_a?(Hash)
+              # Ignore the verbose flag for command research if we activated the debug mode on purpose
+              cline_args_search = CliStub.debug ? cline_args - ['--verbose'] : cline_args
+              _mocked_command, found_instructions = commands.find do |search_command, _search_instructions|
+                search_command.size == cline_args_search.size &&
+                  search_command.zip(cline_args_search).all? { |search_arg, arg| search_arg.is_a?(Regexp) ? arg =~ search_arg : arg == search_arg }
+              end
+              found_instructions
+            else
+              commands[run_idx]
+            end
+          instructions ||= []
           # Create the JSON file that will give all instructions to execute to our Cline CLI stub.
-          stub_conf_file = '.cline_test/tmp/cli_stub.json'
+          stub_conf_file = "#{temp_dir}/cli_stub.json"
           FileUtils.mkdir_p File.dirname(stub_conf_file)
           File.write(
             stub_conf_file,
             # Normalize instructions (always using Arrays, setting default values).
             (
               (@debug ? [{ debug: true }] : []) +
-              (mocked_instructions.is_a?(Array) ? mocked_instructions : [mocked_instructions])
-            ).map do |instructions|
-              normalized_instructions = instructions.dup
+              (instructions.is_a?(Array) ? instructions : [instructions])
+            ).map do |instructions_set|
+              normalized_instructions = instructions_set.dup
               if normalized_instructions[:log] && normalized_instructions[:log].is_a?(Hash)
                 normalized_instructions[:log] = {
                   level: 30,
@@ -148,17 +168,26 @@ module ClineTest
           #   that would have been sent to Cline CLI.
           # Our stub is then doing the opposite conversion on Windows only.
           stubbed_cmd.map! { |arg| arg.gsub("\n", '\\n') } if OS.windows?
-          CliStub.original_pty_spawn.call(*stubbed_cmd) do |reader, writer, pid|
-            if @debug
-              allow(reader).to receive(:each_line).and_wrap_original do |original_each_line, &each_line_block|
-                original_each_line.call do |line|
-                  CliStub.log_debug "[Cline stub stdout] - #{Cline::Utils::Logger.sanitize_pty_output(line)}"
-                  each_line_block.call(line)
+          result = nil
+          original_cline_stub_dir = ENV.fetch('CLINE_STUB_DIR', nil)
+          ENV['CLINE_STUB_DIR'] = temp_dir
+          begin
+            result = CliStub.original_pty_spawn.call(*stubbed_cmd) do |reader, writer, pid|
+              if @debug
+                allow(reader).to receive(:each_line).and_wrap_original do |original_each_line, &each_line_block|
+                  original_each_line.call do |line|
+                    CliStub.log_debug "[Cline stub stdout] - #{Cline::Utils::Logger.sanitize_pty_output(line)}"
+                    each_line_block.call(line)
+                  end
                 end
               end
+              block.call(reader, writer, pid)
             end
-            block.call(reader, writer, pid)
+          ensure
+            ENV['CLINE_STUB_DIR'] = original_cline_stub_dir
           end
+          run_idx += 1
+          result
         end
       end
     end
@@ -170,7 +199,7 @@ module ClineTest
     #   * command [Array<String>] The command itself
     #   * stdin [String, nil] The stdin that was redirected to this command, or nil if none
     def issued_commands
-      calls_file = '.cline_test/tmp/cli_calls.json'
+      calls_file = "#{@temp_dir}/cli_calls.json"
       File.exist?(calls_file) ? JSON.parse(File.read(calls_file), symbolize_names: true) : []
     end
   end
