@@ -39,15 +39,42 @@ end
 # @param session_id [String] The session id
 # @param messages [Array<Hash{Symbol => Object}>] List of messages
 # @return [Hash] The JSON messages file content
+#   If the message's text content is Hash with an eval key, the text content is replaced by the corresponding code execution.
 def session_messages(session_id, messages)
   {
     version: 1,
     updated_at: Time.now.utc.strftime('%FT%T.%LZ'),
     agent: 'lead',
     sessionId: session_id,
-    messages: messages,
+    messages: messages.map do |message|
+      if message[:content]
+        message.merge(
+          content: message[:content].map do |content|
+            if content[:text].is_a?(Hash) && content[:text][:eval]
+              content.merge(text: eval(content[:text][:eval]))
+            else
+              content
+            end
+          end
+        )
+      else
+        message
+      end
+    end,
     system_prompt: 'You are Cline, an AI coding agent.'
   }
+end
+
+# Write session messages for a given session ID
+#
+# @param session_id [String] The session ID
+# @param messages [Array<Hash>] The messages to write
+def write_session_messages(session_id, messages)
+  log_debug "[Session #{session_id}] - Write #{messages.size} messages"
+  File.write(
+    File.join(config_dir, 'data', 'sessions', session_id, "#{session_id}.messages.json"),
+    JSON.pretty_generate(session_messages(session_id, messages))
+  )
 end
 
 # Log debug a message
@@ -132,14 +159,11 @@ JSON.parse(File.read("#{cline_stub_dir}/cli_stub.json"), symbolize_names: true).
       )
       if session_messages
         # First create empty file
-        log_debug "[Session #{desc[:session_id]}] - Initialize messages"
-        File.write(messages_file, JSON.pretty_generate(session_messages(desc[:session_id], [])))
+        write_session_messages(desc[:session_id], [])
         sleep 0.2
         # Then add test messages 1 by 1 with 0.2 seconds delay
         session_messages.size.times do |idx|
-          total_messages = session_messages[0..idx].flatten(1)
-          log_debug "[Session #{desc[:session_id]}] - Set #{total_messages.size} messages"
-          File.write(messages_file, JSON.pretty_generate(session_messages(desc[:session_id], total_messages)))
+          write_session_messages(desc[:session_id], session_messages[0..idx].flatten(1))
           sleep 0.2
         end
       end

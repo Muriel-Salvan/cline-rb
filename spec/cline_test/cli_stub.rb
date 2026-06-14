@@ -65,6 +65,7 @@ module ClineTest
     #     - messages [Array<Hash{Symbol => Object}, Array<Hash{Symbol => Object}>>, nil] List of messages (or messages groups) to be created,
     #       or nil if none.
     #       Each message (or group) from the list will be created with 0.2 seconds interval.
+    #       If the message's text content is a Hash with an eval key, the text content is replaced by the corresponding code execution.
     #   - sleep [Float] Sleep for a given time in seconds.
     #   - stderr [String] Output a string to stderr.
     #   - stdout [String] Output a string to stdout.
