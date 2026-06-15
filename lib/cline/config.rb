@@ -11,11 +11,19 @@ module Cline
 
     # @!group Public API
 
+    # Get the main Cline config.
+    # The main Cline config is the global config, enriched with also project-specific objects (skills...)
+    #
+    # @return [Config] The main config for the current user
+    def self.main
+      @main ||= Config.open("#{Utils::Os.user_home_dir}/.cline", include_project_config: true)
+    end
+
     # Get the global Cline config
     #
     # @return [Config] The global config for the current user
     def self.global
-      @global ||= Config.open("#{Utils::Os.user_home_dir}/.cline")
+      @global ||= Config.open("#{Utils::Os.user_home_dir}/.cline", include_project_config: false)
     end
 
     # Get the project Cline config
