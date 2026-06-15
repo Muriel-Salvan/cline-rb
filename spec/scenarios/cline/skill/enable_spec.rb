@@ -1,4 +1,4 @@
-﻿describe Cline::Skill, '#enable' do
+describe Cline::Skill, '#enable' do
   it 'does nothing when SKILL.md does not exist' do
     with_skill(content: nil) do |skill|
       expect { skill.enable }.not_to raise_error
@@ -35,8 +35,8 @@
       skill.enable
       expect(skill.yaml_front_matter).to eq(
         {
-          'title' => 'My Skill',
-          'description' => 'A test skill'
+          title: 'My Skill',
+          description: 'A test skill'
         }
       )
     end
@@ -58,8 +58,8 @@
       skill.enable
       expect(skill.yaml_front_matter).to eq(
         {
-          'title' => 'My Skill',
-          'disabled' => false
+          title: 'My Skill',
+          disabled: false
         }
       )
     end
@@ -82,8 +82,8 @@
       skill.enable
       expect(skill.yaml_front_matter).to eq(
         {
-          'title' => 'My Skill',
-          'description' => 'A test skill'
+          title: 'My Skill',
+          description: 'A test skill'
         }
       )
     end

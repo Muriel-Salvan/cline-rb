@@ -1,4 +1,5 @@
 require 'front_matter_parser'
+require 'json'
 require 'yaml'
 
 module Cline
@@ -20,7 +21,7 @@ module Cline
     # @return [Hash{Symbol => Object}, nil] The skill's front matter, or nil if none
     def yaml_front_matter
       content = skill_file_content('SKILL.md')&.content
-      FrontMatterParser::Parser.new(:md).call(content).front_matter if content
+      JSON.parse(JSON[FrontMatterParser::Parser.new(:md).call(content).front_matter], symbolize_names: true) if content
     end
 
     # Equality check
@@ -61,7 +62,7 @@ module Cline
 
     # @return [Boolean] Is the skill enabled?
     def enabled?
-      !yaml_front_matter || yaml_front_matter['disabled'] != true
+      !yaml_front_matter || yaml_front_matter[:disabled] != true
     end
 
     # Enable the skill

@@ -38,8 +38,8 @@ describe Cline::Skill, '#yaml_front_matter' do
     ) do |skill|
       expect(skill.yaml_front_matter).to eq(
         {
-          'title' => 'My Skill',
-          'description' => 'A test skill'
+          title: 'My Skill',
+          description: 'A test skill'
         }
       )
     end
@@ -65,11 +65,11 @@ describe Cline::Skill, '#yaml_front_matter' do
     ) do |skill|
       expect(skill.yaml_front_matter).to eq(
         {
-          'title' => 'My Skill',
-          'description' => 'A test skill',
-          'metadata' => {
-            'dependencies' => %w[skill-1 skill-2],
-            'author' => 'Muriel'
+          title: 'My Skill',
+          description: 'A test skill',
+          metadata: {
+            dependencies: %w[skill-1 skill-2],
+            author: 'Muriel'
           }
         }
       )

@@ -4,7 +4,7 @@ describe Cline::Skill, '#disable' do
       expect { skill.disable }.not_to raise_error
       expect(skill.yaml_front_matter).to eq(
         {
-          'disabled' => true
+          disabled: true
         }
       )
     end
@@ -27,9 +27,9 @@ describe Cline::Skill, '#disable' do
       skill.disable
       expect(skill.yaml_front_matter).to eq(
         {
-          'title' => 'My Skill',
-          'description' => 'A test skill',
-          'disabled' => true
+          title: 'My Skill',
+          description: 'A test skill',
+          disabled: true
         }
       )
     end
@@ -51,9 +51,9 @@ describe Cline::Skill, '#disable' do
       skill.disable
       expect(skill.yaml_front_matter).to eq(
         {
-          'title' => 'My Skill',
-          'description' => 'A test skill',
-          'disabled' => true
+          title: 'My Skill',
+          description: 'A test skill',
+          disabled: true
         }
       )
     end
@@ -75,8 +75,8 @@ describe Cline::Skill, '#disable' do
       skill.disable
       expect(skill.yaml_front_matter).to eq(
         {
-          'title' => 'My Skill',
-          'disabled' => true
+          title: 'My Skill',
+          disabled: true
         }
       )
     end
