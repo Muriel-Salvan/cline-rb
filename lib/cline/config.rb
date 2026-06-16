@@ -36,7 +36,7 @@ module Cline
     include Serializable::Dir
 
     # Give access to the data getters
-    def_delegators :data, *%i[global_state logs mcp_settings providers sessions tasks workspaces]
+    def_delegators :data, *%i[global_settings global_state logs mcp_settings providers sessions tasks workspaces]
 
     # Get skills from this config
     #

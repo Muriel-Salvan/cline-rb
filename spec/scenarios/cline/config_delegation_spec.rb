@@ -1,5 +1,13 @@
 describe Cline::Config do
   describe 'delegated methods from the data directory' do
+    it 'delegates global_settings' do
+      with_config(
+        global_settings: { auto_update_enabled: true, telemetry_opt_out: false }
+      ) do |config|
+        expect(config.global_settings).to be config.data.global_settings
+      end
+    end
+
     it 'delegates global_state' do
       with_config(global_state: { clineWebToolsEnabled: true }) do |config|
         expect(config.global_state).to be config.data.global_state

@@ -4,6 +4,7 @@ describe Cline::Data, '#==' do
       tasks: { 'task-1' => {}, 'task-2' => {} },
       workspaces: { 'ws-1' => { settings: { key: 'value' } } },
       cline_models: { 'model-1' => {}, 'model-2' => {} },
+      global_settings: { autoUpdateEnabled: true, telemetryOptOut: false, disabledTools: %w[tool1] },
       global_state: { clineWebToolsEnabled: true, focusChainSettings: { enabled: true, remindClineInterval: 5 } },
       mcp_settings: { mcpServers: { 'server-1' => { url: 'http://localhost:9090' } } },
       secrets: { apiKey: 'my-secret-key' },
@@ -61,6 +62,14 @@ describe Cline::Data, '#==' do
   it 'returns false for different global state' do
     with_data(**common_data) do |data1|
       with_data(**common_data, global_state: { clineWebToolsEnabled: false }) do |data2|
+        expect(data1).not_to eq(data2)
+      end
+    end
+  end
+
+  it 'returns false for different global settings' do
+    with_data(**common_data) do |data1|
+      with_data(**common_data, global_settings: { autoUpdateEnabled: false }) do |data2|
         expect(data1).not_to eq(data2)
       end
     end

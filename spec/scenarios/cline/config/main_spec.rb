@@ -78,7 +78,7 @@ describe Cline::Config, '.main' do
         # Remove the user_home_dir cache
         original_user_home_dir = Cline::Utils::Os.instance_variable_get(:@user_home_dir)
         begin
-          Cline::Utils::Os.remove_instance_variable(:@user_home_dir) if ::Cline::Utils::Os.instance_variable_defined?(:@user_home_dir)
+          Cline::Utils::Os.remove_instance_variable(:@user_home_dir) if Cline::Utils::Os.instance_variable_defined?(:@user_home_dir)
           example.call
         ensure
           Cline::Utils::Os.instance_variable_set(:@user_home_dir, original_user_home_dir)
