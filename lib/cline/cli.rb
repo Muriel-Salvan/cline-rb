@@ -170,8 +170,10 @@ module Cline
                 # So it means that if session_id is nil, there has been a problem (like core dump).
                 if session_id
                   log_debug "Found Cline session ID #{session_id}"
+                  # First get Cline models
+                  cline_models = config.data&.cline_models || Data.vscode&.cline_models
                   # Wait for the CLI to create the session for real
-                  sleep 0.1 while cli_running && !config.sessions
+                  sleep 0.1 while cli_running && !config.sessions(cline_models:)
                   while cli_running && !config.sessions[session_id]
                     sleep 0.1
                     config.sessions.refresh!

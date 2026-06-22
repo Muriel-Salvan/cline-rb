@@ -39,4 +39,86 @@ describe Cline::Cli, '#session' do
       expect(captured_session).to eq(cli.session)
     end
   end
+
+  describe 'Cline models used in session messages' do
+    # Setup the VSCode portable installation data and mock the VSCODE_PORTABLE environment variable.
+    #
+    # @param cline_models [Hash{String => Hash}, nil] The cline_models to create in the VSCode data directory, or nil if none.
+    #   Each key is a model ID, each value is a hash of model attributes (e.g. 'name', 'maxTokens', ...).
+    # @param vscode_root [String] The root temporary directory to use as the VSCode portable installation path.
+    def setup_vscode_models(cline_models, vscode_root)
+      vscode_data_dir = File.join(vscode_root, 'user-data', 'User', 'globalStorage', 'saoudrizwan.claude-dev')
+      FileUtils.mkdir_p(vscode_data_dir)
+      setup_data_dir(vscode_data_dir, cline_models:)
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with('VSCODE_PORTABLE').and_return(vscode_root)
+    end
+
+    around do |example|
+      # Backup and clear the Data.vscode cache
+      original_vscode = Cline::Data.instance_variable_get(:@vscode)
+      Cline::Data.remove_instance_variable(:@vscode) if Cline::Data.instance_variable_defined?(:@vscode)
+      begin
+        example.run
+      ensure
+        Cline::Data.instance_variable_set(:@vscode, original_vscode)
+      end
+    end
+
+    # Get the message returned by the session after running a task in a config dir having some Cline models defined.
+    #
+    # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
+    # @return [SessionMessage] The retruend session message
+    def capture_session_message(cline_models: nil)
+      result = nil
+      with_config(cline_models:) do |config|
+        mock_commands(
+          ['--config', config.dir, 'Test prompt'] => {
+            log: {},
+            session: { messages: [{ ts: 100, content: [{ text: 'Test message' }] }] }
+          }
+        )
+        cli = described_class.new(config: config.dir)
+        cli.task('Test prompt')
+        result = cli.session.messages.first
+      end
+      result
+    end
+
+    it 'uses Cline models from config data dir' do
+      expect(
+        capture_session_message(cline_models: { 'test/model-1' => { 'name' => 'Config Model' } }).cline_models['test/model-1'].name
+      ).to eq 'Config Model'
+    end
+
+    it 'uses Cline models from VSCode when config data dir has no models' do
+      with_temp_dir do |vscode_root|
+        setup_vscode_models({ 'test/model-1' => { 'name' => 'VSCode Model' } }, vscode_root)
+        expect(capture_session_message(cline_models: nil).cline_models['test/model-1'].name).to eq 'VSCode Model'
+      end
+    end
+
+    it 'uses Cline models from config data dir even when VSCode data also exists' do
+      with_temp_dir do |vscode_root|
+        setup_vscode_models({ 'test/model-1' => { 'name' => 'VSCode Model' } }, vscode_root)
+        expect(
+          capture_session_message(cline_models: { 'test/model-1' => { 'name' => 'Config Model' } }).cline_models['test/model-1'].name
+        ).to eq 'Config Model'
+      end
+    end
+
+    it 'does not return any Cline models when neither VSCode nor config dir have Cline models' do
+      with_temp_dir do |vscode_root|
+        setup_vscode_models(nil, vscode_root)
+        expect(capture_session_message(cline_models: nil).cline_models).to be_nil
+      end
+    end
+
+    it 'does not return any Cline models when VSCode dir does not exist and config dir has no Cline models' do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with('VSCODE_PORTABLE').and_return(nil)
+      allow(Cline::Utils::Os).to receive(:user_app_data_dir).and_return '/unknown/vscode/directory'
+      expect(capture_session_message(cline_models: nil).cline_models).to be_nil
+    end
+  end
 end
