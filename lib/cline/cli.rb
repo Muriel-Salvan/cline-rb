@@ -226,7 +226,7 @@ module Cline
         end
       end
       if @session
-        result[:message] = @session.messages&.last
+        result[:message] = @session.messages&.reverse_each&.find { |message| message.role == 'assistant' }
         result[:status] = @session.status
         result[:error] = config.logs.logs(from: start_time).reverse_each.find { |log| log.severity == 'error' } if @session.status == 'failed'
       end

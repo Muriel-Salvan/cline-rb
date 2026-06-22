@@ -137,7 +137,7 @@ module ClineTest
                 if normalized_instructions[:session][:messages]
                   default_message = {
                     id: 'msg_id_1',
-                    role: 'user',
+                    role: 'assistant',
                     content: [
                       {
                         type: 'text',

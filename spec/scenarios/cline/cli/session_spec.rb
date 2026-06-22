@@ -12,9 +12,12 @@ describe Cline::Cli, '#session' do
 
   it 'returns the session\'s messages after running a task' do
     cli_task(stub: { log: {}, session: { messages: [{ ts: 100, content: [{ text: 'Test message' }] }] } }) do |cli|
-      message = cli.session.messages.first
-      expect(message.ts).to eq 100
-      expect(message.content.first.text).to eq 'Test message'
+      user_message = cli.session.messages.first
+      expect(user_message.role).to eq 'user'
+      expect(user_message.content.first.text).to eq '<user_input mode="act">Test prompt</user_input>'
+      assistant_message = cli.session.messages[1]
+      expect(assistant_message.ts).to eq 100
+      expect(assistant_message.content.first.text).to eq 'Test message'
     end
   end
 

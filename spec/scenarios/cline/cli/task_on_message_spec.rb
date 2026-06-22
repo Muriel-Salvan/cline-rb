@@ -33,15 +33,17 @@ describe Cline::Cli, '#task' do
         },
         sleep: 1
       )
-      expect(messages_received.size).to eq 4
-      expect(messages_received[0][:message].ts).to eq 100
+      expect(messages_received.size).to eq 5
+      expect(messages_received[0][:message].role).to eq 'user'
       expect(messages_received[0][:last]).to be true
-      expect(messages_received[1][:message].ts).to eq 101
-      expect(messages_received[1][:last]).to be false
-      expect(messages_received[2][:message].ts).to eq 102
-      expect(messages_received[2][:last]).to be true
-      expect(messages_received[3][:message].ts).to eq 103
+      expect(messages_received[1][:message].ts).to eq 100
+      expect(messages_received[1][:last]).to be true
+      expect(messages_received[2][:message].ts).to eq 101
+      expect(messages_received[2][:last]).to be false
+      expect(messages_received[3][:message].ts).to eq 102
       expect(messages_received[3][:last]).to be true
+      expect(messages_received[4][:message].ts).to eq 103
+      expect(messages_received[4][:last]).to be true
     end
 
     it 'triggers on_message callback for messages added even when the CLI has finished' do
@@ -50,9 +52,11 @@ describe Cline::Cli, '#task' do
         monitoring_interval_secs: 2
       )
       # Verify callback was called correctly
-      expect(messages_received.size).to eq 1
-      expect(messages_received[0][:message].ts).to eq 100
-      expect(messages_received[0][:last]).to be true
+      expect(messages_received.size).to eq 2
+      expect(messages_received[0][:message].role).to eq 'user'
+      expect(messages_received[0][:last]).to be false
+      expect(messages_received[1][:message].ts).to eq 100
+      expect(messages_received[1][:last]).to be true
     end
 
     it 'does not trigger on_message callback when the CLI ends before creating the session\'s files' do

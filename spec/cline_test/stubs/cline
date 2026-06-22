@@ -34,7 +34,13 @@ def config_dir
   end
 end
 
-# Return a session messages file content, for a given list of messages
+# @return [Boolean] Are we in plan mode?
+def plan_mode?
+  ARGV.include? '--plan'
+end
+
+# Return a session messages file content, for a given list of messages.
+# Always prepend the user input as a user message.
 #
 # @param session_id [String] The session id
 # @param messages [Array<Hash{Symbol => Object}>] List of messages
@@ -46,7 +52,16 @@ def session_messages(session_id, messages)
     updated_at: Time.now.utc.strftime('%FT%T.%LZ'),
     agent: 'lead',
     sessionId: session_id,
-    messages: messages.map do |message|
+    messages: (
+      [
+        {
+          ts: 10,
+          role: 'user',
+          content: [{ type: 'text', text: "<user_input mode=\"#{plan_mode? ? 'plan' : 'act'}\">#{ARGV.last}</user_input>" }]
+        }
+      ] +
+        messages
+    ).map do |message|
       if message[:content]
         message.merge(
           content: message[:content].map do |content|

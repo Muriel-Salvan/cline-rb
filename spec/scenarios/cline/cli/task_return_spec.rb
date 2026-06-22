@@ -18,6 +18,26 @@ describe Cline::Cli, '#task' do
       expect(result[:message].content.first.text).to eq 'Third message'
     end
 
+    it 'returns the last session message of the assistant in the result hash' do
+      result = cli_task(
+        stub: {
+          log: {},
+          session: {
+            messages: [
+              { ts: 100, content: [{ text: 'Assistant message #1' }] },
+              { ts: 101, role: 'user', content: [{ text: 'User message #1' }] },
+              { ts: 102, content: [{ text: 'Assistant message #2' }] },
+              { ts: 103, role: 'orchestrator', content: [{ text: 'Orchestrator message #1' }] },
+              { ts: 104, role: 'user', content: [{ text: 'User message #2' }] }
+            ]
+          }
+        }
+      )
+      expect(result[:message]).not_to be_nil
+      expect(result[:message].ts).to eq 102
+      expect(result[:message].content.first.text).to eq 'Assistant message #2'
+    end
+
     it 'does not include message in the result when no session log was encountered' do
       expect(cli_task[:message]).to be_nil
     end
