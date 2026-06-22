@@ -20,9 +20,9 @@ cline_stub_dir = ENV.fetch('CLINE_STUB_DIR', nil)
 raise 'CLINE_STUB_DIR environment variable should be set to the directory containing the Cline stub configuration' unless cline_stub_dir
 
 # Ruby's Windows implementation splits multilines arguments.
-# Therefore we manually replaced them with '\\n'.
+# Therefore we manually replaced them with a magic key.
 # Make sure they are converted back to real new lines, as it would be received by the real Cline CLI.
-ARGV.map! { |arg| arg.gsub('\\n', "\n") } if OS.windows?
+ARGV.map! { |arg| arg.gsub('__CLINE_STUB__NEW_LINE__', "\n") } if OS.windows?
 
 # @return [String] The config directory
 def config_dir

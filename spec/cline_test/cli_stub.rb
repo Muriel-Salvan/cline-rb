@@ -165,10 +165,10 @@ module ClineTest
           CliStub.log_debug { "Execute `#{stubbed_cmd}` with stub conf:\n#{JSON.pretty_generate(JSON.parse(File.read(stub_conf_file)))}" }
           # In Windows' Ruby implementation (ruby.exe) there is actually a bug that splits multiline arguments into separate arguments.
           # This bug does not exist on Linux implementations.
-          # Because of that, we manually replace the new lines with '\\n' so that the behaviour stays consistent with the real arguments\
+          # Because of that, we manually replace the new lines with a magic key so that the behaviour stays consistent with the real arguments
           #   that would have been sent to Cline CLI.
           # Our stub is then doing the opposite conversion on Windows only.
-          stubbed_cmd.map! { |arg| arg.gsub("\n", '\\n') } if OS.windows?
+          stubbed_cmd.map! { |arg| arg.gsub("\n", '__CLINE_STUB__NEW_LINE__') } if OS.windows?
           result = nil
           original_cline_stub_dir = ENV.fetch('CLINE_STUB_DIR', nil)
           ENV['CLINE_STUB_DIR'] = temp_dir
