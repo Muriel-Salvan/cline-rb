@@ -34,6 +34,11 @@ describe Cline::Data, '.vscode' do
       expect(described_class.vscode.dir).to eq "#{tmp_dir}/user-data/User/globalStorage/saoudrizwan.claude-dev"
     end
 
+    it 'returns nil when the vscode data directory does not exist' do
+      allow(ENV).to receive(:[]).with('VSCODE_PORTABLE').and_return(tmp_dir)
+      expect(described_class.vscode).to be_nil
+    end
+
     it 'loads vscode data from a system installation' do
       allow(ENV).to receive(:[]).with('VSCODE_PORTABLE').and_return(nil)
       allow(ENV).to receive(:[]).with('APPDATA').and_return(tmp_dir)
@@ -53,6 +58,11 @@ describe Cline::Data, '.vscode' do
       allow(ENV).to receive(:[]).with('VSCODE_PORTABLE').and_return(tmp_dir)
       FileUtils.mkdir_p(File.join(tmp_dir, 'user-data', 'User', 'globalStorage', 'saoudrizwan.claude-dev'))
       expect(described_class.vscode.dir).to eq "#{tmp_dir}/user-data/User/globalStorage/saoudrizwan.claude-dev"
+    end
+
+    it 'returns nil when the vscode data directory does not exist' do
+      allow(ENV).to receive(:[]).with('VSCODE_PORTABLE').and_return(tmp_dir)
+      expect(described_class.vscode).to be_nil
     end
 
     it 'loads vscode data from XDG_CONFIG_HOME/Code' do

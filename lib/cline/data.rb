@@ -10,7 +10,7 @@ module Cline
 
     # Get the VSCode plugin Cline data dir
     #
-    # @return [Data] The data for the installed VSCode plugin
+    # @return [Data, nil] The data for the installed VSCode plugin, or nil if none
     def self.vscode
       @vscode ||= Data.open(
         "#{
