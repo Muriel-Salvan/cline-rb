@@ -38,7 +38,7 @@ describe Cline::Data, '#mcp_settings' do
       mcp_settings = data.mcp_settings
       # Verify valid attributes are still correctly loaded
       servers = mcp_settings.mcp_servers
-      expect(servers['test-server'].auto_approve).to eq %w[file-read command-run]
+      expect(servers['test-server'].auto_approve.to_a).to eq %w[file-read command-run]
       expect(servers['test-server'].disabled).to be false
       expect(servers['test-server'].timeout).to eq 30
       expect(servers['test-server'].type).to eq 'stdio'
@@ -79,7 +79,7 @@ describe Cline::Data, '#mcp_settings' do
       servers = mcp_settings.mcp_servers
       expect(servers.count).to eq 3
       # Check stdio server
-      expect(servers['stdio-server'].auto_approve).to eq %w[file-read command-run edit-files]
+      expect(servers['stdio-server'].auto_approve.to_a).to eq %w[file-read command-run edit-files]
       expect(servers['stdio-server'].disabled).to be false
       expect(servers['stdio-server'].timeout).to eq 60
       expect(servers['stdio-server'].type).to eq 'stdio'

@@ -28,7 +28,15 @@ module Cline
     # @param line [Log, String] The log entry to add (either a Log object or a raw string)
     # @return [Logs] self
     def <<(line)
-      logs_lines << (line.is_a?(Log) ? line.to_cline_json : line)
+      logs_lines << (
+        if line.is_a?(Log)
+          line.to_cline_json
+        elsif line.is_a?(Hash)
+          Log.cast(line).to_cline_json
+        else
+          line
+        end
+      )
       self
     end
 

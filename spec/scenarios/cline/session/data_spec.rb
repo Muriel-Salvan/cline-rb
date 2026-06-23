@@ -104,7 +104,6 @@ describe Cline::Session, '#data' do
       expect(session_data.metadata.checkpoint.latest.created_at).to eq 1_779_133_220_819
       expect(session_data.metadata.checkpoint.latest.run_count).to eq 1
       expect(session_data.metadata.checkpoint.latest.kind).to eq 'stash'
-      expect(session_data.metadata.checkpoint.history).to be_an(Array)
       expect(session_data.metadata.checkpoint.history.size).to eq 1
       expect(session_data.metadata.checkpoint.history[0].ref).to eq '0d07d92af208720d4fe3636d18bd4d9fb6688362'
       expect(session_data.metadata.checkpoint.history[0].created_at).to eq 1_779_133_220_819

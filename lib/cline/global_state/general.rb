@@ -56,7 +56,7 @@ module Cline
           attribute :last_dismissed_cli_banner_version, :integer
 
           # @return [Array<DismissedBanner>] List of dismissed banners
-          attribute :dismissed_banners, DismissedBanner, collection: true
+          attribute :dismissed_banners, Utils::Schema.collection(DismissedBanner)
 
           # @return [Integer] Terminal output line limit
           attribute :terminal_output_line_limit, :integer

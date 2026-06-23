@@ -111,7 +111,7 @@ describe Cline::Session, '#messages' do
       expect(content[1].name).to eq 'read_file'
       expect(content[1].input).not_to be_nil
       expect(content[1].input.question).to eq 'Which file?'
-      expect(content[1].input.options).to eq %w[file1 file2]
+      expect(content[1].input.options.to_a).to eq %w[file1 file2]
       expect(content[2].type).to eq 'tool_result'
       expect(content[2].tool_use_id).to eq 'tool-1'
       expect(content[2].content).to eq 'File content here'
@@ -175,14 +175,14 @@ describe Cline::Session, '#messages' do
         }
       ) do |session|
         messages = session.messages
-        messages[0].content << Cline::SessionMessage::MessageContent.new(type: 'text', text: 'Updated content')
+        messages[0].content << { type: 'text', text: 'Updated content' }
         messages[0].content[0].text = 'World'
-        messages << Cline::SessionMessage.new(
+        messages << {
           id: 'msg-3',
           role: 'user',
-          content: [Cline::SessionMessage::MessageContent.new(type: 'text', text: 'Another question')],
+          content: [{ type: 'text', text: 'Another question' }],
           ts: 102
-        )
+        }
         messages.save
         expect(JSON.parse(File.read(File.join(session.dir, 'test-session.messages.json')))).to eq(
           {
@@ -223,12 +223,14 @@ describe Cline::Session, '#messages' do
       with_session(messages: nil) do |session|
         messages = session.messages(create: true)
         messages.agent = 'test-agent'
-        messages << Cline::SessionMessage.new(
-          id: 'msg-1',
-          role: 'user',
-          content: [Cline::SessionMessage::MessageContent.new(type: 'text', text: 'Hello')],
-          ts: 100
-        )
+        messages.messages = [
+          {
+            id: 'msg-1',
+            role: 'user',
+            content: [{ type: 'text', text: 'Hello' }],
+            ts: 100
+          }
+        ]
         messages.save
         expect(JSON.parse(File.read(File.join(session.dir, 'test-session.messages.json')))).to eq(
           {

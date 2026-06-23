@@ -6,7 +6,7 @@ module Cline
     # Settings associated to 1 MCP server
     class McpServer < Schema
       # @return [Array<String>] List of tools that are automatically approved for this server
-      attribute :auto_approve, :string, collection: true
+      attribute :auto_approve, Utils::Schema.collection(:string)
 
       # @return [Boolean] Flag indicating if this server is disabled
       attribute :disabled, :boolean

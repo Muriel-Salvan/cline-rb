@@ -196,7 +196,7 @@ describe Cline::Data, '#global_state' do
       expect(global_state.auto_approval_settings.version).to eq 1
       expect(global_state.auto_approval_settings.max_requests).to eq 10
       expect(global_state.auto_approval_settings.enable_notifications).to be false
-      expect(global_state.auto_approval_settings.favorites).to eq %w[file-read command-run]
+      expect(global_state.auto_approval_settings.favorites.to_a).to eq %w[file-read command-run]
       expect(global_state.auto_approval_settings.actions.read_files).to be true
       expect(global_state.auto_approval_settings.actions.read_files_externally).to be false
       expect(global_state.auto_approval_settings.actions.edit_files).to be true

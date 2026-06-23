@@ -30,7 +30,7 @@ describe Cline::Cli, '#task' do
       )
       expect(questions_received.size).to eq 1
       expect(questions_received[0].question).to eq 'What is your name?'
-      expect(questions_received[0].options).to eq %w[Alice Bob]
+      expect(questions_received[0].options.to_a).to eq %w[Alice Bob]
     end
 
     it 'does not trigger on_question callback when a question is not the last content item of the last message' do

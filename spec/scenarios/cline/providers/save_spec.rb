@@ -42,16 +42,17 @@ describe Cline::Providers, '#save' do
     with_providers(providers: nil, create: true) do |providers|
       providers.version = 1
       providers.last_used_provider = 'openrouter'
-      providers.providers = Cline::Utils::Schema.map(Cline::Providers::ProviderEntry).new
-      providers.providers['openrouter'] = Cline::Providers::ProviderEntry.new(
-        settings: Cline::Providers::ProviderSettings.new(
-          provider: 'openrouter',
-          api_key: Cline::SecretString.new('sk-or-test-key'),
-          model: 'openai/gpt-4o'
-        ),
-        updated_at: '2026-06-03T15:00:00.000Z',
-        token_source: 'manual'
-      )
+      providers.providers = {
+        'openrouter' => {
+          settings: {
+            provider: 'openrouter',
+            api_key: 'sk-or-test-key',
+            model: 'openai/gpt-4o'
+          },
+          updated_at: '2026-06-03T15:00:00.000Z',
+          token_source: 'manual'
+        }
+      }
       providers.save
       expect(JSON.parse(File.read(File.join(providers.dir, 'settings/providers.json')))).to eq(
         'version' => 1,

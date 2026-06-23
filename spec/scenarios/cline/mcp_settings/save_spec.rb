@@ -13,7 +13,7 @@ describe Cline::McpSettings, '#save' do
       }
     ) do |settings|
       settings.mcp_servers['test-server-1'].disabled = true
-      settings.mcp_servers['test-server-2'] = Cline::McpSettings::McpServer.new(timeout: 45)
+      settings.mcp_servers['test-server-2'] = { timeout: 45 }
       settings.save
       expect(JSON.parse(File.read(File.join(settings.dir, 'settings/cline_mcp_settings.json')))).to eq(
         'mcpServers' => {
@@ -24,7 +24,6 @@ describe Cline::McpSettings, '#save' do
             'type' => 'stdio'
           },
           'test-server-2' => {
-            'autoApprove' => [],
             'timeout' => 45
           }
         }
@@ -47,7 +46,7 @@ describe Cline::McpSettings, '#save' do
       }
     ) do |settings|
       settings.mcp_servers['test-server-1'].disabled = true
-      settings.mcp_servers['test-server-2'] = Cline::McpSettings::McpServer.new(timeout: 45)
+      settings.mcp_servers['test-server-2'] = { timeout: 45 }
       settings.save
       expect(JSON.parse(File.read(File.join(settings.dir, 'settings/cline_mcp_settings.json')))).to eq(
         'mcpServers' => {
@@ -59,7 +58,6 @@ describe Cline::McpSettings, '#save' do
             'unknownAttribute' => 'Unknown value'
           },
           'test-server-2' => {
-            'autoApprove' => [],
             'timeout' => 45
           }
         }
@@ -70,16 +68,15 @@ describe Cline::McpSettings, '#save' do
   it 'persists a newly instantiated MCP settings file' do
     with_mcp_settings(mcp_settings: nil, create: true) do |settings|
       settings.mcp_servers = Cline::Utils::Schema.map(Cline::McpSettings::McpServer).new
-      settings.mcp_servers['test-server'] = Cline::McpSettings::McpServer.new(
+      settings.mcp_servers['test-server'] = {
         disabled: false,
         type: 'sse',
         url: 'http://localhost:8080/sse'
-      )
+      }
       settings.save
       expect(JSON.parse(File.read(File.join(settings.dir, 'settings/cline_mcp_settings.json')))).to eq(
         'mcpServers' => {
           'test-server' => {
-            'autoApprove' => [],
             'disabled' => false,
             'type' => 'sse',
             'url' => 'http://localhost:8080/sse'

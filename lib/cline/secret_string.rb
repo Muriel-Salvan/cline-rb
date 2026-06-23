@@ -58,6 +58,24 @@ module Cline
       def as_hash(instance, *_args, **_kwargs)
         instance.secret_string.to_unprotected
       end
+
+      # Cast an input value to this Schema object.
+      # Allow the attribute to be initialized directly using its Hash form.
+      #
+      # @param value [Schema, String, nil] The value that could be used to initialize a new instance of this attribute.
+      # @return [Schema, nil] The corresponding instance, or nil if none.
+      def cast(value)
+        return nil if value.nil?
+
+        # We expect the value to be a String, or a new instance already initialized.
+        if value.is_a?(self)
+          value
+        elsif value.is_a?(String)
+          new(value)
+        else
+          raise "Unable to cast #{value} into #{name}"
+        end
+      end
     end
   end
 end

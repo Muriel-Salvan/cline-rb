@@ -109,7 +109,7 @@ describe Cline::Data, '#cline_models' do
       ) do |data|
         models = data.cline_models
         models['test/model-1'].max_tokens = 1500
-        models['test/model-2'] = Cline::Model.new(name: 'Test Model 2', max_tokens: 2000)
+        models['test/model-2'] = { name: 'Test Model 2', max_tokens: 2000 }
         models.save
         file_content = JSON.parse(File.read(File.join(data.dir, 'cache/cline_models.json')))
         expect(file_content['test/model-1']['name']).to eq 'Test Model 1'
@@ -123,7 +123,7 @@ describe Cline::Data, '#cline_models' do
     it 'persists a newly instantiated Cline JSON file' do
       with_data(cline_models: nil) do |data|
         models = data.cline_models(create: true)
-        models['test/model-1'] = Cline::Model.new(name: 'Test Model 1', max_tokens: 1000)
+        models['test/model-1'] = { name: 'Test Model 1', max_tokens: 1000 }
         models.save
         expect(JSON.parse(File.read(File.join(data.dir, 'cache/cline_models.json')))).to eq(
           {

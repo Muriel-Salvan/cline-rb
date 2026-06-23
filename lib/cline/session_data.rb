@@ -26,7 +26,7 @@ module Cline
         attribute :latest, CheckpointEntry
 
         # @return [Array<CheckpointEntry>] History of checkpoint entries
-        attribute :history, CheckpointEntry, collection: true
+        attribute :history, Utils::Schema.collection(CheckpointEntry)
       end
 
       # Usage statistics

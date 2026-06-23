@@ -225,7 +225,7 @@ describe Cline::Data, '#logs' do
       expect(log.properties.duration_ms).to eq 1500
       expect(log.properties.provider_id).to eq 'provider-xyz'
       expect(log.properties.root_count).to eq 2
-      expect(log.properties.vcs_types).to eq ['git']
+      expect(log.properties.vcs_types.to_a).to eq ['git']
       expect(log.properties.is_multi_root).to be true
       expect(log.properties.has_git).to be true
       expect(log.properties.has_mercurial).to be false

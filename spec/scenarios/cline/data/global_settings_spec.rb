@@ -33,7 +33,7 @@ describe Cline::Data, '#global_settings' do
       # Verify valid attributes are still correctly loaded
       expect(global_settings.auto_update_enabled).to be true
       expect(global_settings.telemetry_opt_out).to be false
-      expect(global_settings.disabled_tools).to eq %w[tool1 tool2]
+      expect(global_settings.disabled_tools.to_a).to eq %w[tool1 tool2]
       # Verify unknown parameters are not present on the object
       expect(global_settings).not_to respond_to(:this_is_an_unknown_parameter)
       expect(global_settings).not_to respond_to(:thisIsAnUnknownParameter)
@@ -53,7 +53,7 @@ describe Cline::Data, '#global_settings' do
       global_settings = data.global_settings
       expect(global_settings.auto_update_enabled).to be true
       expect(global_settings.telemetry_opt_out).to be true
-      expect(global_settings.disabled_tools).to eq %w[admin-tool dangerous-tool]
+      expect(global_settings.disabled_tools.to_a).to eq %w[admin-tool dangerous-tool]
     end
   end
 end

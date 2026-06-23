@@ -74,6 +74,24 @@ module Cline
         of_hash(JSON.parse(json), *args, **kwargs)
       end
 
+      # Cast an input value to this Schema object.
+      # Allow the attribute to be initialized directly using its Hash form.
+      #
+      # @param value [Schema, Hash, nil] The value that could be used to initialize a new instance of this attribute.
+      # @return [Schema, nil] The corresponding instance, or nil if none.
+      def cast(value)
+        return nil if value.nil?
+
+        # We expect the value to be either a Hash that can be used to initialize a new instance, or a new instance already initialized.
+        if value.is_a?(self)
+          value
+        elsif value.is_a?(Hash)
+          new(**value)
+        else
+          raise "Unable to cast #{value} into #{name}"
+        end
+      end
+
       private
 
       # Complete the hash mapping to include camelCase to snake_case as the defaults.

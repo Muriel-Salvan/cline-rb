@@ -110,12 +110,12 @@ describe Cline::Task, '#messages' do
       ) do |task|
         messages = task.messages
         messages.first.text = 'Updated hello'
-        messages << Cline::TaskMessage.new(
+        messages << {
           ts: 102,
           type: 'say',
           say: 'text',
           text: 'Another question'
-        )
+        }
         messages.save
         file_content = JSON.parse(File.read(File.join(task.dir, 'ui_messages.json')))
         expect(file_content.size).to eq 3
@@ -136,12 +136,12 @@ describe Cline::Task, '#messages' do
     it 'persists a newly instantiated ui_messages file' do
       with_task(messages: nil) do |task|
         messages = task.messages(create: true)
-        messages << Cline::TaskMessage.new(
+        messages << {
           ts: 100,
           type: 'say',
           say: 'text',
           text: 'Hello'
-        )
+        }
         messages.save
         expect(JSON.parse(File.read(File.join(task.dir, 'ui_messages.json')), symbolize_names: true)).to eq(
           [

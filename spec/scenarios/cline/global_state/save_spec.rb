@@ -11,9 +11,7 @@ describe Cline::GlobalState, '#save' do
       expect(JSON.parse(File.read(File.join(settings.dir, 'globalState.json')), symbolize_names: true)).to eq(
         {
           clineWebToolsEnabled: false,
-          focusChainSettings: { enabled: true, remindClineInterval: 5 },
-          dismissedBanners: [],
-          workspaceRoots: []
+          focusChainSettings: { enabled: true, remindClineInterval: 5 }
         }
       )
     end
@@ -42,9 +40,7 @@ describe Cline::GlobalState, '#save' do
             remindClineInterval: 1107,
             unknownParameter: 42
           },
-          unknownParameter: 'Unknown value',
-          dismissedBanners: [],
-          workspaceRoots: []
+          unknownParameter: 'Unknown value'
         }
       )
     end
@@ -56,9 +52,7 @@ describe Cline::GlobalState, '#save' do
       settings.save
       expect(JSON.parse(File.read(File.join(settings.dir, 'globalState.json')), symbolize_names: true)).to eq(
         {
-          clineWebToolsEnabled: true,
-          dismissedBanners: [],
-          workspaceRoots: []
+          clineWebToolsEnabled: true
         }
       )
     end

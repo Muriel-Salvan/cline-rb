@@ -6,7 +6,7 @@ describe Cline::Secrets, '#save' do
         openAiApiKey: 'openapiapikey'
       }
     ) do |secrets|
-      secrets.cline_api_key = Cline::SecretString.new('sk_updated')
+      secrets.cline_api_key = 'sk_updated'
       secrets.save
       expect(JSON.parse(File.read(File.join(secrets.dir, 'secrets.json')))).to eq(
         'clineApiKey' => 'sk_updated',
@@ -23,7 +23,7 @@ describe Cline::Secrets, '#save' do
         unknownParameter: 'Unknown value'
       }
     ) do |secrets|
-      secrets.cline_api_key = Cline::SecretString.new('sk_updated')
+      secrets.cline_api_key = 'sk_updated'
       secrets.save
       expect(JSON.parse(File.read(File.join(secrets.dir, 'secrets.json')))).to eq(
         'clineApiKey' => 'sk_updated',
@@ -35,7 +35,7 @@ describe Cline::Secrets, '#save' do
 
   it 'persists a newly instantiated secrets file' do
     with_secrets(secrets: nil, create: true) do |secrets|
-      secrets.cline_api_key = Cline::SecretString.new('sk_newkey')
+      secrets.cline_api_key = 'sk_newkey'
       secrets.save
       expect(JSON.parse(File.read(File.join(secrets.dir, 'secrets.json')))).to eq(
         'clineApiKey' => 'sk_newkey'

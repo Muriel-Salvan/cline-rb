@@ -23,7 +23,7 @@ module Cline
       def self.included(base)
         base.class_eval do
           # @return [Array<WorkspaceRoot>] List of workspace root directories
-          attribute :workspace_roots, WorkspaceRoot, collection: true
+          attribute :workspace_roots, Utils::Schema.collection(WorkspaceRoot)
 
           # @return [Integer] Index of currently active primary workspace root
           attribute :primary_root_index, :integer

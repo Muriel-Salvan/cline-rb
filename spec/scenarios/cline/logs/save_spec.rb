@@ -6,7 +6,7 @@ describe Cline::Logs, '#save' do
         { level: 40, msg: 'Second log' }
       ]
     ) do |logs|
-      logs << Cline::Log.new(level: 50, msg: 'Third log')
+      logs << { level: 50, msg: 'Third log' }
       logs.save
       expect(File.read(logs.file)).to eq <<~LOGS
         {"level":30,"msg":"First log"}
@@ -37,7 +37,7 @@ describe Cline::Logs, '#save' do
 
   it 'persists a newly instantiated logs file' do
     with_logs(lines: nil) do |logs|
-      logs << Cline::Log.new(msg: 'New log entry')
+      logs << { msg: 'New log entry' }
       logs.save
       expect(File.read(logs.file)).to eq <<~LOGS
         {"msg":"New log entry"}

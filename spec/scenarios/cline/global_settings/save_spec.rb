@@ -31,7 +31,6 @@ describe Cline::GlobalSettings, '#save' do
       settings.save
       expect(JSON.parse(File.read(File.join(settings.dir, 'settings/global-settings.json')))).to eq(
         'autoUpdateEnabled' => false,
-        'disabledTools' => [],
         'telemetryOptOut' => false,
         'unknownAttribute' => 'Unknown value'
       )

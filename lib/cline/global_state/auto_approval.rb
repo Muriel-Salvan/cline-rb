@@ -41,7 +41,7 @@ module Cline
         attribute :version, :integer
 
         # @return [Array<String>] Favorite approval entries
-        attribute :favorites, :string, collection: true
+        attribute :favorites, Utils::Schema.collection(:string)
 
         # @return [Integer] Maximum allowed requests
         attribute :max_requests, :integer

@@ -10,6 +10,6 @@ module Cline
     attribute :telemetry_opt_out, :boolean
 
     # @return [Array<String>] List of tools that are disabled
-    attribute :disabled_tools, :string, collection: true
+    attribute :disabled_tools, Utils::Schema.collection(:string)
   end
 end

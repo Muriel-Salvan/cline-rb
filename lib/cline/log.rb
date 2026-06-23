@@ -57,10 +57,10 @@ module Cline
       attribute :reason, :string
 
       # @return [Array<ApiError>, nil] Individual errors in a retry chain
-      attribute :errors, ApiError, collection: true
+      attribute :errors, Utils::Schema.collection(ApiError)
 
       # @return [Array<ApiError>, nil] Aggregate errors from retry attempts
-      attribute :aggregate_errors, ApiError, collection: true
+      attribute :aggregate_errors, Utils::Schema.collection(ApiError)
 
       # @return [ApiError, nil] Last error in a retry chain
       attribute :last_error, ApiError
@@ -173,7 +173,7 @@ module Cline
       attribute :root_count, :integer
 
       # @return [Array<String>, nil] VCS types (e.g. ["git"])
-      attribute :vcs_types, :string, collection: true
+      attribute :vcs_types, Utils::Schema.collection(:string)
 
       # @return [Boolean, nil] Whether the workspace has multiple roots
       attribute :is_multi_root, :boolean

@@ -1,58 +1,6 @@
-require 'json'
-
 module Cline
   # Access all messages associated to a Cline task
-  class TaskMessages
-    extend Forwardable
-
-    # @!group Public API
-
+  class TaskMessages < Utils::Schema.collection(TaskMessage)
     Serializable::ClineData.include_for(self, 'ui_messages.json')
-    include Enumerable
-
-    # Delegates enumerating methods to the internal messages
-    def_delegators :messages, *%i[[] << each empty? last size]
-
-    # Equality check
-    #
-    # @param other [Object] The other to check equality with
-    # @return [Boolean] True if objects are equal
-    def ==(other)
-      other.is_a?(TaskMessages) &&
-        other.messages == messages
-    end
-
-    # @!group Internal
-
-    # Constructor
-    #
-    # @param messages [Array<TaskMessage>] List of messages
-    def initialize(messages)
-      @messages = messages
-    end
-
-    # Parse a Cline JSON object and instantiate the proper instance from it.
-    # Handle the following features:
-    # * Cline camelCase naming.
-    # * Keep track of extra attributes to serialize them back if needed.
-    #
-    # @param json [String] JSON data
-    # @param cline_models [Models] The Cline models used to interpret the tasks' messages
-    # @return [Object] Corresponding instance
-    def self.from_cline_json(json, cline_models:)
-      TaskMessages.new(JSON.parse(json).map { |json_message| TaskMessage.of_hash(json_message, cline_models:) })
-    end
-
-    # Output this object as Cline JSON.
-    #
-    # @return [String] Cline JSON
-    def to_cline_json
-      map { |message| TaskMessage.as_hash(message) }.to_json
-    end
-
-    protected
-
-    # @return [Array<TaskMessage>] List of messages
-    attr_reader :messages
   end
 end

@@ -45,7 +45,7 @@ module Cline
         attribute :question, :string
 
         # @return [Array<String>] List of options for the given question
-        attribute :options, :string, collection: true
+        attribute :options, Utils::Schema.collection(:string)
       end
 
       # @return [String] Content block type (text, tool_use, tool_result)
@@ -79,7 +79,7 @@ module Cline
     attribute :role, :string
 
     # @return [Array<MessageContent>] Content blocks
-    attribute :content, MessageContent, collection: true
+    attribute :content, Utils::Schema.collection(MessageContent)
 
     # @return [Integer] Message timestamp in milliseconds
     attribute :ts, :integer

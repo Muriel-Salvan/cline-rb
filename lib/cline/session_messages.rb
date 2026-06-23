@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module Cline
   # Session messages
   class SessionMessages < Schema
@@ -20,7 +22,7 @@ module Cline
     attribute :session_id, :string
 
     # @return [Array<SessionMessage>] Messages of this session
-    attribute :messages, SessionMessage, collection: true
+    attribute :messages, Utils::Schema.collection(SessionMessage)
 
     # @return [String] System prompt used for this session
     attribute :system_prompt, :string
@@ -28,7 +30,7 @@ module Cline
     cline_snake_attributes(*%i[updated_at system_prompt])
 
     # Delegates enumerating methods to the internal messages
-    def_delegators :messages, *%i[[] << each empty? last size]
+    def_delegators :wrapped_messages, *%i[[] << each empty? last size]
 
     include Enumerable
 
@@ -48,6 +50,13 @@ module Cline
       # so we set cline_models on each message after deserialization
       instance.messages&.each { |message| message.cline_models = cline_models }
       instance
+    end
+
+    # Return the messages as an array, even if there are no message.
+    #
+    # @return [Array] The messages
+    def wrapped_messages
+      messages || []
     end
   end
 end
