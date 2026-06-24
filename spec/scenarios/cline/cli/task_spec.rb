@@ -109,7 +109,7 @@ describe Cline::Cli, '#task' do
           prompt: 'x' * 95,
           stub: {
             eval: <<~EO_RUBY
-              puts "[PROMPT] \#{File.read(ARGV.last)}"
+              puts "[PROMPT] \#{File.read(ARGV.last.match(/The user prompt is given to you in the file `([^`]+)`\\./)[1])}"
             EO_RUBY
           },
           stub_ignore_prompt: true
@@ -118,8 +118,9 @@ describe Cline::Cli, '#task' do
             { command: ['--config', /^.+$/, /^.+$/] }
           ]
           expect(result[:stdout]).to include "[PROMPT] #{'x' * 95}"
-          last_arg = issued_commands.last[:command].last
-          expect(File.expand_path(last_arg)).to eq last_arg
+          # Validate that it is an absolute path
+          file_path = issued_commands.last[:command].last.match(/The user prompt is given to you in the file `([^`]+)`\./)[1]
+          expect(File.expand_path(file_path)).to eq file_path
         end
       end
 
@@ -134,7 +135,7 @@ describe Cline::Cli, '#task' do
             prompt: 'x' * 95,
             stub: {
               eval: <<~EO_RUBY
-                puts "[PROMPT] \#{File.read(ARGV.last)}"
+                puts "[PROMPT] \#{File.read(ARGV.last.match(/The user prompt is given to you in the file `([^`]+)`\\./)[1])}"
               EO_RUBY
             },
             stub_ignore_prompt: true
@@ -143,8 +144,9 @@ describe Cline::Cli, '#task' do
               { command: ['--config', /^.+$/, /^.+$/] }
             ]
             expect(result[:stdout]).to include "[PROMPT] #{'x' * 95}"
-            last_arg = issued_commands.last[:command].last
-            expect(File.expand_path(last_arg)).to eq last_arg
+            # Validate that it is an absolute path
+            file_path = issued_commands.last[:command].last.match(/The user prompt is given to you in the file `([^`]+)`\./)[1]
+            expect(File.expand_path(file_path)).to eq file_path
           end
         ensure
           FileUtils.rm_rf temp_config.temp_dir_root
@@ -171,7 +173,7 @@ describe Cline::Cli, '#task' do
           prompt: 'x' * 8200,
           stub: {
             eval: <<~EO_RUBY
-              puts "[PROMPT] \#{File.read(ARGV.last)}"
+              puts "[PROMPT] \#{File.read(ARGV.last.match(/The user prompt is given to you in the file `([^`]+)`\\./)[1])}"
             EO_RUBY
           },
           stub_ignore_prompt: true
@@ -181,8 +183,9 @@ describe Cline::Cli, '#task' do
           ]
           # Huge PTY output also inserts some new lines chars. Remove them to validate the output.
           expect(result[:stdout].gsub("\n", '')).to include "[PROMPT] #{'x' * 8200}"
-          last_arg = issued_commands.last[:command].last
-          expect(File.expand_path(last_arg)).to eq last_arg
+          # Validate that it is an absolute path
+          file_path = issued_commands.last[:command].last.match(/The user prompt is given to you in the file `([^`]+)`\./)[1]
+          expect(File.expand_path(file_path)).to eq file_path
         end
       end
 
@@ -196,7 +199,7 @@ describe Cline::Cli, '#task' do
             prompt: 'x' * 8200,
             stub: {
               eval: <<~EO_RUBY
-                puts "[PROMPT] \#{File.read(ARGV.last)}"
+                puts "[PROMPT] \#{File.read(ARGV.last.match(/The user prompt is given to you in the file `([^`]+)`\\./)[1])}"
               EO_RUBY
             },
             stub_ignore_prompt: true
@@ -206,8 +209,9 @@ describe Cline::Cli, '#task' do
             ]
             # Huge PTY output also inserts some new lines chars. Remove them to validate the output.
             expect(result[:stdout].gsub("\n", '')).to include "[PROMPT] #{'x' * 8200}"
-            last_arg = issued_commands.last[:command].last
-            expect(File.expand_path(last_arg)).to eq last_arg
+            # Validate that it is an absolute path
+            file_path = issued_commands.last[:command].last.match(/The user prompt is given to you in the file `([^`]+)`\./)[1]
+            expect(File.expand_path(file_path)).to eq file_path
           end
         ensure
           FileUtils.rm_rf temp_config.temp_dir_root

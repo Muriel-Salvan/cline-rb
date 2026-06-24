@@ -138,7 +138,10 @@ module Cline
             Utils::File.with_temp_dir do |tmp_dir|
               prompt_file = "#{tmp_dir}/prompt.txt"
               File.write(prompt_file, stripped_prompt)
-              run_block.call(File.expand_path(prompt_file))
+              run_block.call(
+                "The user prompt is given to you in the file `#{File.expand_path(prompt_file)}`. " \
+                  'You have to read it and treat its content as the user prompt.'
+              )
             end
           end
         else
