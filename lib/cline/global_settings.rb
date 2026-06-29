@@ -1,6 +1,8 @@
 module Cline
   # Global settings for Cline
   class GlobalSettings < Schema
+    # @!group Public API
+
     Serializable::ClineData.include_for(self, 'settings/global-settings.json')
 
     # @return [Boolean] Flag indicating if automatic updates are enabled

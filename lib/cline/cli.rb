@@ -258,8 +258,6 @@ module Cline
       end
     end
 
-    # @!group Internal
-
     private
 
     # Generate all methods that can parse kwargs to generate CLI options, for each known command.

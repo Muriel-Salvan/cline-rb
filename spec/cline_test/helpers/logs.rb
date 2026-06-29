@@ -42,19 +42,19 @@ module ClineTest
       end
 
       # @return [Array<Hash{Symbol => Object}>] List of calls that have been made on on_log
-      attr_reader :calls
+      attr_reader :on_log_calls
 
       # Helper to capture logs from monitoring.
-      # on_log calls are captured in the @calls variable
+      # on_log calls are captured in the @on_log_calls variable
       #
       # @param logs [Logs] The logs for which we monitor
       # @param from [Time, String, nil] The filter to use when calling monitor (see Cline::Logs#monitor)
       # @yield Optional code called with monitoring in place
       def capture_on_log(logs, from: nil)
-        @calls = []
+        @on_log_calls = []
         logs.monitor(
           on_log: proc do |log, last|
-            calls << {
+            on_log_calls << {
               log: log,
               last: last
             }

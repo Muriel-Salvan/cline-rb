@@ -5,6 +5,8 @@ module Cline
 
     # Cause of an API call error
     class ErrorCause < Schema
+      # @!group Public API
+
       # @return [String, nil] Error code (e.g. "ConnectionRefused")
       attribute :code, :string
 
@@ -17,6 +19,8 @@ module Cline
 
     # Individual API call error (used in errors[], aggregateErrors[], and lastError)
     class ApiError < Schema
+      # @!group Public API
+
       # @return [String, nil] Error type identifier
       attribute :type, :string
 
@@ -41,6 +45,8 @@ module Cline
 
     # Top-level error wrapper (the err field in error logs)
     class Error < Schema
+      # @!group Public API
+
       # @return [String, nil] Error type identifier
       attribute :type, :string
 
@@ -68,6 +74,8 @@ module Cline
 
     # Event-specific properties for telemetry entries
     class Properties < Schema
+      # @!group Public API
+
       # @return [String, nil] Unique identifier for tasks and sessions
       attribute :ulid, :string
 
@@ -217,6 +225,8 @@ module Cline
       # All attributes are already snake case
       cline_snake_attributes(*attributes.keys)
     end
+
+    # @!group Public API
 
     # @return [Integer] Log level number (e.g. 30 for info, 40 for warn)
     attribute :level, :integer
