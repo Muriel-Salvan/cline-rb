@@ -5,6 +5,8 @@ Zeitwerk::Loader.for_gem.setup
 # All Cline objects are accessible here.
 module Cline
   class << self
+    # @!group Public API
+
     # Configure the behaviour of the cline-rb Rubygem
     #
     # @yield [config] The configuration

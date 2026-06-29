@@ -75,6 +75,12 @@ module Cline
       Cli.new(config: dir, **kwargs)
     end
 
+    # Refresh caches to reload data from disk.
+    def refresh!
+      @skills = nil
+      @data = nil
+    end
+
     # @!group Internal
 
     # Constructor
@@ -82,12 +88,6 @@ module Cline
     # @param include_project_config [Boolean] Do we include the project configuration in the objects read?
     def initialize(include_project_config: true)
       @include_project_config = include_project_config
-    end
-
-    # Remove caches.
-    def refresh!
-      @skills = nil
-      @data = nil
     end
 
     private
