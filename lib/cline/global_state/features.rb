@@ -4,6 +4,8 @@ module Cline
     module Features
       # Focus chain feature settings
       class FocusChainSettings < Schema
+        # @!group Public API
+
         # @return [Boolean] Focus chain enabled flag
         attribute :enabled, :boolean
 
@@ -16,6 +18,8 @@ module Cline
       # @param base [Class] Base class including this mixin
       def self.included(base)
         base.class_eval do
+          # @!group Public API
+
           # @return [FocusChainSettings] Focus chain feature settings
           attribute :focus_chain_settings, FocusChainSettings
 

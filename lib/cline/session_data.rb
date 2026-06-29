@@ -1,14 +1,22 @@
 module Cline
   # Session data
   class SessionData < Schema
+    # @!group Public API
+
     Serializable::ClineData.include_for(self, proc { |base_dir| "#{File.basename(base_dir)}.json" })
 
     # Session metadata
     class Metadata < Schema
+      # @!group Public API
+
       # Checkpoint metadata
       class Checkpoint < Schema
+        # @!group Public API
+
         # Checkpoint entry (ref, timestamps, etc.)
         class CheckpointEntry < Schema
+          # @!group Public API
+
           # @return [String] Git ref of the checkpoint
           attribute :ref, :string
 
@@ -31,6 +39,8 @@ module Cline
 
       # Usage statistics
       class Usage < Schema
+        # @!group Public API
+
         # @return [Integer] Input tokens count
         attribute :input_tokens, :integer
 

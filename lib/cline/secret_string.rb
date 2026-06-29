@@ -39,6 +39,8 @@ module Cline
     end
 
     class << self
+      # @!group Internal
+
       # Parse a Hash object and instantiate the proper instance from it.
       #
       # @param hash [Hash] Data

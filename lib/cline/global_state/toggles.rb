@@ -7,6 +7,8 @@ module Cline
       # @param base [Class] Base class including this mixin
       def self.included(base)
         base.class_eval do
+          # @!group Public API
+
           # @return [Hash] Remote rules toggle states
           attribute :remote_rules_toggles, Utils::Schema.map(:boolean)
 

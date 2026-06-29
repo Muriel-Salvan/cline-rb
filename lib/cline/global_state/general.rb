@@ -4,6 +4,8 @@ module Cline
     module General
       # Dismissed banner entry
       class DismissedBanner < Schema
+        # @!group Public API
+
         # @return [String] Banner identifier
         attribute :banner_id, :string
 
@@ -16,6 +18,8 @@ module Cline
       # @param base [Class] Base class including this mixin
       def self.included(base)
         base.class_eval do
+          # @!group Public API
+
           # @return [Boolean] Flag indicating welcome view has been completed
           attribute :welcome_view_completed, :boolean
 

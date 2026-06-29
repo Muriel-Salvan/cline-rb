@@ -8,6 +8,8 @@ module Cline
 
     # Model info in messages
     class ModelInfo < Schema
+      # @!group Public API
+
       # @return [String] Provider
       attribute :provider_id, :string
 

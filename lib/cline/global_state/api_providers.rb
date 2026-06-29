@@ -7,6 +7,8 @@ module Cline
       # @param base [Class] Base class including this mixin
       def self.included(base)
         base.class_eval do
+          # @!group Public API
+
           # @return [Hash] OpenAI custom headers
           attribute :open_ai_headers, Utils::Schema.map(:string)
 

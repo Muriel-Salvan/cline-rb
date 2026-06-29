@@ -1,7 +1,11 @@
 module Cline
   # Provide a set of tasks from a directory
   class Tasks
+    # @!group Public API
+
     include Utils::EnumerableDirObjects
+
+    # @!group Internal
 
     # Constructor
     #

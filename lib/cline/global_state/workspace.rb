@@ -4,6 +4,8 @@ module Cline
     module Workspace
       # Workspace root directory entry
       class WorkspaceRoot < Schema
+        # @!group Public API
+
         # @return [String] Directory path
         attribute :path, :string
 
@@ -22,6 +24,8 @@ module Cline
       # @param base [Class] Base class including this mixin
       def self.included(base)
         base.class_eval do
+          # @!group Public API
+
           # @return [Array<WorkspaceRoot>] List of workspace root directories
           attribute :workspace_roots, Utils::Schema.collection(WorkspaceRoot)
 

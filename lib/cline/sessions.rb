@@ -1,7 +1,11 @@
 module Cline
   # Provide a set of sessions from a directory
   class Sessions
+    # @!group Public API
+
     include Utils::EnumerableDirObjects
+
+    # @!group Internal
 
     # Constructor
     #

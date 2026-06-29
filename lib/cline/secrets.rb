@@ -1,6 +1,8 @@
 module Cline
   # Access secrets stored in the data directory's secrets.json file
   class Secrets < Schema
+    # @!group Public API
+
     Serializable::ClineData.include_for(self, 'secrets.json')
 
     # @return [SecretString, nil] Cline API key

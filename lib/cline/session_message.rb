@@ -8,6 +8,8 @@ module Cline
 
     # Model info in session messages
     class ModelInfo < Schema
+      # @!group Public API
+
       # @return [String] Model ID
       attribute :id, :string
 
@@ -20,6 +22,8 @@ module Cline
 
     # Metrics in session messages
     class Metrics < Schema
+      # @!group Public API
+
       # @return [Integer] Input tokens count
       attribute :input_tokens, :integer
 
@@ -39,8 +43,12 @@ module Cline
     # A content block in a session message.
     # All attributes are optional, some will be nil depending on the type of content.
     class MessageContent < Schema
+      # @!group Public API
+
       # An input used for tool use content.
       class ToolUseInput < Schema
+        # @!group Public API
+
         # @return [String] Question
         attribute :question, :string
 
@@ -140,17 +148,6 @@ module Cline
       ).ellipsized(limit)
     end
 
-    private
-
-    # Get the text from the first text content block.
-    #
-    # @return [String] The first text content, or an empty string if none
-    def first_text
-      content.find { |c| c.type == 'text' }&.text.to_s.gsub("\n", ' ')
-    end
-
-    public
-
     # @!group Internal
 
     # Parse a Hash object and instantiate the proper instance from it.
@@ -168,5 +165,14 @@ module Cline
 
     # @return [Models] The Clines models used to interpret the message
     attr_accessor :cline_models
+
+    private
+
+    # Get the text from the first text content block.
+    #
+    # @return [String] The first text content, or an empty string if none
+    def first_text
+      content.find { |c| c.type == 'text' }&.text.to_s.gsub("\n", ' ')
+    end
   end
 end

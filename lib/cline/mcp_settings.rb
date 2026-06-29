@@ -1,10 +1,13 @@
 module Cline
   # MCP settings
   class McpSettings < Schema
+    # @!group Public API
     Serializable::ClineData.include_for(self, 'settings/cline_mcp_settings.json')
 
     # Settings associated to 1 MCP server
     class McpServer < Schema
+      # @!group Public API
+
       # @return [Array<String>] List of tools that are automatically approved for this server
       attribute :auto_approve, Utils::Schema.collection(:string)
 

@@ -1,34 +1,42 @@
 module Cline
   # Providers configuration stored in settings/providers.json
   class Providers < Schema
+    # @!group Public API
+
     Serializable::ClineData.include_for(self, 'settings/providers.json')
-
-    # Settings specific to a provider's reasoning configuration
-    class ReasoningSettings < Schema
-      # @return [Boolean] Whether reasoning is enabled
-      attribute :enabled, :boolean
-
-      # @return [String] The reasoning effort level (e.g. "xhigh")
-      attribute :effort, :string
-    end
-
-    # Settings for a single provider entry
-    class ProviderSettings < Schema
-      # @return [String] The provider name
-      attribute :provider, :string
-
-      # @return [SecretString, nil] The API key for this provider
-      attribute :api_key, SecretString
-
-      # @return [String] The model identifier
-      attribute :model, :string
-
-      # @return [ReasoningSettings, nil] Optional reasoning configuration
-      attribute :reasoning, ReasoningSettings
-    end
 
     # A provider entry with settings, update timestamp and token source
     class ProviderEntry < Schema
+      # @!group Public API
+
+      # Settings for a single provider entry
+      class ProviderSettings < Schema
+        # @!group Public API
+
+        # Settings specific to a provider's reasoning configuration
+        class ReasoningSettings < Schema
+          # @!group Public API
+
+          # @return [Boolean] Whether reasoning is enabled
+          attribute :enabled, :boolean
+
+          # @return [String] The reasoning effort level (e.g. "xhigh")
+          attribute :effort, :string
+        end
+
+        # @return [String] The provider name
+        attribute :provider, :string
+
+        # @return [SecretString, nil] The API key for this provider
+        attribute :api_key, SecretString
+
+        # @return [String] The model identifier
+        attribute :model, :string
+
+        # @return [ReasoningSettings, nil] Optional reasoning configuration
+        attribute :reasoning, ReasoningSettings
+      end
+
       # @return [ProviderSettings] The provider settings
       attribute :settings, ProviderSettings
 

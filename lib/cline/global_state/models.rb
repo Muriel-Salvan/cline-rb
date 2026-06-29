@@ -2,14 +2,18 @@ module Cline
   class GlobalState
     # Model and AI configuration settings
     module Models
-      # Thinking configuration for models
-      class ThinkingConfig < Schema
-        # @return [Integer] Maximum thinking budget tokens
-        attribute :max_budget, :integer
-      end
-
       # OpenRouter model information
       class OpenRouterModelInfo < Schema
+        # @!group Public API
+
+        # Thinking configuration for models
+        class ThinkingConfig < Schema
+          # @!group Public API
+
+          # @return [Integer] Maximum thinking budget tokens
+          attribute :max_budget, :integer
+        end
+
         # @return [String] Model name
         attribute :name, :string
 
@@ -46,6 +50,8 @@ module Cline
       # @param base [Class] Base class including this mixin
       def self.included(base)
         base.class_eval do
+          # @!group Public API
+
           # @return [OpenRouterModelInfo] OpenRouter model information for Act mode
           attribute :act_mode_open_router_model_info, OpenRouterModelInfo
 

@@ -1,6 +1,8 @@
 module Cline
   # Cline model information
   class Model < Schema
+    # @!group Public API
+
     # @return [String] Model display name
     attribute :name, :string
 
@@ -33,6 +35,8 @@ module Cline
 
     # Thinking configuration for this model
     class ThinkingConfig < Schema
+      # @!group Public API
+
       # @return [Integer] Maximum thinking budget in tokens
       attribute :max_budget, :integer
     end

@@ -2,17 +2,21 @@ module Cline
   class GlobalState
     # Browser integration and viewport settings
     module Browser
-      # Browser viewport settings
-      class BrowserViewport < Schema
-        # @return [Integer] Viewport width
-        attribute :width, :integer
-
-        # @return [Integer] Viewport height
-        attribute :height, :integer
-      end
-
       # Browser configuration settings
       class BrowserSettings < Schema
+        # @!group Public API
+
+        # Browser viewport settings
+        class BrowserViewport < Schema
+          # @!group Public API
+
+          # @return [Integer] Viewport width
+          attribute :width, :integer
+
+          # @return [Integer] Viewport height
+          attribute :height, :integer
+        end
+
         # @return [BrowserViewport] Browser viewport dimensions
         attribute :viewport, BrowserViewport
 
@@ -37,6 +41,8 @@ module Cline
       # @param base [Class] Base class including this mixin
       def self.included(base)
         base.class_eval do
+          # @!group Public API
+
           # @return [BrowserSettings] Browser configuration settings
           attribute :browser_settings, BrowserSettings
         end

@@ -2,35 +2,39 @@ module Cline
   class GlobalState
     # Auto approval and command execution permissions
     module AutoApproval
-      # Auto approval action toggles
-      class AutoApprovalActions < Schema
-        # @return [Boolean] Allow reading files
-        attribute :read_files, :boolean
-
-        # @return [Boolean] Allow reading files externally
-        attribute :read_files_externally, :boolean
-
-        # @return [Boolean] Allow editing files
-        attribute :edit_files, :boolean
-
-        # @return [Boolean] Allow editing files externally
-        attribute :edit_files_externally, :boolean
-
-        # @return [Boolean] Allow executing safe commands
-        attribute :execute_safe_commands, :boolean
-
-        # @return [Boolean] Allow executing all commands
-        attribute :execute_all_commands, :boolean
-
-        # @return [Boolean] Allow using browser tools
-        attribute :use_browser, :boolean
-
-        # @return [Boolean] Allow using MCP servers
-        attribute :use_mcp, :boolean
-      end
-
       # Auto approval configuration settings
       class AutoApprovalSettings < Schema
+        # @!group Public API
+
+        # Auto approval action toggles
+        class AutoApprovalActions < Schema
+          # @!group Public API
+
+          # @return [Boolean] Allow reading files
+          attribute :read_files, :boolean
+
+          # @return [Boolean] Allow reading files externally
+          attribute :read_files_externally, :boolean
+
+          # @return [Boolean] Allow editing files
+          attribute :edit_files, :boolean
+
+          # @return [Boolean] Allow editing files externally
+          attribute :edit_files_externally, :boolean
+
+          # @return [Boolean] Allow executing safe commands
+          attribute :execute_safe_commands, :boolean
+
+          # @return [Boolean] Allow executing all commands
+          attribute :execute_all_commands, :boolean
+
+          # @return [Boolean] Allow using browser tools
+          attribute :use_browser, :boolean
+
+          # @return [Boolean] Allow using MCP servers
+          attribute :use_mcp, :boolean
+        end
+
         # @return [AutoApprovalActions] Action toggles
         attribute :actions, AutoApprovalActions
 
@@ -55,6 +59,8 @@ module Cline
       # @param base [Class] Base class including this mixin
       def self.included(base)
         base.class_eval do
+          # @!group Public API
+
           # @return [AutoApprovalSettings] Auto approval configuration settings
           attribute :auto_approval_settings, AutoApprovalSettings
 
