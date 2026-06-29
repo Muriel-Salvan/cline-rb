@@ -75,6 +75,7 @@ Naming/MethodParameterName:
 RSpec/DescribeClass:
   Exclude:
     - 'spec/scenarios/code_quality_spec.rb'
+    - 'spec/scenarios/documentation_spec.rb'
     - 'spec/scenarios/packaging_spec.rb'
 
 # It's ok to have scenarios having multiple lines

@@ -1,6 +1,7 @@
 require 'strings/ansi'
 
 module Cline
+  # Various internal utilities and helpers.
   module Utils
     # Mixin adding some debug logging capabilities
     module Logger

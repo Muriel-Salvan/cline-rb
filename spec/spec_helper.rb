@@ -1,3 +1,8 @@
+require 'simplecov'
+SimpleCov.start do
+  minimum_coverage 98
+end
+
 require 'cline'
 require 'zeitwerk'
 

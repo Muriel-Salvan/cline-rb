@@ -103,7 +103,7 @@ module Cline
 
     # Constructor
     #
-    # @params layers [Array] List of Hash-like objects that should be served.
+    # @param layers [Array] List of Hash-like objects that should be served.
     #   In case of conflicting keys, the first ones in the list get priority.
     #   Write operations are performed on the first one only.
     def initialize(*layers)

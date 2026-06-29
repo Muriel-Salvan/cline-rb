@@ -19,6 +19,9 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v6
 
+      - name: Install node-pty
+        run: npm install node-pty
+
       - name: Run unit tests
         run: bundle exec rspec --format documentation
 
