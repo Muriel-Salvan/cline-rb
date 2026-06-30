@@ -61,19 +61,6 @@ module Cline
         hash
       end
 
-      # Parse a Cline JSON object and instantiate the proper instance from it.
-      # Handle the following features:
-      # * Cline camelCase naming.
-      # * Keep track of extra attributes to serialize them back if needed.
-      #
-      # @param json [String] JSON data
-      # @param args [Array] Remaining arguments to be transferred to Shale
-      # @param kwargs [Hash] Remaining kwargs to be transferred to Shale
-      # @return [Object] Corresponding instance
-      def from_cline_json(json, *args, **kwargs)
-        of_hash(JSON.parse(json), *args, **kwargs)
-      end
-
       # Cast an input value to this Schema object.
       # Allow the attribute to be initialized directly using its Hash form.
       #

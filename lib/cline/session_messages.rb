@@ -36,16 +36,15 @@ module Cline
 
     # @!group Internal
 
-    # Parse a Cline JSON object and instantiate the proper instance from it.
-    # Handle the following features:
-    # * Cline camelCase naming.
-    # * Keep track of extra attributes to serialize them back if needed.
+    # Parse a Hash object and instantiate the proper instance from it.
     #
-    # @param json [String] JSON data
+    # @param hash [Hash] Data
+    # @param args [Array] Remaining arguments to be transferred to Shale
     # @param cline_models [Models] The Cline models used to interpret the tasks' messages
-    # @return [Object] Corresponding instance
-    def self.from_cline_json(json, cline_models:)
-      instance = SessionMessages.of_hash(JSON.parse(json))
+    # @param kwargs [Hash] Remaining kwargs to be transferred to Shale
+    # @return [Schema] Corresponding instance
+    def self.of_hash(hash, *args, cline_models:, **kwargs)
+      instance = super(hash, *args, **kwargs)
       # Shale doesn't pass extra kwargs to nested collection items,
       # so we set cline_models on each message after deserialization
       instance.messages&.each { |message| message.cline_models = cline_models }

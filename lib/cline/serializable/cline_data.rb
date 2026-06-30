@@ -11,7 +11,7 @@ module Cline
     # - `#to_cline_data(base_dir)` Save an instance in the Cline data.
     #
     # Requires:
-    # - `.from_cline_json(json) -> Object` The deserializer that returns an instance from a JSON string.
+    # - `.of_hash(hash) -> Object` The deserializer that returns an instance from a JSON object.
     # - `#to_cline_json -> String` The serializer that returns a JSON string from the instance.
     module ClineData
       # @!group Public API
@@ -84,7 +84,8 @@ module Cline
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor.
         # @return [Object] A new instance.
         def new_instance(file, *args, **kwargs)
-          from_cline_json(Utils::File.safe_read(file), *args, **kwargs)
+          # TODO: Implement a retry mechanism if JSON is not parseable as it can be due to the file being written concurrently.
+          of_hash(JSON.parse(Utils::File.safe_read(file)), *args, **kwargs)
         end
 
         private

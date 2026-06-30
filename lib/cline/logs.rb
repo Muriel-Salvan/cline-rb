@@ -17,7 +17,7 @@ module Cline
     #   - [nil] Get all log lines
     # @return [Array<Log>] Logs list
     def logs(from: nil)
-      logs_lines_from(from).map { |line| line.start_with?('{') ? Log.from_cline_json(line) : line }
+      logs_lines_from(from).map { |line| line.start_with?('{') ? Log.of_hash(JSON.parse(line)) : line }
     end
 
     # Delegates enumerating methods to the internal logs
@@ -70,7 +70,7 @@ module Cline
           unless new_lines.empty?
             last_idx = new_lines.size - 1
             new_lines.each.with_index do |line, idx|
-              on_log.call(line.start_with?('{') ? Log.from_cline_json(line) : line, idx == last_idx)
+              on_log.call(line.start_with?('{') ? Log.of_hash(JSON.parse(line)) : line, idx == last_idx)
             end
             last_log = new_lines.last
           end
