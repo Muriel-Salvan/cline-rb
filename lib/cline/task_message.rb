@@ -161,7 +161,7 @@ module Cline
           when 'tool'
             details = JSON.parse(text, symbolize_names: true)
             tool_name = details.delete(:tool)
-            "Use tool - #{tool_name} - #{details.to_json}}"
+            "Use tool - #{tool_name} - #{JSON.dump(details)}}"
           when 'mistake_limit_reached'
             "Mistake limit reached - #{one_lining(text)}}"
           when 'new_task'

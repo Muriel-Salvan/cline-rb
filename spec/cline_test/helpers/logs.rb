@@ -33,7 +33,7 @@ module ClineTest
       def write_logs(logs, lines)
         log_file = logs.file
         if lines
-          File.write(log_file, lines.map { |line| "#{line.is_a?(String) ? line : line.to_json}\n" }.join)
+          File.write(log_file, lines.map { |line| "#{line.is_a?(String) ? line : JSON.dump(line)}\n" }.join)
         else
           FileUtils.rm_f(log_file)
         end

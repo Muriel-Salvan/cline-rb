@@ -51,19 +51,19 @@ module ClineTest
         tasks: nil,
         workspaces: nil
       )
-        File.write(File.join(data_dir, 'globalState.json'), global_state.to_json) if global_state
-        File.write(File.join(data_dir, 'secrets.json'), secrets.to_json) if secrets
+        File.write(File.join(data_dir, 'globalState.json'), JSON.dump(global_state)) if global_state
+        File.write(File.join(data_dir, 'secrets.json'), JSON.dump(secrets)) if secrets
         if global_settings
           FileUtils.mkdir_p(File.join(data_dir, 'settings'))
-          File.write(File.join(data_dir, 'settings', 'global-settings.json'), global_settings.to_json)
+          File.write(File.join(data_dir, 'settings', 'global-settings.json'), JSON.dump(global_settings))
         end
         if mcp_settings
           FileUtils.mkdir_p(File.join(data_dir, 'settings'))
-          File.write(File.join(data_dir, 'settings', 'cline_mcp_settings.json'), mcp_settings.to_json)
+          File.write(File.join(data_dir, 'settings', 'cline_mcp_settings.json'), JSON.dump(mcp_settings))
         end
         if providers
           FileUtils.mkdir_p(File.join(data_dir, 'settings'))
-          File.write(File.join(data_dir, 'settings', 'providers.json'), providers.to_json)
+          File.write(File.join(data_dir, 'settings', 'providers.json'), JSON.dump(providers))
         end
         if workspaces
           workspaces_dir = File.join(data_dir, 'workspaces')
@@ -71,7 +71,7 @@ module ClineTest
           workspaces.each do |workspace_name, workspace_data|
             workspace_dir = File.join(workspaces_dir, workspace_name)
             FileUtils.mkdir_p(workspace_dir)
-            File.write(File.join(workspace_dir, 'workspaceState.json'), workspace_data[:settings].to_json) if workspace_data[:settings]
+            File.write(File.join(workspace_dir, 'workspaceState.json'), JSON.dump(workspace_data[:settings])) if workspace_data[:settings]
           end
         end
         if sessions
@@ -80,8 +80,8 @@ module ClineTest
           sessions.each do |session_name, session_data|
             session_dir = File.join(sessions_dir, session_name)
             FileUtils.mkdir_p(session_dir)
-            File.write(File.join(session_dir, "#{session_name}.json"), session_data[:data].to_json) if session_data[:data]
-            File.write(File.join(session_dir, "#{session_name}.messages.json"), session_data[:messages].to_json) if session_data[:messages]
+            File.write(File.join(session_dir, "#{session_name}.json"), JSON.dump(session_data[:data])) if session_data[:data]
+            File.write(File.join(session_dir, "#{session_name}.messages.json"), JSON.dump(session_data[:messages])) if session_data[:messages]
           end
         end
         if tasks
@@ -90,19 +90,19 @@ module ClineTest
           tasks.each do |task_name, task_data|
             task_dir = File.join(tasks_dir, task_name)
             FileUtils.mkdir_p(task_dir)
-            File.write(File.join(task_dir, 'ui_messages.json'), task_data[:messages].to_json) if task_data[:messages]
+            File.write(File.join(task_dir, 'ui_messages.json'), JSON.dump(task_data[:messages])) if task_data[:messages]
           end
         end
         if logs
           logs_dir = File.join(data_dir, 'logs')
           FileUtils.mkdir_p(logs_dir)
-          File.write(File.join(logs_dir, 'cline.log'), logs.map { |log| log.is_a?(String) ? log : log.to_json }.join("\n"))
+          File.write(File.join(logs_dir, 'cline.log'), logs.map { |log| log.is_a?(String) ? log : JSON.dump(log) }.join("\n"))
         end
         return unless cline_models
 
         cache_dir = File.join(data_dir, 'cache')
         FileUtils.mkdir_p(cache_dir)
-        File.write(File.join(cache_dir, 'cline_models.json'), cline_models.to_json)
+        File.write(File.join(cache_dir, 'cline_models.json'), JSON.dump(cline_models))
       end
     end
   end

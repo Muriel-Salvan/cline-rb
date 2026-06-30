@@ -127,7 +127,7 @@ module Cline
     #
     # @return [String] Cline JSON
     def to_cline_json
-      self.class.as_hash(self).to_json
+      JSON.dump(self.class.as_hash(self))
     end
 
     # Output this object as a Hash.

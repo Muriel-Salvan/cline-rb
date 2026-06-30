@@ -101,64 +101,66 @@ module ClineTest
           FileUtils.mkdir_p File.dirname(stub_conf_file)
           File.write(
             stub_conf_file,
-            # Normalize instructions (always using Arrays, setting default values).
-            (
-              (@debug ? [{ debug: true }] : []) +
-              (instructions.is_a?(Array) ? instructions : [instructions])
-            ).map do |instructions_set|
-              normalized_instructions = instructions_set.dup
-              if normalized_instructions[:log] && normalized_instructions[:log].is_a?(Hash)
-                normalized_instructions[:log] = {
-                  level: 30,
-                  hostname: 'LOCALHOST',
-                  name: 'cline.cli',
-                  component: 'main',
-                  properties: {
-                    ulid: 'test-session-id'
-                  }
-                }.merge(normalized_instructions[:log])
-              end
-              if normalized_instructions[:session]
-                normalized_instructions[:session] = {
-                  version: 1,
-                  session_id: 'test-session-id',
-                  source: 'cli',
-                  status: 'running',
-                  interactive: false,
-                  provider: 'cline',
-                  model: 'deepseek/deepseek-v4-flash',
-                  cwd: Dir.pwd,
-                  workspace_root: Dir.pwd,
-                  team_name: 'team-sjHpe',
-                  enable_tools: true,
-                  enable_spawn: true,
-                  enable_teams: true
-                }.merge(normalized_instructions[:session])
-                if normalized_instructions[:session][:messages]
-                  default_message = {
-                    id: 'msg_id_1',
-                    role: 'assistant',
-                    content: [
-                      {
-                        type: 'text',
-                        text: 'Message content'
-                      }
-                    ],
-                    ts: 100
-                  }
-                  normalized_instructions[:session][:messages] = normalized_instructions[:session][:messages].map do |messages_group|
+            JSON.dump(
+              # Normalize instructions (always using Arrays, setting default values).
+              (
+                (@debug ? [{ debug: true }] : []) +
+                (instructions.is_a?(Array) ? instructions : [instructions])
+              ).map do |instructions_set|
+                normalized_instructions = instructions_set.dup
+                if normalized_instructions[:log].is_a?(Hash)
+                  normalized_instructions[:log] = {
+                    level: 30,
+                    hostname: 'LOCALHOST',
+                    name: 'cline.cli',
+                    component: 'main',
+                    properties: {
+                      ulid: 'test-session-id'
+                    }
+                  }.merge(normalized_instructions[:log])
+                end
+                if normalized_instructions[:session]
+                  normalized_instructions[:session] = {
+                    version: 1,
+                    session_id: 'test-session-id',
+                    source: 'cli',
+                    status: 'running',
+                    interactive: false,
+                    provider: 'cline',
+                    model: 'deepseek/deepseek-v4-flash',
+                    cwd: Dir.pwd,
+                    workspace_root: Dir.pwd,
+                    team_name: 'team-sjHpe',
+                    enable_tools: true,
+                    enable_spawn: true,
+                    enable_teams: true
+                  }.merge(normalized_instructions[:session])
+                  if normalized_instructions[:session][:messages]
+                    default_message = {
+                      id: 'msg_id_1',
+                      role: 'assistant',
+                      content: [
+                        {
+                          type: 'text',
+                          text: 'Message content'
+                        }
+                      ],
+                      ts: 100
+                    }
+                    normalized_instructions[:session][:messages] = normalized_instructions[:session][:messages].map do |messages_group|
+                      (messages_group.is_a?(Array) ? messages_group : [messages_group]).map { |message| default_message.merge(message) }
+                    end
+                  end
+                end
+                if normalized_instructions.dig(:task, :messages)
+                  default_message = { ts: 100, type: 'say', say: 'text', text: 'Message content' }
+                  normalized_instructions[:task][:messages] = normalized_instructions[:task][:messages].map do |messages_group|
                     (messages_group.is_a?(Array) ? messages_group : [messages_group]).map { |message| default_message.merge(message) }
                   end
                 end
+                normalized_instructions
               end
-              if normalized_instructions.dig(:task, :messages)
-                default_message = { ts: 100, type: 'say', say: 'text', text: 'Message content' }
-                normalized_instructions[:task][:messages] = normalized_instructions[:task][:messages].map do |messages_group|
-                  (messages_group.is_a?(Array) ? messages_group : [messages_group]).map { |message| default_message.merge(message) }
-                end
-              end
-              normalized_instructions
-            end.to_json
+            )
           )
           # Run PTY.spawn with our stub instead of the real Cline CLI.
           stubbed_cmd = ["ruby#{'.exe' if OS.windows?}", File.expand_path("#{__dir__}/stubs/cline")] + cline_args

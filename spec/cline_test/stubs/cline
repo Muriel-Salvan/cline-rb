@@ -110,7 +110,7 @@ calls_file = "#{cline_stub_dir}/cli_calls.json"
 calls = File.exist?(calls_file) ? JSON.parse(File.read(calls_file)) : []
 File.write(
   calls_file,
-  (
+  JSON.dump(
     calls + [
       {
         pid: Process.pid,
@@ -124,7 +124,7 @@ File.write(
           end
       }
     ]
-  ).to_json
+  )
 )
 
 # Read the config driven by mock_commands and execute all instructions in sequence
@@ -148,10 +148,12 @@ JSON.parse(File.read("#{cline_stub_dir}/cli_stub.json"), symbolize_names: true).
             desc
           else
             # Prepare default values that are process dependent
-            {
-              time: Time.now.utc.strftime('%FT%T.%LZ'),
-              pid: Process.pid
-            }.merge(desc).to_json
+            JSON.dump(
+              {
+                time: Time.now.utc.strftime('%FT%T.%LZ'),
+                pid: Process.pid
+              }.merge(desc)
+            )
           end
         }\n",
         mode: 'a+'
@@ -200,7 +202,7 @@ JSON.parse(File.read("#{cline_stub_dir}/cli_stub.json"), symbolize_names: true).
         sleep 0.2
         # Then add test messages 1 by 1 with 0.2 seconds delay
         desc[:messages].size.times do |idx|
-          File.write(messages_file, desc[:messages][0..idx].flatten(1).to_json)
+          File.write(messages_file, JSON.dump(desc[:messages][0..idx].flatten(1)))
           sleep 0.2
         end
       end

@@ -8,7 +8,7 @@ describe Cline::Task, '#monitor_messages' do
   def write_messages(task, messages)
     json_file = File.join(task.dir, 'ui_messages.json')
     if messages
-      File.write(json_file, messages.to_json)
+      File.write(json_file, JSON.dump(messages))
     else
       FileUtils.rm_f(json_file)
     end
