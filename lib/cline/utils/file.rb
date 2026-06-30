@@ -29,6 +29,29 @@ module Cline
         file_content
       end
 
+      # Try to read a file and parse its JSON content with retries.
+      # Uses safe_read internally, and also retries on JSON parse errors
+      # (e.g. if the file was half-written when read).
+      #
+      # Parameters::
+      # * *file* (String): Path to read
+      # * *max_retries* (Integer): Number of retries for both file access and JSON parsing [default: 3]
+      # Result::
+      # * Object: The parsed JSON content
+      def self.safe_json_read(file, max_retries: 3)
+        retries = 0
+        begin
+          content = safe_read(file, max_retries: max_retries)
+          JSON.parse(content)
+        rescue JSON::ParserError
+          retries += 1
+          raise if retries > max_retries
+
+          sleep(0.05 * retries)
+          retry
+        end
+      end
+
       # Provide a temporary directory.
       # Will clean up the directory after code execution unless debug mode is on.
       #

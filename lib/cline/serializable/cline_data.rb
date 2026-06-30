@@ -84,8 +84,7 @@ module Cline
         # @param kwargs [Hash] Extra kwargs to give to the instance's constructor.
         # @return [Object] A new instance.
         def new_instance(file, *args, **kwargs)
-          # TODO: Implement a retry mechanism if JSON is not parseable as it can be due to the file being written concurrently.
-          of_hash(JSON.parse(Utils::File.safe_read(file)), *args, **kwargs)
+          of_hash(Utils::File.safe_json_read(file), *args, **kwargs)
         end
 
         private

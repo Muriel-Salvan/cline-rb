@@ -293,4 +293,49 @@ describe Cline::Session, '#messages' do
       expect(messages.first.ts).to eq 100
     end
   end
+
+  it 'raises JSON::ParserError after retrying 3 times when the file contains invalid JSON' do
+    with_session(
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
+        ]
+      }
+    ) do |session|
+      read_call_count = 0
+      allow(File).to(receive(:read).with(File.join(session.dir, 'test-session.messages.json'))) do |*_args|
+        read_call_count += 1
+        '{invalid json content'
+      end
+      expect { session.messages }.to raise_error(JSON::ParserError)
+      expect(read_call_count).to eq 4
+    end
+  end
+
+  it 'recovers from invalid JSON and parses the file successfully on retry' do
+    with_session(
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'First message' }], ts: 100 }
+        ]
+      }
+    ) do |session|
+      read_call_count = 0
+      original_read = File.method(:read)
+      allow(File).to(receive(:read).with(File.join(session.dir, 'test-session.messages.json'))) do |*args|
+        read_call_count += 1
+        if read_call_count == 1
+          '{invalid json content'
+        else
+          original_read.call(*args)
+        end
+      end
+
+      messages = session.messages
+      expect(read_call_count).to eq 2
+      expect(messages).not_to be_nil
+      expect(messages.size).to eq 1
+      expect(messages.first.ts).to eq 100
+    end
+  end
 end

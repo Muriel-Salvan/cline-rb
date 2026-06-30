@@ -186,4 +186,46 @@ describe Cline::Session, '#data' do
       expect(session_data.session_id).to eq 'test'
     end
   end
+
+  it 'raises JSON::ParserError after retrying 3 times when the file contains invalid JSON' do
+    with_session(
+      data: {
+        session_id: 'test',
+        source: 'cli'
+      }
+    ) do |session|
+      read_call_count = 0
+      allow(File).to(receive(:read).with(File.join(session.dir, 'test-session.json'))) do |*_args|
+        read_call_count += 1
+        '{invalid json content'
+      end
+      expect { session.data }.to raise_error(JSON::ParserError)
+      expect(read_call_count).to eq 4
+    end
+  end
+
+  it 'recovers from invalid JSON and parses the file successfully on retry' do
+    with_session(
+      data: {
+        session_id: 'test',
+        source: 'cli'
+      }
+    ) do |session|
+      read_call_count = 0
+      original_read = File.method(:read)
+      allow(File).to(receive(:read).with(File.join(session.dir, 'test-session.json'))) do |*args|
+        read_call_count += 1
+        if read_call_count == 1
+          '{invalid json content'
+        else
+          original_read.call(*args)
+        end
+      end
+
+      session_data = session.data
+      expect(read_call_count).to eq 2
+      expect(session_data).not_to be_nil
+      expect(session_data.session_id).to eq 'test'
+    end
+  end
 end
