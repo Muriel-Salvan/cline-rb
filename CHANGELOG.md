@@ -1,3 +1,9 @@
+# [v1.1.0](https://github.com/Muriel-Salvan/cline-rb/compare/v1.0.0...v1.1.0) (2026-07-01 13:34:01)
+
+### Features
+
+* [[feature] feat: include CliStub spec files in gem and document usage in README](https://github.com/Muriel-Salvan/cline-rb/commit/6d8103fc559194396cd50508728625c82e8a3f19)
+
 # [v0.0.1](https://github.com/Muriel-Salvan/cline-rb/compare/...v0.0.1) (2026-07-01 12:59:01)
 
 ### Patches
