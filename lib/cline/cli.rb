@@ -194,8 +194,8 @@ module Cline
                         last_usage = usages.values.last
                         prefix = "[#{message.timestamp.strftime('%H:%M:%S')}]#{
                           unless last_usage.nil?
-                            " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')}" \
-                              " #{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
+                            " (#{HumanNumber.currency(usages.values.map { |usage| usage.cost || 0.0 }.sum, currency_code: 'USD')} " \
+                              "#{HumanNumber.human_number(last_usage.context_tokens, max_digits: 2)}" \
                               "/#{HumanNumber.human_number(last_usage.context_tokens_limit || 0, max_digits: 2)})"
                           end
                         } - "
