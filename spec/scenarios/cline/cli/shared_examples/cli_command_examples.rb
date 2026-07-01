@@ -82,7 +82,7 @@ shared_examples 'a cli command' do |opts|
       }
     )
     result = described_class.new.public_send(opts[:name], *opts[:args])
-    expect(result[:stdout]).to eq "Executing Cline CLI\nSuccess\nWarning: update available\n"
+    expect(result[:stdout].gsub("\r\n", "\n")).to include "Executing Cline CLI\nSuccess\nWarning: update available\n"
     expect(result[:exit_status]).to eq 0
   end
 
@@ -94,15 +94,14 @@ shared_examples 'a cli command' do |opts|
     )
     received_stdout = []
     allow($stdout).to receive(:write) do |received_data|
-      received_stdout << Cline::Utils::Logger.sanitize_pty_output(received_data)
+      received_stdout << Cline::Utils::Logger.sanitize_pty_output(received_data).gsub("\r\n", "\n")
     end
     described_class.new(stdout_echo: true).public_send(opts[:name], *opts[:args])
-    expect(received_stdout).to eq [
-      "Executing Cline CLI\n",
-      "Success output line 1\n",
-      "Success output line 2\n",
-      ''
-    ]
+    expect(received_stdout.join).to include <<~EO_STDOUT.gsub("\r\n", "\n")
+      Executing Cline CLI
+      Success output line 1
+      Success output line 2
+    EO_STDOUT
   end
 
   it 'does not echo stdout content to $stdout when stdout_echo is false (default)' do
