@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.author        = 'Muriel Salvan'
   spec.email         = 'muriel@x-aeon.com'
 
-  spec.files         = Dir['*.{md,txt}', '{lib}/**/*']
+  spec.files         = Dir['*.{md,txt}', '{lib}/**/*'] + %w[spec/cline_test/cli_stub.rb spec/cline_test/stubs/cline]
   spec.executables   = Dir['bin/*'].map { |exe_file| File.basename(exe_file) }
   spec.require_path  = 'lib'
 

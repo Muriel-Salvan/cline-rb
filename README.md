@@ -103,6 +103,7 @@ Designed as a Ruby library (not a standalone CLI), **cline-rb** lets you build a
   - [Install dependencies](#install-dependencies)
   - [Project structure](#project-structure)
   - [Running tests](#running-tests)
+  - [Using the Cline CLI stub in other project's test cases](#using-the-cline-cli-stub-in-other-projects-test-cases)
   - [Code linting](#code-linting)
   - [Code coverage](#code-coverage)
   - [Building the gem](#building-the-gem)
@@ -1039,6 +1040,42 @@ TEST_DEBUG=1 bundle exec rspec
 ```
 
 The `.rspec` file configures `--color` and `--require spec_helper` by default.
+
+### Using the Cline CLI stub in other project's test cases
+
+The `cline-rb` gem ships with a `CliStub` class that external projects can use to mock the Cline CLI in their own unit tests. It intercepts `PTY.spawn` calls and replaces them with a lightweight stub that simulates Cline CLI behaviour (stdout, sessions, tasks, logs, exit codes, etc.).
+
+Example usage:
+
+```ruby
+require "#{Gem.loaded_specs['cline-rb'].full_gem_path}/spec/cline_test/cli_stub"
+
+it 'tests something in my project' do
+  # Setup the Cline CLI stub
+  cli_stub = ClineTest::CliStub.new
+  cli_stub.mock_commands(
+    {
+      log: {},
+      session: {
+        messages: [
+          {
+            ts: 100,
+            role: 'assistant',
+            content: [{ type: 'text', text: 'Assistant Output' }]
+          }
+        ]
+      }
+    }
+  )
+  # Run the code that would have executed the Cline CLI
+  result = Cline::Cli.new(config: '.test-config').task 'A nice user prompt'
+  expect(result[:message].content.first.text).to eq 'Assistant Output'
+  # Use the stub to check what was called
+  expect(cli_stub.issued_commands.first[:command]).to eq ['--config', '.test-config', 'A nice user prompt']
+end
+```
+
+For full API documentation of the `CliStub` class, see the [ClineTest::CliStub YARD documentation](https://www.rubydoc.info/gems/cline-rb/ClineTest/CliStub).
 
 ### Code linting
 
