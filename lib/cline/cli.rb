@@ -156,11 +156,11 @@ module Cline
             on_start: proc do |_reader, writer, _pid|
               session_monitor_thread = Thread.new do
                 # Start monitoring logs to get the session ID.
-                # Wait for logs to exist.
-                sleep 0.1 while cli_running && !config.logs
+                # Wait for config and logs to exist.
+                sleep 0.1 while cli_running && !config&.logs
                 # Monitor logs to get the session ID
                 session_id = nil
-                config.logs&.monitor(
+                config&.logs&.monitor(
                   on_log: proc do |log, _last|
                     session_id = log.properties.ulid if !session_id && log.is_a?(Log) && log.properties&.ulid
                   end,

@@ -80,6 +80,14 @@ describe Cline::Cli, '#task' do
     ]
   end
 
+  it 'starts correctly even when the config dir does not exist' do
+    mock_commands(['--config', 'unknown_config_dir', 'Test prompt'] => { sleep: 0.5 })
+    described_class.new(config: 'unknown_config_dir').task('Test prompt', monitoring_interval_secs: 0.1)
+    expect_issued_commands [
+      ['--config', 'unknown_config_dir', 'Test prompt']
+    ]
+  end
+
   describe 'prompt command line length handling' do
     context 'when the host OS is Linux' do
       around do |example|
