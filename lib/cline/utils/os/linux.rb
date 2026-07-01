@@ -3,6 +3,8 @@ module Cline
     module Os
       # OS utils for host OS linux
       module Linux
+        include Logger
+
         # Get the user home directory path
         #
         # @return [String] Normalized absolute path to user home directory
