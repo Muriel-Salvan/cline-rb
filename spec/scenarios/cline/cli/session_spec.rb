@@ -101,6 +101,18 @@ describe Cline::Cli, '#session' do
       end
     end
 
+    it 'uses Cline models from VSCode when config data dir has no models even when CLI finishes before accessing VSCode data' do
+      with_temp_dir do |vscode_root|
+        setup_vscode_models({ 'test/model-1' => { 'name' => 'VSCode Model' } }, vscode_root)
+        # Simulate a bit of lag while accessing the VSCode data folder
+        allow(Cline::Data).to receive(:vscode).and_wrap_original do |original_vscode|
+          sleep 0.5
+          original_vscode.call
+        end
+        expect(capture_session_message(cline_models: nil).cline_models['test/model-1'].name).to eq 'VSCode Model'
+      end
+    end
+
     it 'uses Cline models from config data dir even when VSCode data also exists' do
       with_temp_dir do |vscode_root|
         setup_vscode_models({ 'test/model-1' => { 'name' => 'VSCode Model' } }, vscode_root)

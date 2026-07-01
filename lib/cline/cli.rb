@@ -177,6 +177,7 @@ module Cline
                   cline_models = config.data&.cline_models || Data.vscode&.cline_models
                   # Wait for the CLI to create the session for real
                   sleep 0.1 while cli_running && !config.sessions(cline_models:)
+                  config.sessions(cline_models:) unless cli_running
                   while cli_running && !config.sessions[session_id]
                     sleep 0.1
                     config.sessions.refresh!
@@ -335,12 +336,12 @@ module Cline
         if !@interrupted_on_purpose && !expected_exit_status.nil? && exit_status != expected_exit_status
           raise UnexpectedExitStatusError, "Cline master process `#{cmd}` exited with status #{exit_status} (expected #{expected_exit_status})"
         end
-
-        {
-          stdout: Utils::Logger.sanitize_pty_output(stdout_lines.join),
-          exit_status:
-        }
       end
+
+      {
+        stdout: Utils::Logger.sanitize_pty_output(stdout_lines.join),
+        exit_status:
+      }
     end
 
     # Return the config object associated to this instance
