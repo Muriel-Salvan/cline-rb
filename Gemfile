@@ -8,6 +8,7 @@ gem 'rubocop', '~> 1.86'
 gem 'rubocop-rspec', '~> 3.9'
 gem 'rubocop-yard', '~> 1.1'
 gem 'simplecov', '~> 0.22'
+gem 'simplecov-cobertura', '~> 3.2'
 
 # Deployment dependencies
 gem 'sem_ver_components', '~> 0.4'
