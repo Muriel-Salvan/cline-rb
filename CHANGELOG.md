@@ -1,3 +1,9 @@
+# [v1.1.1](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.0...v1.1.1) (2026-07-01 15:14:42)
+
+### Patches
+
+* [ci: add code coverage reporting with Cobertura and Codecov integration](https://github.com/Muriel-Salvan/cline-rb/commit/82c7622af5621f90515737421e1633b933ebf55c)
+
 # [v1.1.0](https://github.com/Muriel-Salvan/cline-rb/compare/v1.0.0...v1.1.0) (2026-07-01 13:34:01)
 
 ### Features
