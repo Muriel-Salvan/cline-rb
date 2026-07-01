@@ -71,7 +71,7 @@ describe Cline::Cli, '#session' do
     # Get the message returned by the session after running a task in a config dir having some Cline models defined.
     #
     # @param cline_models [Hash{String => Hash}, nil] The Cline models to create, or nil if none
-    # @return [SessionMessage] The retruend session message
+    # @return [SessionMessage] The returned session message
     def capture_session_message(cline_models: nil)
       result = nil
       with_config(cline_models:) do |config|
@@ -114,6 +114,21 @@ describe Cline::Cli, '#session' do
     end
 
     it 'uses Cline models from config data dir even when VSCode data also exists' do
+      # TODO: Investigate non-deterministic failures on this test (especially on Linux):
+      #      Failure/Error: result = cli.session.messages.first
+      #
+      #  NoMethodError:
+      #    undefined method 'messages' for nil
+      # ./spec/scenarios/cline/cli/session_spec.rb:86:in 'block in RSpec::ExampleGroups::ClineCliSession::ClineModelsUsedInSessionMessages#capture_session_message'
+      # ./spec/cline_test/helpers/config.rb:21:in 'block in ClineTest::Helpers::Config#with_config'
+      # ./spec/cline_test/helpers/temp_dir.rb:24:in 'ClineTest::Helpers::TempDir#with_temp_dir'
+      # ./spec/cline_test/helpers/config.rb:19:in 'ClineTest::Helpers::Config#with_config'
+      # ./spec/scenarios/cline/cli/session_spec.rb:77:in 'RSpec::ExampleGroups::ClineCliSession::ClineModelsUsedInSessionMessages#capture_session_message'
+      # ./spec/scenarios/cline/cli/session_spec.rb:120:in 'block (4 levels) in <top (required)>'
+      # ./spec/cline_test/helpers/temp_dir.rb:24:in 'ClineTest::Helpers::TempDir#with_temp_dir'
+      # ./spec/scenarios/cline/cli/session_spec.rb:117:in 'block (3 levels) in <top (required)>'
+      # ./spec/scenarios/cline/cli/session_spec.rb:65:in 'block (3 levels) in <top (required)>'
+      # ./spec/spec_helper.rb:40:in 'block (2 levels) in <top (required)>'
       with_temp_dir do |vscode_root|
         setup_vscode_models({ 'test/model-1' => { 'name' => 'VSCode Model' } }, vscode_root)
         expect(

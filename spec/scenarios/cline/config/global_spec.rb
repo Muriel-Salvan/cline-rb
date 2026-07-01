@@ -21,16 +21,15 @@ describe Cline::Config, '.global' do
   # @return [String] The temporary directory that contains the .cline config dir
   attr_reader :tmp_dir
 
+  before do
+    mock_installed_os(user_home_dir: tmp_dir)
+  end
+
   context 'when the host OS is mingw32' do
     around do |example|
       with_host_os('mingw32') do
         example.call
       end
-    end
-
-    before do
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with('USERPROFILE').and_return(tmp_dir)
     end
 
     it 'loads global config from USERPROFILE/.cline' do
@@ -43,10 +42,6 @@ describe Cline::Config, '.global' do
       with_host_os('linux') do
         example.call
       end
-    end
-
-    before do
-      allow(Cline::Utils::Os).to receive(:`).with('eval echo ~$USER').and_return(tmp_dir)
     end
 
     it 'loads global config from HOME/.cline' do

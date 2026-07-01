@@ -9,14 +9,19 @@ describe Cline::Cli, '#interrupt' do
         end
       end
 
+      before do
+        mock_installed_os
+      end
+
       it 'kills the direct cline_pid process' do
         mock_commands(['auth'] => { sleep: 60 })
-        spy_killing_pids
         # Create another thread to interrupt the running command
         cline_pid = nil
         interruptor_thread = Thread.new do
           # Wait for the command execution to start
+          log_debug '[Interruptor thread] - Starting waiting for CLI PID'
           sleep 0.1 until cli.cline_pid
+          log_debug "[Interruptor thread] - Got CLI PID: #{cli.cline_pid}"
           cline_pid = cli.cline_pid
           cli.interrupt
         end
@@ -68,7 +73,6 @@ describe Cline::Cli, '#interrupt' do
                 eval: "system 'ruby #{spawn_file} 4 2>&1'"
               }
             )
-            spy_killing_pids
             # Create another thread to interrupt the running command
             interruptor_thread = Thread.new do
               # Wait for the command execution to start
@@ -93,7 +97,6 @@ describe Cline::Cli, '#interrupt' do
       end
 
       it 'does not attempt to kill any processes when no cline_pid is present' do
-        spy_killing_pids
         cli.interrupt
         expect(killed_pids).to be_empty
       end
@@ -102,7 +105,6 @@ describe Cline::Cli, '#interrupt' do
         mock_commands(['auth'] => { sleep: 60 })
         # Simulate an error while fetching process children
         allow(Sys::ProcTable).to receive(:ps).and_raise(StandardError.new('Process table error'))
-        spy_killing_pids
         # Create another thread to interrupt the running command
         cline_pid = nil
         interruptor_thread = Thread.new do
@@ -123,7 +125,7 @@ describe Cline::Cli, '#interrupt' do
       it 'gracefully handles errors when process disappears just before killing it' do
         mock_commands(['auth'] => { sleep: 0.5 })
         cline_pid = nil
-        spy_killing_pids(
+        mock_installed_os(
           on_kill: proc do
             # Wait for the cline_pid to disappear
             sleep 0.1 while Sys::ProcTable.ps(pid: cline_pid)

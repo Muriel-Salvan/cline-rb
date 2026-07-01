@@ -103,8 +103,11 @@ describe Cline::Cli, '#task' do
         end
       end
 
+      before do
+        mock_installed_os
+      end
+
       it 'passes a short prompt directly as a CLI argument' do
-        allow(Cline::Utils::Os).to receive(:`).with('getconf ARG_MAX').and_return("200\n")
         cli_task(prompt: 'Hello, please write a Ruby script')
         expect_issued_commands [
           { command: ['--config', /^.+$/, 'Hello, please write a Ruby script'] }
@@ -112,7 +115,6 @@ describe Cline::Cli, '#task' do
       end
 
       it 'writes a long prompt that exceeds the max command length to a temp file' do
-        allow(Cline::Utils::Os).to receive(:`).with('getconf ARG_MAX').and_return("100\n")
         cli_task(
           prompt: 'x' * 95,
           stub: {
@@ -133,7 +135,6 @@ describe Cline::Cli, '#task' do
       end
 
       it 'writes a long prompt that exceeds the max command length to a temp file in a relative dir' do
-        allow(Cline::Utils::Os).to receive(:`).with('getconf ARG_MAX').and_return("100\n")
         temp_config = Cline::Configuration.new
         temp_config.debug = true
         temp_config.temp_dir_root = '.cline-rb-tmp'

@@ -18,6 +18,7 @@ describe Cline::Data, '.vscode' do
   attr_reader :tmp_dir
 
   before do
+    mock_installed_os
     allow(ENV).to receive(:[]).and_call_original
   end
 

@@ -43,16 +43,15 @@ describe Cline::Config, '.main' do
   # @return [String] The temporary directory that contains the .cline config dir
   attr_reader :tmp_dir
 
+  before do
+    mock_installed_os(user_home_dir: tmp_dir)
+  end
+
   context 'when the host OS is mingw32' do
     around do |example|
       with_host_os('mingw32') do
         example.call
       end
-    end
-
-    before do
-      allow(ENV).to receive(:[]).and_call_original
-      allow(ENV).to receive(:[]).with('USERPROFILE').and_return(tmp_dir)
     end
 
     it 'loads main config from USERPROFILE/.cline with project config included' do
@@ -75,20 +74,8 @@ describe Cline::Config, '.main' do
   context 'when the host OS is linux' do
     around do |example|
       with_host_os('linux') do
-        # Remove the user_home_dir cache
-        original_user_home_dir = Cline::Utils::Os.instance_variable_get(:@user_home_dir)
-        begin
-          Cline::Utils::Os.remove_instance_variable(:@user_home_dir) if Cline::Utils::Os.instance_variable_defined?(:@user_home_dir)
-          example.call
-        ensure
-          Cline::Utils::Os.instance_variable_set(:@user_home_dir, original_user_home_dir)
-        end
+        example.call
       end
-    end
-
-    before do
-      allow(Cline::Utils::Os).to receive(:`).and_call_original
-      allow(Cline::Utils::Os).to receive(:`).with('eval echo ~$USER').and_return(tmp_dir)
     end
 
     it 'loads main config from HOME/.cline with project config included' do
