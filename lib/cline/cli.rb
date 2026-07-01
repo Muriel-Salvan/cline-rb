@@ -318,7 +318,7 @@ module Cline
           # Child process finished
           log_debug "Cline master process (PID #{cline_pid}) got terminated: #{e.message}"
         end
-        exit_status = PTY.last_status.exitstatus
+        exit_status = Process::Status.wait.exitstatus
         log_debug do
           "Cline master process (PID #{cline_pid}) exited with status: #{exit_status}#{' (interrupted on purpose)' if @interrupted_on_purpose}"
         end
