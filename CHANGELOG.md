@@ -1,3 +1,9 @@
+# [v1.1.3](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.2...v1.1.3) (2026-10-14 15:38:46)
+
+### Patches
+
+* [ci: Configure RubyGems credentials via trusted publishing](https://github.com/Muriel-Salvan/cline-rb/commit/7194a95dec2200166dcba19f2e210377f6d7ad1d)
+
 # [v1.1.2](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.1...v1.1.2) (2026-10-14 15:29:12)
 
 ### Patches
