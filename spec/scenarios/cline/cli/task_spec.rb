@@ -88,6 +88,27 @@ describe Cline::Cli, '#task' do
     ]
   end
 
+  it 'starts correctly even when the config dir exists but its data dir does not exist yet' do
+    # Make sure thread exceptions are not output in stdout for this test, as it messes up tests output.
+    # The exception is still re-raised by Thread#join in the ensure block of Cline::Cli#task.
+    original_report_on_exception = Thread.report_on_exception
+    Thread.report_on_exception = false
+    begin
+      with_temp_dir do |config_dir|
+        # The config dir exists (so Config.open returns a Config), but its data/ subdirectory does not exist yet,
+        # like in a production environment where the Cline CLI has not created it yet.
+        # The session monitor thread must wait for it instead of raising (see Cline::Config#logs).
+        mock_commands(['--config', config_dir, 'Test prompt'] => { sleep: 0.5 })
+        described_class.new(config: config_dir).task('Test prompt', monitoring_interval_secs: 0.1)
+        expect_issued_commands [
+          ['--config', config_dir, 'Test prompt']
+        ]
+      end
+    ensure
+      Thread.report_on_exception = original_report_on_exception
+    end
+  end
+
   describe 'prompt command line length handling' do
     context 'when the host OS is Linux' do
       around do |example|
