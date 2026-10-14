@@ -33,6 +33,11 @@ jobs:
   package:
     needs: test
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
     steps:
 
       - name: Check-out code
@@ -57,8 +62,10 @@ jobs:
       - name: Install semantic-release
         run: npm install @semantic-release/git@9.0.1 @semantic-release/changelog@5.0.1 @semantic-release/exec@5.0.0 semantic-release-rubygem -D
 
+      - name: Configure RubyGems credentials
+        uses: rubygems/configure-rubygems-credentials@main
+
       - name: Semantic releasing
         run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{secrets.SEMANTIC_RELEASE_GH_TOKEN}}
-          GEM_HOST_API_KEY: ${{secrets.GEM_HOST_API_KEY}}
