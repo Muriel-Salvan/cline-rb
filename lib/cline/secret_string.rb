@@ -1,3 +1,4 @@
+require 'forwardable'
 require 'secret_string'
 
 module Cline

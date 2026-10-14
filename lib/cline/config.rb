@@ -1,5 +1,3 @@
-require 'forwardable'
-
 module Cline
   # Accesses all configuration of a Cline directory.
   # Wraps for example the content of ~/.cline.
@@ -7,8 +5,6 @@ module Cline
   # - include_project_config [Boolean] Do we include the project-specific objects as well in this
   #     configuration? Defaults to `true`.
   class Config
-    extend Forwardable
-
     # @!group Public API
 
     # Get the main Cline config.
@@ -35,8 +31,14 @@ module Cline
 
     include Serializable::Dir
 
-    # Give access to the data getters
-    def_delegators :data, *%i[global_settings global_state logs mcp_settings providers sessions tasks workspaces]
+    # Give access to the data getters.
+    # Getters are nil-safe: they return nil when the data directory does not exist yet (instead of raising),
+    # so that callers can wait for the data directory to appear (see the session monitor thread in Cline::Cli#task).
+    %i[global_settings global_state logs mcp_settings providers sessions tasks workspaces].each do |data_getter|
+      define_method(data_getter) do |*args, **kwargs, &block|
+        data&.public_send(data_getter, *args, **kwargs, &block)
+      end
+    end
 
     # Get skills from this config
     #
