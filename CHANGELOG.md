@@ -1,3 +1,9 @@
+# [v1.1.2](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.1...v1.1.2) (2026-10-14 15:29:12)
+
+### Patches
+
+* [fix: make config data getters nil-safe](https://github.com/Muriel-Salvan/cline-rb/commit/25f72bac6c624f73ed89025c15b143b8e121da60)
+
 # [v1.1.1](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.0...v1.1.1) (2026-07-01 15:14:42)
 
 ### Patches
