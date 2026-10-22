@@ -1,3 +1,9 @@
+# [v1.1.4](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.3...v1.1.4) (2026-10-22 09:34:43)
+
+### Patches
+
+* [feat(cli): use temp prompt file when a single arg exceeds per-arg limit](https://github.com/Muriel-Salvan/cline-rb/commit/52c9486a2f97af29d4c10afbc596bef7f61994f3)
+
 # [v1.1.3](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.2...v1.1.3) (2026-10-14 15:38:46)
 
 ### Patches
