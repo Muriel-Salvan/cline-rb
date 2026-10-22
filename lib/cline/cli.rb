@@ -125,7 +125,7 @@ module Cline
     # @return [Hash{Symbol => Object}] A set of return properties (see #run_cli). Additionnally the following ones:
     #   - message [SessionMessage, nil] The last message of the session, or nil if none
     #   - status [String] The task status
-    #   - error [Log, nil] In case of status "failed", get the last error log entry, or nil if no error.
+    #   - error [Log, nil] In case of status "failed" or "cancelled", get the last error log entry with level >= 40, or nil if no error.
     def task(prompt, on_message: nil, on_question: nil, monitoring_interval_secs: 1, **kwargs)
       result = {}
       start_time = Time.now
@@ -236,7 +236,7 @@ module Cline
       if @session
         result[:message] = @session.messages&.reverse_each&.find { |message| message.role == 'assistant' }
         result[:status] = @session.status
-        result[:error] = config.logs.logs(from: start_time).reverse_each.find { |log| log.severity == 'error' } if @session.status == 'failed'
+        result[:error] = config.logs.logs(from: start_time).reverse_each.find { |log| log.level >= 40 } if %w[failed cancelled].include?(@session.status)
       end
       result
     end

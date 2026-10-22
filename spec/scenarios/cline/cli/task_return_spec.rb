@@ -69,7 +69,7 @@ describe Cline::Cli, '#task' do
     it 'returns the last error log in the result hash in case of a failed run' do
       result = cli_task(
         stub: {
-          log: { severity: 'error', msg: 'There is an error' },
+          log: { level: 40, severity: 'error', msg: 'There is an error' },
           session: {
             status: 'failed'
           }
@@ -77,14 +77,55 @@ describe Cline::Cli, '#task' do
       )
       expect(result[:error].severity).to eq 'error'
       expect(result[:error].msg).to eq 'There is an error'
+      expect(result[:error].level).to eq 40
     end
 
     it 'does not return any error in the result hash in case of a completed run' do
       result = cli_task(
         stub: {
-          log: {},
+          log: { level: 50, severity: 'error', msg: 'There is an error' },
           session: {
             status: 'completed'
+          }
+        }
+      )
+      expect(result[:error]).to be_nil
+    end
+
+    it 'returns the last error log in the result hash in case of a cancelled run' do
+      result = cli_task(
+        stub: {
+          log: { level: 40, severity: 'warn', msg: 'There is a warning' },
+          session: {
+            status: 'cancelled'
+          }
+        }
+      )
+      expect(result[:error]).not_to be_nil
+      expect(result[:error].severity).to eq 'warn'
+      expect(result[:error].msg).to eq 'There is a warning'
+      expect(result[:error].level).to eq 40
+      expect(result[:status]).to eq 'cancelled'
+    end
+
+    it 'does not return any error in the result hash in case of a failed run with no error log level' do
+      result = cli_task(
+        stub: {
+          log: { level: 30, severity: 'info', msg: 'There is an info' },
+          session: {
+            status: 'failed'
+          }
+        }
+      )
+      expect(result[:error]).to be_nil
+    end
+
+    it 'does not return any error in the result hash in case of a cancelled run with no error log level' do
+      result = cli_task(
+        stub: {
+          log: { level: 30, severity: 'info', msg: 'There is an info' },
+          session: {
+            status: 'cancelled'
           }
         }
       )
