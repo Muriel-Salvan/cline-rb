@@ -1,3 +1,15 @@
+# [v2.0.0](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.4...v2.0.0) (2026-10-22 13:28:57)
+
+## Global changes
+### Patches
+
+* [break(cline): return task error for failed and cancelled runs](https://github.com/Muriel-Salvan/cline-rb/commit/155df5e6c829bcdf2b9040ba33eb4cddbb804854)
+
+## Changes for cline
+### Breaking changes
+
+* [break(cline): return task error for failed and cancelled runs](https://github.com/Muriel-Salvan/cline-rb/commit/155df5e6c829bcdf2b9040ba33eb4cddbb804854)
+
 # [v1.1.4](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.3...v1.1.4) (2026-10-22 09:34:43)
 
 ### Patches
