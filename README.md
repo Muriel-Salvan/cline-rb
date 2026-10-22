@@ -206,7 +206,7 @@ result = cli.task('Explain what Ruby symbols are in one sentence.')
 puts result[:stdout]     # Full CLI output
 puts result[:message]    # Last assistant message (SessionMessage object)
 puts result[:status]     # e.g. "completed"
-puts result[:error]      # Error log entry if status is "failed"
+puts result[:error]      # Error log entry if status is "failed" or "cancelled"
 ```
 
 #### Running a task with a specific model
