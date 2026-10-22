@@ -155,6 +155,33 @@ describe Cline::Cli, '#task' do
         end
       end
 
+      context 'when total command length fits but one argument exceeds the per-argument limit' do
+        before do
+          allow(Cline::Utils::Os).to receive(:`).with('getconf ARG_MAX').and_return("1000000\n")
+          Cline::Utils::Os.instance_variable_set(:@max_cmd_length, nil)
+          Cline::Utils::Os.instance_variable_set(:@max_arg_length, nil)
+        end
+
+        it 'writes the prompt to a temp file' do
+          cli_task(
+            prompt: 'x' * 200_000,
+            stub: {
+              eval: <<~EO_RUBY
+                puts "[PROMPT] \#{File.read(ARGV.last.match(/The user prompt is given to you in the file `([^`]+)`\\./)[1])}"
+              EO_RUBY
+            },
+            stub_ignore_prompt: true
+          ) do |_cli, result|
+            expect_issued_commands [
+              { command: ['--config', /^.+$/, /^.+$/] }
+            ]
+            expect(result[:stdout].gsub("\n", '')).to include "[PROMPT] #{'x' * 200_000}"
+            file_path = issued_commands.last[:command].last.match(/The user prompt is given to you in the file `([^`]+)`\./)[1]
+            expect(File.expand_path(file_path)).to eq file_path
+          end
+        end
+      end
+
       it 'writes a long prompt that exceeds the max command length to a temp file in a relative dir' do
         temp_config = Cline::Configuration.new
         temp_config.debug = true

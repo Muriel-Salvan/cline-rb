@@ -40,6 +40,11 @@ module Cline
         def max_cmd_length
           8191
         end
+
+        # @return [Integer] Maximum length a single command-line argument can have
+        def max_arg_length
+          8191
+        end
       end
     end
   end
