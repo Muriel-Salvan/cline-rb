@@ -54,6 +54,7 @@ module ClineTest
           %i[
             @user_home_dir
             @max_cmd_length
+            @max_arg_length
           ].each do |cache_var|
             Cline::Utils::Os.remove_instance_variable(cache_var) if Cline::Utils::Os.instance_variable_defined?(cache_var)
           end

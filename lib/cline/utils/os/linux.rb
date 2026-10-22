@@ -37,6 +37,11 @@ module Cline
         def max_cmd_length
           @max_cmd_length ||= Integer(`getconf ARG_MAX`.strip)
         end
+
+        # @return [Integer] Maximum length a single command-line argument can have
+        def max_arg_length
+          @max_arg_length ||= [131_072, max_cmd_length].min
+        end
       end
     end
   end

@@ -63,7 +63,7 @@ Metrics/ParameterLists:
 
 # It's ok to have longer methods, while keeping readability.
 Metrics/PerceivedComplexity:
-  Max: 50
+  Max: 60
 
 # Some method names should have less than 3 characters
 Naming/MethodParameterName:

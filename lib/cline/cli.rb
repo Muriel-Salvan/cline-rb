@@ -133,7 +133,11 @@ module Cline
       task_args = parse_task_options(**kwargs)
       # Use a prompt temporary file if the prompt is too long to fit in the command line.
       (
-        if stripped_prompt && stripped_prompt.size + 2 > Utils::Os.max_cmd_length - (Utils::Os.cline_exe + task_args).map { |arg| "\"#{arg}\"" }.join(' ').size
+        if stripped_prompt && (
+          stripped_prompt.bytesize + 2 > Utils::Os.max_cmd_length -
+            (Utils::Os.cline_exe + task_args).map { |arg| "\"#{arg}\"" }.join(' ').bytesize ||
+          stripped_prompt.bytesize + 2 > Utils::Os.max_arg_length
+        )
           proc do |&run_block|
             Utils::File.with_temp_dir do |tmp_dir|
               prompt_file = "#{tmp_dir}/prompt.txt"
