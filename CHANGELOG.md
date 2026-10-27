@@ -1,3 +1,15 @@
+# [v2.1.0](https://github.com/Muriel-Salvan/cline-rb/compare/v2.0.0...v2.1.0) (2026-10-27 11:46:14)
+
+## Global changes
+### Patches
+
+* [feat(cline): add telemetry attributes to session and error logs](https://github.com/Muriel-Salvan/cline-rb/commit/efe3f555c42aebca33f6d039671c03f6774a0f67)
+
+## Changes for cline
+### Features
+
+* [feat(cline): add telemetry attributes to session and error logs](https://github.com/Muriel-Salvan/cline-rb/commit/efe3f555c42aebca33f6d039671c03f6774a0f67)
+
 # [v2.0.0](https://github.com/Muriel-Salvan/cline-rb/compare/v1.1.4...v2.0.0) (2026-10-22 13:28:57)
 
 ## Global changes
