@@ -53,6 +53,13 @@ describe Cline::Data, '#logs' do
           event: 'test.event',
           severity: 'error',
           providerId: 'cline',
+          runId: 'run-001',
+          status: 'completed',
+          iteration: 3,
+          errorName: 'AI_RetryError',
+          errorMessage: 'Failed after 3 attempts',
+          assistantContentPartCount: 2,
+          hasPrompt: true,
           err: {
             type: '_Q',
             message: 'Failed after 3 attempts. Last error: Cannot connect to API',
@@ -138,7 +145,31 @@ describe Cline::Data, '#logs' do
             os_type: 'win32',
             os_version: 'Windows 11 Pro',
             distinct_id: 'distinct-001',
-            restored_from_persistence: false
+            restored_from_persistence: false,
+            user_id: 'user-123',
+            account_id: 'account-456',
+            account_email: 'user@example.com',
+            session_origin: 'cli',
+            device_id: 'device-789',
+            reasoning_token_count: 150,
+            model_request_id: 'model_req_001',
+            run_count: 4,
+            outcome: 'head_clean',
+            phase: 'first_chunk_received',
+            skill_name: 'code_explorer',
+            skill_source: 'project',
+            skills_available_global: 100,
+            skills_available_project: 50,
+            strategy: 'agentic',
+            messages_before: 30,
+            messages_after: 12,
+            messages_removed: 18,
+            tokens_before: 12_000,
+            tokens_after: 8000,
+            tokens_saved: 4000,
+            trigger_tokens: 1500.5,
+            max_input_tokens: 32_000.0,
+            threshold_ratio: 0.9
           }
         }
       ]
@@ -152,7 +183,7 @@ describe Cline::Data, '#logs' do
       expect(log.msg).to eq 'Test message'
       expect(log.component).to eq 'main'
       expect(log.interactive).to be true
-      expect(log.has_prompt).to be_nil
+      expect(log.has_prompt).to be true
       expect(log.cwd).to eq '/home/user/project'
       expect(log.reason).to eq 'test reason'
       expect(log.backend_mode).to eq 'auto'
@@ -161,6 +192,12 @@ describe Cline::Data, '#logs' do
       expect(log.event).to eq 'test.event'
       expect(log.severity).to eq 'error'
       expect(log.provider_id).to eq 'cline'
+      expect(log.run_id).to eq 'run-001'
+      expect(log.status).to eq 'completed'
+      expect(log.iteration).to eq 3
+      expect(log.error_name).to eq 'AI_RetryError'
+      expect(log.error_message).to eq 'Failed after 3 attempts'
+      expect(log.assistant_content_part_count).to eq 2
       # Error top-level attributes
       expect(log.err.type).to eq '_Q'
       expect(log.err.message).to eq 'Failed after 3 attempts. Last error: Cannot connect to API'
@@ -239,6 +276,30 @@ describe Cline::Data, '#logs' do
       expect(log.properties.os_version).to eq 'Windows 11 Pro'
       expect(log.properties.distinct_id).to eq 'distinct-001'
       expect(log.properties.restored_from_persistence).to be false
+      expect(log.properties.user_id).to eq 'user-123'
+      expect(log.properties.account_id).to eq 'account-456'
+      expect(log.properties.account_email).to eq 'user@example.com'
+      expect(log.properties.session_origin).to eq 'cli'
+      expect(log.properties.device_id).to eq 'device-789'
+      expect(log.properties.reasoning_token_count).to eq 150
+      expect(log.properties.model_request_id).to eq 'model_req_001'
+      expect(log.properties.run_count).to eq 4
+      expect(log.properties.outcome).to eq 'head_clean'
+      expect(log.properties.phase).to eq 'first_chunk_received'
+      expect(log.properties.skill_name).to eq 'code_explorer'
+      expect(log.properties.skill_source).to eq 'project'
+      expect(log.properties.skills_available_global).to eq 100
+      expect(log.properties.skills_available_project).to eq 50
+      expect(log.properties.strategy).to eq 'agentic'
+      expect(log.properties.messages_before).to eq 30
+      expect(log.properties.messages_after).to eq 12
+      expect(log.properties.messages_removed).to eq 18
+      expect(log.properties.tokens_before).to eq 12_000
+      expect(log.properties.tokens_after).to eq 8000
+      expect(log.properties.tokens_saved).to eq 4000
+      expect(log.properties.trigger_tokens).to eq 1500.5
+      expect(log.properties.max_input_tokens).to eq 32_000.0
+      expect(log.properties.threshold_ratio).to eq 0.9
     end
   end
 
