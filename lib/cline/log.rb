@@ -222,6 +222,81 @@ module Cline
       # @return [String, nil] Whether the session was restored from persistence
       attribute :restored_from_persistence, :boolean
 
+      # @return [String, nil] User identifier
+      attribute :user_id, :string
+
+      # @return [String, nil] Account identifier
+      attribute :account_id, :string
+
+      # @return [String, nil] Account email
+      attribute :account_email, :string
+
+      # @return [String, nil] Session origin (e.g. "user", "cli")
+      attribute :session_origin, :string
+
+      # @return [String, nil] Device identifier
+      attribute :device_id, :string
+
+      # @return [Integer, nil] Reasoning token count
+      attribute :reasoning_token_count, :integer
+
+      # @return [String, nil] Model request identifier
+      attribute :model_request_id, :string
+
+      # @return [Integer, nil] Run count
+      attribute :run_count, :integer
+
+      # @return [String, nil] Outcome (e.g. "head_clean", "aborted")
+      attribute :outcome, :string
+
+      # @return [String, nil] Phase of a provider request (e.g. "provider_request_started", "first_chunk_received")
+      attribute :phase, :string
+
+      # @return [String, nil] Skill name used
+      attribute :skill_name, :string
+
+      # @return [String, nil] Skill source (e.g. "project", "global")
+      attribute :skill_source, :string
+
+      # @return [Integer, nil] Number of skills available globally
+      attribute :skills_available_global, :integer
+
+      # @return [Integer, nil] Number of skills available for the project
+      attribute :skills_available_project, :integer
+
+      # @return [String, nil] Compaction strategy (e.g. "agentic")
+      attribute :strategy, :string
+
+      # @return [Integer, nil] Mode of the compaction (e.g. "auto")
+      attribute :mode, :string
+
+      # @return [Integer, nil] Number of messages before compaction
+      attribute :messages_before, :integer
+
+      # @return [Integer, nil] Number of messages after compaction
+      attribute :messages_after, :integer
+
+      # @return [Integer, nil] Number of messages removed during compaction
+      attribute :messages_removed, :integer
+
+      # @return [Integer, nil] Number of tokens before compaction
+      attribute :tokens_before, :integer
+
+      # @return [Integer, nil] Number of tokens after compaction
+      attribute :tokens_after, :integer
+
+      # @return [Integer, nil] Number of tokens saved by compaction
+      attribute :tokens_saved, :integer
+
+      # @return [Float, nil] Trigger tokens for compaction
+      attribute :trigger_tokens, :float
+
+      # @return [Float, nil] Maximum input tokens
+      attribute :max_input_tokens, :float
+
+      # @return [Float, nil] Threshold ratio for compaction trigger
+      attribute :threshold_ratio, :float
+
       # All attributes are already snake case
       cline_snake_attributes(*attributes.keys)
     end
@@ -281,6 +356,24 @@ module Cline
 
     # @return [String, nil] Provider identifier (e.g. "cline")
     attribute :provider_id, :string
+
+    # @return [String, nil] Run identifier
+    attribute :run_id, :string
+
+    # @return [String, nil] Status (e.g. "aborted", "completed")
+    attribute :status, :string
+
+    # @return [Integer, nil] Iteration number
+    attribute :iteration, :integer
+
+    # @return [String, nil] Error class name
+    attribute :error_name, :string
+
+    # @return [String, nil] Human-readable error message
+    attribute :error_message, :string
+
+    # @return [Integer, nil] Number of assistant content parts
+    attribute :assistant_content_part_count, :integer
 
     # @return [Error, nil] Error details for error logs
     attribute :err, Error
