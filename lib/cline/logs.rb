@@ -62,7 +62,7 @@ module Cline
     def monitor(on_log:, from: nil, monitoring_interval_secs: 1, &)
       # Keep the last log line that we have read
       last_log = from
-      Logs.monitor_file_changes(
+      monitor = Logs.monitor_file_changes(
         file,
         on_change: proc do |_mtime|
           refresh!
@@ -83,6 +83,7 @@ module Cline
       # in-memory cache so that the next call to #logs reads from disk instead
       # of a stale snapshot frozen during monitoring.
       refresh! if block_given?
+      monitor
     end
 
     # Clear the cache in case the log file has changed
