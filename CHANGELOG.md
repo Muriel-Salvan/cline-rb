@@ -1,3 +1,15 @@
+# [v2.1.1](https://github.com/Muriel-Salvan/cline-rb/compare/v2.1.0...v2.1.1) (2026-10-28 09:57:49)
+
+## Global changes
+### Patches
+
+* [fix(cline): refresh log cache after block-based monitoring](https://github.com/Muriel-Salvan/cline-rb/commit/bd3d05bbf783a8ccefd70e38d24f2204ddacfa7e)
+
+## Changes for cline
+### Patches
+
+* [fix(cline): refresh log cache after block-based monitoring](https://github.com/Muriel-Salvan/cline-rb/commit/bd3d05bbf783a8ccefd70e38d24f2204ddacfa7e)
+
 # [v2.1.0](https://github.com/Muriel-Salvan/cline-rb/compare/v2.0.0...v2.1.0) (2026-10-27 11:46:14)
 
 ## Global changes
