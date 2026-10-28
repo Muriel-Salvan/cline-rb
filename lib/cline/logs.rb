@@ -78,6 +78,11 @@ module Cline
         monitoring_interval_secs:,
         &
       )
+      # When monitoring is driven by a block, FileMonitor#start has already
+      # called #stop at the end of the block's execution. Invalidate the
+      # in-memory cache so that the next call to #logs reads from disk instead
+      # of a stale snapshot frozen during monitoring.
+      refresh! if block_given?
     end
 
     # Clear the cache in case the log file has changed
