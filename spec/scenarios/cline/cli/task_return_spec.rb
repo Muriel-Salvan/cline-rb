@@ -131,5 +131,29 @@ describe Cline::Cli, '#task' do
       )
       expect(result[:error]).to be_nil
     end
+
+    it 'returns the last error log from disk (not the stale in-memory cache) when the log file is updated after the session ID is discovered' do
+      result = cli_task(
+        stub: [
+          # First log entry (level 40): startup fallback. The monitor discovers the
+          # session ID from this entry (ulid present by default) and stops, freezing
+          # the in-memory cache with this as the newest error log.
+          {
+            log: { level: 40, severity: 'error', msg: 'First error/warning message' },
+            session: { status: 'failed' }
+          },
+          # Wait for the monitor to detect the first log entry, discover the session
+          # ID, and stop monitoring — freezing @logs_lines in memory.
+          { sleep: 2.0 },
+          # Second log entry (level 40): the actual abort error. Written to disk
+          # after the monitor stopped, so it is NOT in the in-memory cache.
+          { log: { level: 40, severity: 'error', msg: 'Final error message' } }
+        ]
+      )
+      expect(result[:error]).not_to be_nil
+      expect(result[:error].msg).to eq 'Final error message'
+      expect(result[:error].severity).to eq 'error'
+      expect(result[:error].level).to eq 40
+    end
   end
 end
