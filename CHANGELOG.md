@@ -1,3 +1,15 @@
+# [v2.2.0](https://github.com/Muriel-Salvan/cline-rb/compare/v2.1.1...v2.2.0) (2026-11-03 16:44:07)
+
+## Global changes
+### Patches
+
+* [feat(session-message): add tool input attributes and origin metadata](https://github.com/Muriel-Salvan/cline-rb/commit/b873024a5d85f1032f63af03742e713d84f0818f)
+
+## Changes for session-message
+### Features
+
+* [feat(session-message): add tool input attributes and origin metadata](https://github.com/Muriel-Salvan/cline-rb/commit/b873024a5d85f1032f63af03742e713d84f0818f)
+
 # [v2.1.1](https://github.com/Muriel-Salvan/cline-rb/compare/v2.1.0...v2.1.1) (2026-10-28 09:57:49)
 
 ## Global changes
