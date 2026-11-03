@@ -116,7 +116,7 @@ module Cline
     #   or nil if none (see Session#monitor_message)
     # @param on_question [#call, nil] Callback called for each question that is asked by the assistant, or nil if none.
     #   This should be set if an interactive session is expected.
-    #   If a question is asked without a callback to handle it, an UnexpectedInteractiveSessionError exceptioon will be raised.
+    #   If a question is asked without a callback to handle it, an UnexpectedInteractiveSessionError exception will be raised.
     #   - Param question [SessionMessage::MessageContent::ToolUseInput] Question input with possible options
     #     (see SessionMessage::MessageContent::ToolUseInput).
     #   - Return [String] The answer that the user should provide to this assistant's question.

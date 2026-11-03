@@ -7,6 +7,23 @@ module Cline
 
     # @!group Public API
 
+    # Origin of the messages (from where they were generated)
+    class Origin < Schema
+      # @!group Public API
+
+      # @return [String] Source of the messages (cli or api)
+      attribute :source, :string
+
+      # @return [String] Interaction mode (user or auto)
+      attribute :mode, :string
+
+      # @return [String] Origin session ID
+      attribute :session_id, :string
+
+      # @return [String] Version of the origin source
+      attribute :version, :string
+    end
+
     Serializable::ClineData.include_for(self, proc { |base_dir| "#{File.basename(base_dir)}.messages.json" })
 
     # @return [Integer] Schema version
@@ -20,6 +37,15 @@ module Cline
 
     # @return [String] Session ID
     attribute :session_id, :string
+
+    # @return [String, nil] Source of the messages (cli or api)
+    attribute :source, :string
+
+    # @return [String, nil] Interaction mode (user or auto)
+    attribute :mode, :string
+
+    # @return [Origin, nil] Origin of the messages
+    attribute :origin, Origin
 
     # @return [Array<SessionMessage>] Messages of this session
     attribute :messages, Utils::Schema.collection(SessionMessage)

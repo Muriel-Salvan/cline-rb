@@ -52,11 +52,11 @@ describe Cline::SessionMessage, '#==' do
     end
   end
 
-  it 'returns false for messages with different content blocks' do
+  it 'returns false for messages with different thinking content blocks' do
     with_session(
       messages: {
         messages: [
-          { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Hello' }], ts: 100 }
+          { id: 'msg-1', role: 'assistant', content: [{ type: 'thinking', thinking: 'Think A' }, { type: 'text', text: 'Hello' }], ts: 100 }
         ]
       }
     ) do |session1|
@@ -64,11 +64,122 @@ describe Cline::SessionMessage, '#==' do
         name: 'session-2',
         messages: {
           messages: [
-            { id: 'msg-1', role: 'user', content: [{ type: 'text', text: 'Different' }], ts: 100 }
+            { id: 'msg-1', role: 'assistant', content: [{ type: 'thinking', thinking: 'Think B' }, { type: 'text', text: 'Hello' }], ts: 100 }
           ]
         }
       ) do |session2|
         expect(session1.messages.first).not_to eq session2.messages.first
+      end
+    end
+  end
+
+  it 'returns true for messages with same thinking content blocks' do
+    with_session(
+      messages: {
+        messages: [
+          { id: 'msg-1', role: 'assistant', content: [{ type: 'thinking', thinking: 'Think A' }, { type: 'text', text: 'Hello' }], ts: 100 }
+        ]
+      }
+    ) do |session1|
+      with_session(
+        name: 'session-2',
+        messages: {
+          messages: [
+            { id: 'msg-1', role: 'assistant', content: [{ type: 'thinking', thinking: 'Think A' }, { type: 'text', text: 'Hello' }], ts: 100 }
+          ]
+        }
+      ) do |session2|
+        expect(session1.messages.first).to eq session2.messages.first
+      end
+    end
+  end
+
+  it 'returns false for messages with different ToolUseInput fields' do
+    with_session(
+      messages: {
+        messages: [
+          {
+            id: 'msg-1',
+            role: 'assistant',
+            content: [
+              {
+                type: 'tool_use',
+                id: 'tool-1',
+                name: 'read_files',
+                input: { files: [{ path: '/path/file1' }, { path: '/path/file2' }] }
+              }
+            ],
+            ts: 100
+          }
+        ]
+      }
+    ) do |session1|
+      with_session(
+        name: 'session-2',
+        messages: {
+          messages: [
+            {
+              id: 'msg-1',
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool_use',
+                  id: 'tool-1',
+                  name: 'read_files',
+                  input: { files: [{ path: '/path/file1' }, { path: '/path/different' }] }
+                }
+              ],
+              ts: 100
+            }
+          ]
+        }
+      ) do |session2|
+        expect(session1.messages.first).not_to eq session2.messages.first
+      end
+    end
+  end
+
+  it 'returns true for messages with same ToolUseInput fields' do
+    with_session(
+      messages: {
+        messages: [
+          {
+            id: 'msg-1',
+            role: 'assistant',
+            content: [
+              {
+                type: 'tool_use',
+                id: 'tool-1',
+                name: 'editor',
+                input: { new_text: 'new', old_text: 'old', path: '/path/file' }
+              }
+            ],
+            ts: 100
+          }
+        ]
+      }
+    ) do |session1|
+      with_session(
+        name: 'session-2',
+        messages: {
+          messages: [
+            {
+              id: 'msg-1',
+              role: 'assistant',
+              content: [
+                {
+                  type: 'tool_use',
+                  id: 'tool-1',
+                  name: 'editor',
+                  input: { new_text: 'new', old_text: 'old', path: '/path/file' }
+                }
+              ],
+              ts: 100
+            }
+          ]
+        }
+      ) do |session2|
+        expect(session1.messages.first).to eq session2.messages.first
       end
     end
   end

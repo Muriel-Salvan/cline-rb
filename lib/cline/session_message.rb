@@ -49,11 +49,36 @@ module Cline
       class ToolUseInput < Schema
         # @!group Public API
 
+        # A file to be read by the read_files tool
+        class FileInput < Schema
+          # @!group Public API
+
+          # @return [String] File path
+          attribute :path, :string
+        end
+
         # @return [String] Question
         attribute :question, :string
 
         # @return [Array<String>] List of options for the given question
         attribute :options, Utils::Schema.collection(:string)
+
+        # @return [String, nil] File path (for editor / read_files tools)
+        attribute :path, :string
+
+        # @return [String, nil] New file content (for editor tool)
+        attribute :new_text, :string
+
+        # @return [String, nil] Old file content (for editor tool)
+        attribute :old_text, :string
+
+        # @return [String, nil] Shell commands to run (for run_commands tool)
+        attribute :commands, :string
+
+        # @return [Array<FileInput>, nil] Files to read (for read_files tool)
+        attribute :files, Utils::Schema.collection(FileInput)
+
+        cline_snake_attributes :new_text, :old_text
       end
 
       # @return [String] Content block type (text, tool_use, tool_result)
@@ -61,6 +86,9 @@ module Cline
 
       # @return [String, nil] Text content (for type "text")
       attribute :text, :string
+
+      # @return [String, nil] Thinking content (for type "thinking")
+      attribute :thinking, :string
 
       # @return [String, nil] Tool use identifier (for type "tool_use")
       attribute :id, :string
