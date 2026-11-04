@@ -99,4 +99,40 @@ describe Cline::SessionMessage, '.of_hash' do
     expect(message.content[0].name).to eq 'read_files'
     expect(message.content[0].input.wrong_attributes).to eq('_raw' => 'garbage')
   end
+
+  it 'deserializes a tool result content given as a String' do
+    message = first_message_with(
+      [
+        { type: 'tool_result', tool_use_id: 'tool-1', content: 'File content here' }
+      ]
+    )
+
+    tool_result = message.content[0]
+    expect(tool_result.type).to eq 'tool_result'
+    expect(tool_result.tool_use_id).to eq 'tool-1'
+    expect(tool_result.content).to eq 'File content here'
+  end
+
+  it 'deserializes a tool result content given as a list of entries' do
+    message = first_message_with(
+      [
+        {
+          type: 'tool_result',
+          tool_use_id: 'tool-1',
+          content: [
+            { query: 'cd /path && ls', result: 'file.txt', success: true, unknown_attribute: 'kept' }
+          ]
+        }
+      ]
+    )
+
+    tool_result = message.content[0]
+    expect(tool_result.type).to eq 'tool_result'
+    expect(tool_result.tool_use_id).to eq 'tool-1'
+    expect(tool_result.content.size).to eq 1
+    expect(tool_result.content[0].query).to eq 'cd /path && ls'
+    expect(tool_result.content[0].result).to eq 'file.txt'
+    expect(tool_result.content[0].success).to be true
+    expect(tool_result.content[0].extra_attributes).to eq('unknown_attribute' => 'kept')
+  end
 end

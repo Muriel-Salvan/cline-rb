@@ -73,6 +73,39 @@ describe Cline::SessionMessage, '#to_human' do
     ).to eq 'Tool result: File content here'
   end
 
+  it 'returns human description for messages with a list of tool_result content' do
+    expect(
+      human_message(
+        id: 'msg-1',
+        role: 'tool',
+        content: [
+          {
+            type: 'tool_result',
+            tool_use_id: 'tool-1',
+            content: [
+              { query: 'ls', result: 'file1.txt', success: true },
+              { query: 'pwd', result: '/path', success: true }
+            ]
+          }
+        ],
+        ts: 100
+      )
+    ).to eq 'Tool result: file1.txt /path'
+  end
+
+  it 'uses the query of a tool_result content entry having no result' do
+    expect(
+      human_message(
+        id: 'msg-1',
+        role: 'tool',
+        content: [
+          { type: 'tool_result', tool_use_id: 'tool-1', content: [{ query: 'ls', success: true }] }
+        ],
+        ts: 100
+      )
+    ).to eq 'Tool result: ls'
+  end
+
   it 'converts message with model info to human format' do
     expect(
       human_message(

@@ -74,6 +74,14 @@ module Cline
                 subclass.value_type = value_type
               end
 
+              # Check if a raw value can be deserialized by this map.
+              #
+              # @param raw_value [Object] The raw value to check
+              # @return [Boolean] true if this map can deserialize this value
+              def accepts_value?(raw_value)
+                raw_value.is_a?(self) || raw_value.is_a?(Hash)
+              end
+
               # Parse a Hash object and instantiate the proper instance from it.
               #
               # @param hash [Hash] Data
@@ -233,6 +241,14 @@ module Cline
                 subclass.value_type = value_type
               end
 
+              # Check if a raw value can be deserialized by this collection.
+              #
+              # @param raw_value [Object] The raw value to check
+              # @return [Boolean] true if this collection can deserialize this value
+              def accepts_value?(raw_value)
+                raw_value.is_a?(self) || raw_value.is_a?(Array)
+              end
+
               # Parse a Ruby object and instantiate the proper instance from it.
               #
               # @param hash [Object] Data
@@ -284,6 +300,145 @@ module Cline
           Schema.const_set(external_name, schema_class)
         end
         Schema.const_get(external_name)
+      end
+
+      # Provide a class that can be used by Shale for attributes that can be of several types, like this:
+      #   "content": "Some text"                  # A String
+      #   "content": [{ "query": "ls" }, ...]     # An Array of structures
+      # The first type accepting a value is used to deserialize / serialize it.
+      #
+      # @param shale_types [Array<Symbol, Class>] The Shale types this attribute can be (at least 2)
+      # @return [Class] Class that can be used in an attribute declaration
+      def self.union(*shale_types)
+        Union.of(*shale_types)
+      end
+
+      # Handle union types: attributes that can be of several types.
+      # Used by {Cline::Utils::Schema.union}.
+      class Union
+        # @!group Internal
+
+        # Ruby classes that can be deserialized by each scalar Shale type.
+        # Shale types not listed here are considered to accept any value.
+        SCALAR_VALUE_CLASSES = {
+          Shale::Type::String => String,
+          Shale::Type::Integer => Integer,
+          Shale::Type::Float => Float,
+          Shale::Type::Boolean => [TrueClass, FalseClass],
+          Shale::Type::Date => Date,
+          Shale::Type::Time => Time,
+          Shale::Type::Decimal => BigDecimal
+        }.freeze
+
+        class << self
+          # Build (or retrieve) the type class for a union of the given types.
+          #
+          # @param shale_types [Array<Symbol, Class>] The Shale types this union can be (at least 2)
+          # @return [Class] Class that can be used in an attribute declaration
+          def of(*shale_types)
+            raise ArgumentError, "A union type needs at least 2 types, got #{shale_types.size}" if shale_types.size < 2
+
+            shale_types = shale_types.map { |shale_type| shale_type.is_a?(Symbol) ? Shale::Type.lookup(shale_type) : shale_type }
+            # Give a name to this class because Shale needs it to reference it in its accessors.
+            # That also allows us to not redefine the same class several times.
+            external_name = :"UnionOf#{shale_types.map { |shale_type| shale_type.to_s.gsub(':', '') }.join('Or')}"
+            unless Cline::Utils::Schema.const_defined?(external_name)
+              union_class = new_union_class
+              union_class.union_types = shale_types
+              union_class.external_name = external_name
+              Cline::Utils::Schema.const_set(external_name, union_class)
+            end
+            Cline::Utils::Schema.const_get(external_name)
+          end
+
+          # Check if a raw value can be deserialized by a given Shale type.
+          # Shale types that don't handle accepted values are considered as scalar types.
+          #
+          # @param shale_type [Class] The Shale type to check
+          # @param raw_value [Object] The raw value to check
+          # @return [Boolean] true if the Shale type can deserialize this value
+          def accepts_value?(shale_type, raw_value)
+            if shale_type.respond_to?(:accepts_value?)
+              shale_type.accepts_value?(raw_value)
+            else
+              raw_value.is_a?(SCALAR_VALUE_CLASSES.fetch(shale_type, Object))
+            end
+          end
+
+          private
+
+          # Create the class implementing a union type.
+          #
+          # @return [Class] The new union type class
+          def new_union_class
+            Class.new(Cline::Schema) do
+              class << self
+                attr_accessor :union_types, :external_name
+
+                # Check if a raw value can be deserialized by one of this union's types.
+                #
+                # @param raw_value [Object] The raw value to check
+                # @return [Boolean] true if one of this union's types accepts this value
+                def accepts_value?(raw_value)
+                  raw_value.is_a?(self) ||
+                    union_types.any? { |union_type| Cline::Utils::Schema::Union.accepts_value?(union_type, raw_value) }
+                end
+
+                # Parse a value and instantiate the proper instance from it.
+                #
+                # @param value [Object] Data
+                # @param args [Array] Remaining arguments to be transferred to Shale
+                # @param kwargs [Hash] Remaining kwargs to be transferred to Shale
+                # @return [Object, nil] Corresponding instance, or nil if value is nil
+                def of_hash(value, *args, **kwargs)
+                  return nil if value.nil?
+
+                  union_type_for(value).of_hash(value, *args, **kwargs)
+                end
+
+                # Get a Ruby object from an instance.
+                #
+                # @param value [Object] Object to serialize
+                # @param args [Array] Remaining arguments to be transferred to Shale
+                # @param kwargs [Hash] Remaining kwargs to be transferred to Shale
+                # @return [Object, nil] Corresponding Ruby object, or nil if value is nil
+                def as_hash(value, *args, **kwargs)
+                  return nil if value.nil?
+
+                  union_type_for(value).as_hash(value, *args, **kwargs)
+                end
+
+                # Cast an input value to the type matching it.
+                #
+                # @param value [Object, nil] The value to cast
+                # @return [Object, nil] The corresponding instance, or nil if none
+                def cast(value)
+                  return nil if value.nil?
+
+                  union_type_for(value).cast(value)
+                end
+
+                # Return the class name
+                #
+                # @return [String] The class name
+                def to_s
+                  "::Cline::Utils::Schema::#{@external_name}"
+                end
+
+                private
+
+                # Get the type that can deserialize / serialize a given value.
+                #
+                # @param value [Object] The value to find the type of
+                # @return [Class] The corresponding type
+                def union_type_for(value)
+                  union_types.find { |union_type| Cline::Utils::Schema::Union.accepts_value?(union_type, value) } ||
+                    raise("Unable to cast a #{value.class} into #{name}")
+                end
+              end
+            end
+          end
+        end
       end
     end
   end

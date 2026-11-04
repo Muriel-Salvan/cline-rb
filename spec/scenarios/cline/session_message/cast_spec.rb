@@ -69,4 +69,29 @@ describe Cline::SessionMessage, '#cast' do
     expect(message.content[0].type).to eq 'thinking'
     expect(message.content[0].thinking).to eq 'Let me think about this...'
   end
+
+  it 'initializes a tool result content given as a String from Hash' do
+    message.content = [
+      { type: 'tool_result', tool_use_id: 'tool-1', content: 'File content here' }
+    ]
+    expect(message.content.size).to eq 1
+    expect(message.content[0].type).to eq 'tool_result'
+    expect(message.content[0].tool_use_id).to eq 'tool-1'
+    expect(message.content[0].content).to eq 'File content here'
+  end
+
+  it 'initializes a tool result content given as a list of entries from Hash' do
+    message.content = [
+      {
+        type: 'tool_result',
+        tool_use_id: 'tool-1',
+        content: [{ query: 'ls', result: 'file.txt', success: true }]
+      }
+    ]
+    expect(message.content.size).to eq 1
+    expect(message.content[0].content.size).to eq 1
+    expect(message.content[0].content[0].query).to eq 'ls'
+    expect(message.content[0].content[0].result).to eq 'file.txt'
+    expect(message.content[0].content[0].success).to be true
+  end
 end

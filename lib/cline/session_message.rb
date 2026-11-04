@@ -86,6 +86,27 @@ module Cline
         cline_snake_attributes :new_text, :old_text
       end
 
+      # A content entry of a tool result that is not a plain String.
+      class ToolResultContent < Schema
+        # @!group Public API
+
+        # @return [String, nil] Query or command executed by the tool
+        attribute :query, :string
+
+        # @return [String, nil] Result of the query or command
+        attribute :result, :string
+
+        # @return [Boolean, nil] Whether the query or command succeeded
+        attribute :success, :boolean
+
+        # Get a human-readable representation of this tool result.
+        #
+        # @return [String] The result of the tool, or its query if there is no result
+        def to_s
+          result || query || ''
+        end
+      end
+
       # @return [String] Content block type (text, tool_use, tool_result)
       attribute :type, :string
 
@@ -107,8 +128,8 @@ module Cline
       # @return [String, nil] Tool use identifier this result corresponds to (for type "tool_result")
       attribute :tool_use_id, :string
 
-      # @return [String, nil] Content of the tool result (for type "tool_result")
-      attribute :content, :string
+      # @return [String, Array<ToolResultContent>, nil] Content of the tool result (for type "tool_result")
+      attribute :content, Utils::Schema.union(:string, Utils::Schema.collection(ToolResultContent))
 
       cline_snake_attributes :tool_use_id
     end
@@ -174,7 +195,7 @@ module Cline
             "Assistant: #{first_text}"
           end
         when 'tool'
-          "Tool result: #{content.find { |c| c.type == 'tool_result' }&.content}"
+          "Tool result: #{human_tool_result}"
         else
           to_s
         end
@@ -206,6 +227,16 @@ module Cline
     # @return [String] The first text content, or an empty string if none
     def first_text
       content.find { |c| c.type == 'text' }&.text.to_s.gsub("\n", ' ')
+    end
+
+    # Get a human representation of the tool result content of this message.
+    #
+    # @return [String] The tool result content, as a String
+    def human_tool_result
+      tool_result = content.find { |c| c.type == 'tool_result' }&.content
+      return tool_result.to_s if tool_result.nil? || tool_result.is_a?(String)
+
+      Array(tool_result).join(' ')
     end
   end
 end

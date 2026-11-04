@@ -41,6 +41,15 @@ module Cline
         @strict_types == true
       end
 
+      # Check if a raw value can be deserialized by this schema.
+      # By default a schema is deserialized from a Hash, or from an instance of itself.
+      #
+      # @param raw_value [Object] The raw value to check
+      # @return [Boolean] true if {of_hash} can deserialize this value
+      def accepts_value?(raw_value)
+        raw_value.is_a?(self) || raw_value.is_a?(Hash)
+      end
+
       # Parse a Hash object and instantiate the proper instance from it.
       #
       # @param hash [Hash] Data
