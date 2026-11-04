@@ -592,7 +592,7 @@ msg.usage         #=> Usage struct (cost, tokens)
 msg.to_human      #=> human-friendly string (limited to 128 chars by default)
 ```
 
-Contains nested schemas: `ModelInfo`, `Metrics`, `MessageContent`, `ToolUseInput`.
+Contains nested schemas: `ModelInfo`, `Metrics`, `MessageContent`, `ToolUseInput`, `ToolResultContent`.
 
 ---
 
@@ -877,6 +877,7 @@ Every domain object (settings, providers, sessions, tasks...) extends `Cline::Sc
 - **Declarative attributes** — `attribute :my_field, :string` mirrors the JSON schema.
 - **Automatic camelCase↔snake_case mapping** — Cline stores `autoUpdateEnabled`, Ruby gets `auto_update_enabled`.
 - **Extra attribute preservation** — unknown JSON keys are stored in `extra_attributes` and re-serialized back, maintaining round-trip fidelity.
+- **Typed containers & unions** — `Utils::Schema.collection(Type)` models arrays, `Utils::Schema.map(:string)` dynamic-key maps and `Utils::Schema.union(:string, Utils::Schema.collection(Type))` attributes that can be of several types.
 
 3 mixin modules handle file persistence — classes include them to "come alive" from disk:
 

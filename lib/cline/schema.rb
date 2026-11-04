@@ -10,6 +10,8 @@ module Cline
   class Schema < Shale::Mapper
     # @!group Internal
 
+    include Utils::Logger
+
     # @return [Hash] Store all extra values from a JSON parse
     attr_accessor :extra_attributes
 
@@ -21,6 +23,31 @@ module Cline
         @snake_attributes ||= []
         @snake_attributes.concat(attributes)
         @snake_attributes.uniq!
+      end
+
+      # Enable strict type checks on deserialization.
+      # When enabled, a scalar attribute that receives an Array or a Hash raises a TypeError
+      # instead of being silently coerced.
+      #
+      # @return [void]
+      def strict_types!
+        @strict_types = true
+      end
+
+      # Are strict type checks enabled on deserialization?
+      #
+      # @return [Boolean] true if strict type checks are enabled
+      def strict_types?
+        @strict_types == true
+      end
+
+      # Check if a raw value can be deserialized by this schema.
+      # By default a schema is deserialized from a Hash, or from an instance of itself.
+      #
+      # @param raw_value [Object] The raw value to check
+      # @return [Boolean] true if {of_hash} can deserialize this value
+      def accepts_value?(raw_value)
+        raw_value.is_a?(self) || raw_value.is_a?(Hash)
       end
 
       # Parse a Hash object and instantiate the proper instance from it.
@@ -42,6 +69,7 @@ module Cline
             extra_hash[key] = value
           end
         end
+        validate_scalar_types!(known_hash) if strict_types?
         # Give Shale the data it knows about, without extra attributes
         instance = super(known_hash, *args, **kwargs)
         instance.extra_attributes = extra_hash unless extra_hash.empty?
@@ -80,6 +108,30 @@ module Cline
       end
 
       private
+
+      # Validate that scalar attributes do not receive a structured value.
+      #
+      # @param known_hash [Hash] The known attributes to validate
+      # @return [void]
+      def validate_scalar_types!(known_hash)
+        known_hash.each do |key, value|
+          attribute = attributes[hash_mapping.keys[key].attribute]
+          check_scalar_value!(attribute, value) if attribute
+        end
+      end
+
+      # Check that a value is structurally compatible with an attribute.
+      # A scalar attribute should not receive an Array or a Hash.
+      #
+      # @param attribute [Shale::Attribute] The attribute to check
+      # @param value [Object] The raw value to check
+      # @return [void]
+      def check_scalar_value!(attribute, value)
+        return if value.nil? || attribute.collection? || attribute.type < Shale::Type::Complex
+        return unless value.is_a?(Array) || value.is_a?(Hash)
+
+        raise TypeError, "Attribute #{attribute.name.inspect} of #{name} expects a scalar value but got a #{value.class}"
+      end
 
       # Complete the hash mapping to include camelCase to snake_case as the defaults.
       # Do it only once.
