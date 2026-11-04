@@ -46,12 +46,17 @@ module Cline
       # @!group Public API
 
       # An input used for tool use content.
-      class ToolUseInput < Schema
+      # Its values are filled by the LLM, whose types are not guaranteed by the Cline CLI:
+      # deserialization is therefore lenient (wrong values do not raise but are stored in {#wrong_attributes}).
+      class ToolUseInput < LenientSchema
         # @!group Public API
 
         # A file to be read by the read_files tool
+        # The path is expected to be a String: a wrong type (e.g. an Array) is reported as a deserialization error.
         class FileInput < Schema
           # @!group Public API
+
+          strict_types!
 
           # @return [String] File path
           attribute :path, :string
