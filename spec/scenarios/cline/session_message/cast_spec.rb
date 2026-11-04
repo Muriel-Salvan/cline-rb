@@ -41,7 +41,7 @@ describe Cline::SessionMessage, '#cast' do
           path: '/path/to/file',
           new_text: 'new content',
           old_text: 'old content',
-          commands: 'echo hello',
+          commands: ['echo hello', 'echo world'],
           files: [{ path: '/path/to/file1' }, { path: '/path/to/file2' }]
         }
       }
@@ -55,7 +55,7 @@ describe Cline::SessionMessage, '#cast' do
     expect(message.content[0].input.path).to eq '/path/to/file'
     expect(message.content[0].input.new_text).to eq 'new content'
     expect(message.content[0].input.old_text).to eq 'old content'
-    expect(message.content[0].input.commands).to eq 'echo hello'
+    expect(message.content[0].input.commands.to_a).to eq ['echo hello', 'echo world']
     expect(message.content[0].input.files.to_a.size).to eq 2
     expect(message.content[0].input.files[0].path).to eq '/path/to/file1'
     expect(message.content[0].input.files[1].path).to eq '/path/to/file2'
