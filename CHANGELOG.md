@@ -1,3 +1,20 @@
+# [v2.3.0](https://github.com/Muriel-Salvan/cline-rb/compare/v2.2.0...v2.3.0) (2026-11-04 15:21:27)
+
+## Global changes
+### Patches
+
+* [feat(cline): add LenientSchema for tolerant deserialization of session messages's input](https://github.com/Muriel-Salvan/cline-rb/commit/a033d62989c22876030742c5e4979dc7a02bee16)
+
+## Changes for cline
+### Features
+
+* [feat(cline): add LenientSchema for tolerant deserialization of session messages's input](https://github.com/Muriel-Salvan/cline-rb/commit/a033d62989c22876030742c5e4979dc7a02bee16)
+
+## Changes for schema
+### Features
+
+* [feat(cline): add LenientSchema for tolerant deserialization of session messages's input](https://github.com/Muriel-Salvan/cline-rb/commit/a033d62989c22876030742c5e4979dc7a02bee16)
+
 # [v2.2.0](https://github.com/Muriel-Salvan/cline-rb/compare/v2.1.1...v2.2.0) (2026-11-03 16:44:07)
 
 ## Global changes
