@@ -1,3 +1,15 @@
+# [v2.3.1](https://github.com/Muriel-Salvan/cline-rb/compare/v2.3.0...v2.3.1) (2026-11-04 18:13:28)
+
+## Global changes
+### Patches
+
+* [fix(SessionMessage): Fix type of commands from String to Array](https://github.com/Muriel-Salvan/cline-rb/commit/d89408139717eaba0142bcb344a41bc3d135495d)
+
+## Changes for SessionMessage
+### Patches
+
+* [fix(SessionMessage): Fix type of commands from String to Array](https://github.com/Muriel-Salvan/cline-rb/commit/d89408139717eaba0142bcb344a41bc3d135495d)
+
 # [v2.3.0](https://github.com/Muriel-Salvan/cline-rb/compare/v2.2.0...v2.3.0) (2026-11-04 15:21:27)
 
 ## Global changes
