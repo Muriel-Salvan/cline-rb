@@ -1,3 +1,15 @@
+# [v2.3.2](https://github.com/Muriel-Salvan/cline-rb/compare/v2.3.1...v2.3.2) (2026-11-05 10:23:33)
+
+## Global changes
+### Patches
+
+* [fix(session_message): allow string options in ask_question input](https://github.com/Muriel-Salvan/cline-rb/commit/2fb6c0027e37e5437b9bc835270e46765a66cf87)
+
+## Changes for session_message
+### Patches
+
+* [fix(session_message): allow string options in ask_question input](https://github.com/Muriel-Salvan/cline-rb/commit/2fb6c0027e37e5437b9bc835270e46765a66cf87)
+
 # [v2.3.1](https://github.com/Muriel-Salvan/cline-rb/compare/v2.3.0...v2.3.1) (2026-11-04 18:13:28)
 
 ## Global changes
