@@ -66,7 +66,7 @@ describe Cline::SessionMessage, '.of_hash' do
     expect(input.wrong_attributes).to be_nil
   end
 
-  it 'does not raise and stores the raw value when commands is not an Array' do
+  it 'deserializes commands given as a String' do
     message = first_message_with(
       [
         {
@@ -79,8 +79,25 @@ describe Cline::SessionMessage, '.of_hash' do
     )
 
     input = message.content[0].input
+    expect(input.commands).to eq 'echo hello'
+    expect(input.wrong_attributes).to be_nil
+  end
+
+  it 'does not raise and stores the raw value when commands has an unsupported type' do
+    message = first_message_with(
+      [
+        {
+          type: 'tool_use',
+          id: 'tool-1',
+          name: 'run_commands',
+          input: { commands: 42 }
+        }
+      ]
+    )
+
+    input = message.content[0].input
     expect(input.commands).to be_nil
-    expect(input.wrong_attributes).to eq(commands: 'echo hello')
+    expect(input.wrong_attributes).to eq(commands: 42)
   end
 
   it 'does not raise and stores the raw value when a tool use input attribute has a wrong type' do

@@ -77,8 +77,8 @@ module Cline
         # @return [String, nil] Old file content (for editor tool)
         attribute :old_text, :string
 
-        # @return [Array<String>, nil] Shell commands to run (for run_commands tool)
-        attribute :commands, Utils::Schema.collection(:string)
+        # @return [String, Array<String>, nil] Shell commands to run (for run_commands tool)
+        attribute :commands, Utils::Schema.union(:string, Utils::Schema.collection(:string))
 
         # @return [Array<FileInput>, nil] Files to read (for read_files tool)
         attribute :files, Utils::Schema.collection(FileInput)
