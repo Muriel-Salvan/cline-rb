@@ -74,6 +74,18 @@ describe Cline::SessionMessage, '#cast' do
     expect(message.content[0].input.options).to eq 'Yes'
   end
 
+  it 'initializes commands given as a String' do
+    message.content = [
+      {
+        type: 'tool_use',
+        id: 'tool-1',
+        name: 'run_commands',
+        input: { commands: 'echo hello' }
+      }
+    ]
+    expect(message.content[0].input.commands).to eq 'echo hello'
+  end
+
   it 'initializes thinking content blocks from Hash' do
     message.content = [
       { type: 'thinking', thinking: 'Let me think about this...' }
