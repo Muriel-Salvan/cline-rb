@@ -61,6 +61,19 @@ describe Cline::SessionMessage, '#cast' do
     expect(message.content[0].input.files[1].path).to eq '/path/to/file2'
   end
 
+  it 'initializes options given as a String' do
+    message.content = [
+      {
+        type: 'tool_use',
+        id: 'tool-1',
+        name: 'ask_question',
+        input: { question: 'Continue?', options: 'Yes' }
+      }
+    ]
+    expect(message.content[0].input.question).to eq 'Continue?'
+    expect(message.content[0].input.options).to eq 'Yes'
+  end
+
   it 'initializes thinking content blocks from Hash' do
     message.content = [
       { type: 'thinking', thinking: 'Let me think about this...' }
