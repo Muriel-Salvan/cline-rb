@@ -1,3 +1,15 @@
+# [v2.3.3](https://github.com/Muriel-Salvan/cline-rb/compare/v2.3.2...v2.3.3) (2026-11-05 13:58:16)
+
+## Global changes
+### Patches
+
+* [fix(session-message): accept string commands for run_commands tool](https://github.com/Muriel-Salvan/cline-rb/commit/fa565fdef675dfe0edce2b23a51d8065b9d317ad)
+
+## Changes for session-message
+### Patches
+
+* [fix(session-message): accept string commands for run_commands tool](https://github.com/Muriel-Salvan/cline-rb/commit/fa565fdef675dfe0edce2b23a51d8065b9d317ad)
+
 # [v2.3.2](https://github.com/Muriel-Salvan/cline-rb/compare/v2.3.1...v2.3.2) (2026-11-05 10:23:33)
 
 ## Global changes
