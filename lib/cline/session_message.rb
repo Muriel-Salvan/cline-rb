@@ -65,8 +65,8 @@ module Cline
         # @return [String] Question
         attribute :question, :string
 
-        # @return [Array<String>] List of options for the given question
-        attribute :options, Utils::Schema.collection(:string)
+        # @return [String, Array<String>, nil] List of options for the given question
+        attribute :options, Utils::Schema.union(:string, Utils::Schema.collection(:string))
 
         # @return [String, nil] File path (for editor / read_files tools)
         attribute :path, :string

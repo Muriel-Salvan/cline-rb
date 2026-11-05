@@ -48,6 +48,24 @@ describe Cline::SessionMessage, '.of_hash' do
     expect(input.wrong_attributes).to be_nil
   end
 
+  it 'deserializes options given as a String' do
+    message = first_message_with(
+      [
+        {
+          type: 'tool_use',
+          id: 'tool-1',
+          name: 'ask_question',
+          input: { question: 'Continue?', options: 'Yes' }
+        }
+      ]
+    )
+
+    input = message.content[0].input
+    expect(input.question).to eq 'Continue?'
+    expect(input.options).to eq 'Yes'
+    expect(input.wrong_attributes).to be_nil
+  end
+
   it 'does not raise and stores the raw value when commands is not an Array' do
     message = first_message_with(
       [
